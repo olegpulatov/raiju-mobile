@@ -1,5 +1,5 @@
-import 'package:buzz/features/settings/theme_picker_page.dart';
-import 'package:buzz/shared/theme/theme.dart';
+import 'package:raiju_mobile/features/settings/theme_picker_page.dart';
+import 'package:raiju_mobile/shared/theme/theme.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

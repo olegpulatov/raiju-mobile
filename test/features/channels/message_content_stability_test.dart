@@ -1,10 +1,10 @@
-import 'package:buzz/features/channels/message_content.dart';
-import 'package:buzz/features/channels/media_viewer_page.dart';
-import 'package:buzz/shared/custom_emoji/custom_emoji.dart';
-import 'package:buzz/shared/custom_emoji/custom_emoji_provider.dart';
-import 'package:buzz/shared/custom_emoji/custom_emoji_render.dart';
-import 'package:buzz/shared/emoji/emoji_only.dart';
-import 'package:buzz/shared/theme/theme.dart';
+import 'package:raiju_mobile/features/channels/message_content.dart';
+import 'package:raiju_mobile/features/channels/media_viewer_page.dart';
+import 'package:raiju_mobile/shared/custom_emoji/custom_emoji.dart';
+import 'package:raiju_mobile/shared/custom_emoji/custom_emoji_provider.dart';
+import 'package:raiju_mobile/shared/custom_emoji/custom_emoji_render.dart';
+import 'package:raiju_mobile/shared/emoji/emoji_only.dart';
+import 'package:raiju_mobile/shared/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gpt_markdown/gpt_markdown.dart';

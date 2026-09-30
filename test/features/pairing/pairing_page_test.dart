@@ -5,14 +5,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:buzz/features/pairing/pairing_page.dart';
-import 'package:buzz/features/pairing/pairing_provider.dart';
-import 'package:buzz/shared/community/community.dart';
-import 'package:buzz/shared/security/sensitive_action_authorizer.dart';
-import 'package:buzz/shared/theme/theme.dart';
-import 'package:buzz/shared/widgets/buzz_loading_indicator.dart';
-import 'package:buzz/shared/widgets/ios_glass_navigation_button.dart';
-import 'package:buzz/shared/widgets/tappable_flapping_bee.dart';
+import 'package:raiju_mobile/features/pairing/pairing_page.dart';
+import 'package:raiju_mobile/features/pairing/pairing_provider.dart';
+import 'package:raiju_mobile/shared/community/community.dart';
+import 'package:raiju_mobile/shared/security/sensitive_action_authorizer.dart';
+import 'package:raiju_mobile/shared/theme/theme.dart';
+import 'package:raiju_mobile/shared/widgets/buzz_loading_indicator.dart';
+import 'package:raiju_mobile/shared/widgets/ios_glass_navigation_button.dart';
+import 'package:raiju_mobile/shared/widgets/tappable_flapping_bee.dart';
 
 import '../../helpers/widget_helpers.dart';
 

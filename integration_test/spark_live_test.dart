@@ -1,14 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:buzz/harness/harness.dart';
-import 'package:buzz/storage/voice_transcript.dart';
-import 'package:buzz/spark/chat_bridge.dart';
-import 'package:buzz/spark/controller.dart';
-import 'package:buzz/spark/credential_broker.dart';
-import 'package:buzz/spark/models.dart';
-import 'package:buzz/spark/settings_store.dart';
-import 'package:buzz/spark/voice_session.dart';
+import 'package:raiju_mobile/harness/harness.dart';
+import 'package:raiju_mobile/storage/voice_transcript.dart';
+import 'package:raiju_mobile/spark/chat_bridge.dart';
+import 'package:raiju_mobile/spark/controller.dart';
+import 'package:raiju_mobile/spark/credential_broker.dart';
+import 'package:raiju_mobile/spark/models.dart';
+import 'package:raiju_mobile/spark/settings_store.dart';
+import 'package:raiju_mobile/spark/voice_session.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';

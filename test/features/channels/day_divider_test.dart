@@ -1,5 +1,5 @@
-import 'package:buzz/features/channels/day_divider.dart';
-import 'package:buzz/shared/theme/theme.dart';
+import 'package:raiju_mobile/features/channels/day_divider.dart';
+import 'package:raiju_mobile/shared/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

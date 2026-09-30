@@ -1,14 +1,14 @@
 import 'dart:async';
 
-import 'package:buzz/features/channels/channel.dart';
-import 'package:buzz/features/channels/channel_actions_sheet.dart';
-import 'package:buzz/features/channels/channel_management_provider.dart';
-import 'package:buzz/features/channels/channel_sections/channel_sections_provider.dart';
-import 'package:buzz/features/channels/channel_sections/channel_sections_storage.dart';
-import 'package:buzz/features/channels/manage_channel_sheet.dart';
-import 'package:buzz/shared/mentions/agent_identity_provider.dart';
-import 'package:buzz/shared/relay/relay.dart';
-import 'package:buzz/shared/theme/theme.dart';
+import 'package:raiju_mobile/features/channels/channel.dart';
+import 'package:raiju_mobile/features/channels/channel_actions_sheet.dart';
+import 'package:raiju_mobile/features/channels/channel_management_provider.dart';
+import 'package:raiju_mobile/features/channels/channel_sections/channel_sections_provider.dart';
+import 'package:raiju_mobile/features/channels/channel_sections/channel_sections_storage.dart';
+import 'package:raiju_mobile/features/channels/manage_channel_sheet.dart';
+import 'package:raiju_mobile/shared/mentions/agent_identity_provider.dart';
+import 'package:raiju_mobile/shared/relay/relay.dart';
+import 'package:raiju_mobile/shared/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';

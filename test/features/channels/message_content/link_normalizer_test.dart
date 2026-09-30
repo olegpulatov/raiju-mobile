@@ -1,4 +1,4 @@
-import 'package:buzz/features/channels/message_content/link_normalizer.dart';
+import 'package:raiju_mobile/features/channels/message_content/link_normalizer.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

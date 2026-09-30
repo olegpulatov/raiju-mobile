@@ -1,5 +1,5 @@
-import 'package:buzz/harness/collab_replica.dart';
-import 'package:buzz/harness/harness.dart';
+import 'package:raiju_mobile/harness/collab_replica.dart';
+import 'package:raiju_mobile/harness/harness.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

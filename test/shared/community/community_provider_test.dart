@@ -3,11 +3,11 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:buzz/shared/auth/auth_provider.dart';
-import 'package:buzz/shared/community/community.dart';
-import 'package:buzz/shared/community/community_provider.dart';
-import 'package:buzz/shared/community/community_storage.dart';
-import 'package:buzz/shared/push/push_subscription.dart';
+import 'package:raiju_mobile/shared/auth/auth_provider.dart';
+import 'package:raiju_mobile/shared/community/community.dart';
+import 'package:raiju_mobile/shared/community/community_provider.dart';
+import 'package:raiju_mobile/shared/community/community_storage.dart';
+import 'package:raiju_mobile/shared/push/push_subscription.dart';
 import 'package:nostr/nostr.dart' as nostr;
 
 import 'community_storage_test.dart';

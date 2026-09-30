@@ -1,15 +1,15 @@
 import 'dart:async';
 
-import 'package:buzz/companion_controller.dart';
-import 'package:buzz/features/channels/channels_page.dart';
-import 'package:buzz/features/profile/presence_cache_provider.dart';
-import 'package:buzz/harness/harness.dart';
-import 'package:buzz/raiju/companion_provider.dart';
-import 'package:buzz/shared/profile/user_profile.dart';
-import 'package:buzz/shared/profile/user_cache_provider.dart';
-import 'package:buzz/shared/theme/theme.dart';
-import 'package:buzz/shared/widgets/avatar_image.dart';
-import 'package:buzz/storage/chat_store.dart';
+import 'package:raiju_mobile/companion_controller.dart';
+import 'package:raiju_mobile/features/channels/channels_page.dart';
+import 'package:raiju_mobile/features/profile/presence_cache_provider.dart';
+import 'package:raiju_mobile/harness/harness.dart';
+import 'package:raiju_mobile/raiju/companion_provider.dart';
+import 'package:raiju_mobile/shared/profile/user_profile.dart';
+import 'package:raiju_mobile/shared/profile/user_cache_provider.dart';
+import 'package:raiju_mobile/shared/theme/theme.dart';
+import 'package:raiju_mobile/shared/widgets/avatar_image.dart';
+import 'package:raiju_mobile/storage/chat_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';

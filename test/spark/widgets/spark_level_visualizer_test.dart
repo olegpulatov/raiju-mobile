@@ -1,4 +1,4 @@
-import 'package:buzz/spark/widgets/spark_level_visualizer.dart';
+import 'package:raiju_mobile/spark/widgets/spark_level_visualizer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

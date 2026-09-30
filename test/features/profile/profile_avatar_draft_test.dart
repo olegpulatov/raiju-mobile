@@ -1,6 +1,6 @@
-import 'package:buzz/features/profile/profile_avatar_draft.dart';
-import 'package:buzz/shared/animated_avatar.dart';
-import 'package:buzz/shared/relay/relay.dart';
+import 'package:raiju_mobile/features/profile/profile_avatar_draft.dart';
+import 'package:raiju_mobile/shared/animated_avatar.dart';
+import 'package:raiju_mobile/shared/relay/relay.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 

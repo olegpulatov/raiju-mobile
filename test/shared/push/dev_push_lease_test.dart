@@ -1,14 +1,14 @@
 import 'dart:convert';
 
-import 'package:buzz/shared/auth/auth_provider.dart';
-import 'package:buzz/shared/crypto/nip44.dart';
-import 'package:buzz/shared/push/dev_push_lease.dart';
-import 'package:buzz/shared/push/push_bridge.dart';
-import 'package:buzz/shared/push/push_subscription.dart';
-import 'package:buzz/shared/relay/nostr_models.dart';
-import 'package:buzz/shared/relay/relay_session.dart';
-import 'package:buzz/shared/relay/relay_socket.dart';
-import 'package:buzz/shared/relay/signed_event_relay.dart';
+import 'package:raiju_mobile/shared/auth/auth_provider.dart';
+import 'package:raiju_mobile/shared/crypto/nip44.dart';
+import 'package:raiju_mobile/shared/push/dev_push_lease.dart';
+import 'package:raiju_mobile/shared/push/push_bridge.dart';
+import 'package:raiju_mobile/shared/push/push_subscription.dart';
+import 'package:raiju_mobile/shared/relay/nostr_models.dart';
+import 'package:raiju_mobile/shared/relay/relay_session.dart';
+import 'package:raiju_mobile/shared/relay/relay_socket.dart';
+import 'package:raiju_mobile/shared/relay/signed_event_relay.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:nostr/nostr.dart' as nostr;

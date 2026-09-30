@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:buzz/shared/read_state/read_state_format.dart';
-import 'package:buzz/shared/relay/nostr_models.dart';
+import 'package:raiju_mobile/shared/read_state/read_state_format.dart';
+import 'package:raiju_mobile/shared/relay/nostr_models.dart';
 
 void main() {
   group('read state event validation', () {

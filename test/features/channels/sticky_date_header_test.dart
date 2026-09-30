@@ -1,6 +1,6 @@
-import 'package:buzz/features/channels/message_action_backdrop_state.dart';
-import 'package:buzz/features/channels/sticky_date_header.dart';
-import 'package:buzz/shared/theme/theme.dart';
+import 'package:raiju_mobile/features/channels/message_action_backdrop_state.dart';
+import 'package:raiju_mobile/features/channels/sticky_date_header.dart';
+import 'package:raiju_mobile/shared/theme/theme.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gpt_markdown/custom_widgets/link_button.dart';
-import 'package:buzz/features/channels/agent_activity/observer_models.dart';
-import 'package:buzz/features/channels/agent_activity/transcript_item_widget.dart';
-import 'package:buzz/shared/theme/theme.dart';
+import 'package:raiju_mobile/features/channels/agent_activity/observer_models.dart';
+import 'package:raiju_mobile/features/channels/agent_activity/transcript_item_widget.dart';
+import 'package:raiju_mobile/shared/theme/theme.dart';
 
 Widget _testable(Widget child) {
   return MaterialApp(

@@ -4,11 +4,11 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:buzz/features/channels/channel_messages_provider.dart';
-import 'package:buzz/features/channels/pending_local_messages_provider.dart';
-import 'package:buzz/features/channels/thread_replies_provider.dart';
-import 'package:buzz/features/channels/timeline_message.dart';
-import 'package:buzz/shared/relay/relay.dart';
+import 'package:raiju_mobile/features/channels/channel_messages_provider.dart';
+import 'package:raiju_mobile/features/channels/pending_local_messages_provider.dart';
+import 'package:raiju_mobile/features/channels/thread_replies_provider.dart';
+import 'package:raiju_mobile/features/channels/timeline_message.dart';
+import 'package:raiju_mobile/shared/relay/relay.dart';
 
 void main() {
   test('live window without deep links does not rescan flattened ids', () async {

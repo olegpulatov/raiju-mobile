@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:buzz/features/settings/settings_page.dart';
-import 'package:buzz/shared/theme/theme.dart';
-import 'package:buzz/spark/spark.dart';
+import 'package:raiju_mobile/features/settings/settings_page.dart';
+import 'package:raiju_mobile/shared/theme/theme.dart';
+import 'package:raiju_mobile/spark/spark.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';

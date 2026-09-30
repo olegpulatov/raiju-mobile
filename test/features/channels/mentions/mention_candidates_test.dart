@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:buzz/features/channels/channel_management_provider.dart';
-import 'package:buzz/features/channels/mentions/mention_candidates.dart';
-import 'package:buzz/shared/profile/user_profile.dart';
-import 'package:buzz/shared/mentions/agent_identity_provider.dart';
+import 'package:raiju_mobile/features/channels/channel_management_provider.dart';
+import 'package:raiju_mobile/features/channels/mentions/mention_candidates.dart';
+import 'package:raiju_mobile/shared/profile/user_profile.dart';
+import 'package:raiju_mobile/shared/mentions/agent_identity_provider.dart';
 
 final userPubkey = 'a' * 64;
 final memberPubkey = 'b' * 64;

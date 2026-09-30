@@ -1,5 +1,5 @@
 # Modified for Raiju: complete Buzz GUI retained; OMP transport added.
-name: buzz
+name: raiju_mobile
 description: Raiju personal companion mobile surface, based on Buzz
 publish_to: 'none'
 version: 0.0.1+1

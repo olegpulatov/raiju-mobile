@@ -1,13 +1,13 @@
 // Modified for Raiju: startup must render original shell without Buzz gates.
-import 'package:buzz/app.dart';
-import 'package:buzz/companion_controller.dart';
-import 'package:buzz/features/age_gate/age_signal_provider.dart';
-import 'package:buzz/features/home/home_page.dart';
-import 'package:buzz/features/pairing/pairing_page.dart';
-import 'package:buzz/raiju/companion_provider.dart';
-import 'package:buzz/shared/auth/auth.dart';
-import 'package:buzz/shared/theme/theme_provider.dart';
-import 'package:buzz/storage/chat_store.dart';
+import 'package:raiju_mobile/app.dart';
+import 'package:raiju_mobile/companion_controller.dart';
+import 'package:raiju_mobile/features/age_gate/age_signal_provider.dart';
+import 'package:raiju_mobile/features/home/home_page.dart';
+import 'package:raiju_mobile/features/pairing/pairing_page.dart';
+import 'package:raiju_mobile/raiju/companion_provider.dart';
+import 'package:raiju_mobile/shared/auth/auth.dart';
+import 'package:raiju_mobile/shared/theme/theme_provider.dart';
+import 'package:raiju_mobile/storage/chat_store.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';

@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:buzz/app.dart';
-import 'package:buzz/companion_controller.dart';
-import 'package:buzz/harness/harness.dart';
-import 'package:buzz/raiju/companion_provider.dart';
-import 'package:buzz/shared/theme/community_theme_provider.dart';
-import 'package:buzz/shared/theme/theme_provider.dart';
-import 'package:buzz/storage/encrypted_file_chat_store.dart';
+import 'package:raiju_mobile/app.dart';
+import 'package:raiju_mobile/companion_controller.dart';
+import 'package:raiju_mobile/harness/harness.dart';
+import 'package:raiju_mobile/raiju/companion_provider.dart';
+import 'package:raiju_mobile/shared/theme/community_theme_provider.dart';
+import 'package:raiju_mobile/shared/theme/theme_provider.dart';
+import 'package:raiju_mobile/storage/encrypted_file_chat_store.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';

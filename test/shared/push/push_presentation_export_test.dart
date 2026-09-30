@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:isolate';
 
-import 'package:buzz/shared/push/push_presentation_cache.dart';
-import 'package:buzz/shared/push/push_presentation_export_recovery.dart';
-import 'package:buzz/shared/relay/nostr_models.dart';
+import 'package:raiju_mobile/shared/push/push_presentation_cache.dart';
+import 'package:raiju_mobile/shared/push/push_presentation_export_recovery.dart';
+import 'package:raiju_mobile/shared/relay/nostr_models.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';

@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-import 'package:buzz/harness/collab_codec.dart';
-import 'package:buzz/harness/collab_link.dart';
-import 'package:buzz/harness/collab_socket.dart';
-import 'package:buzz/harness/harness.dart';
-import 'package:buzz/harness/omp_collab_client.dart';
+import 'package:raiju_mobile/harness/collab_codec.dart';
+import 'package:raiju_mobile/harness/collab_link.dart';
+import 'package:raiju_mobile/harness/collab_socket.dart';
+import 'package:raiju_mobile/harness/harness.dart';
+import 'package:raiju_mobile/harness/omp_collab_client.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

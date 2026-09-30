@@ -1,7 +1,7 @@
-import 'package:buzz/features/channels/channel.dart';
-import 'package:buzz/shared/community/community.dart';
-import 'package:buzz/shared/push/push_subscription.dart';
-import 'package:buzz/shared/push/push_subscription_provider.dart';
+import 'package:raiju_mobile/features/channels/channel.dart';
+import 'package:raiju_mobile/shared/community/community.dart';
+import 'package:raiju_mobile/shared/push/push_subscription.dart';
+import 'package:raiju_mobile/shared/push/push_subscription_provider.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nostr/nostr.dart' as nostr;
 

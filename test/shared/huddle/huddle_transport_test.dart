@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:buzz/shared/huddle/huddle_auth.dart';
-import 'package:buzz/shared/huddle/huddle_transport.dart';
-import 'package:buzz/shared/huddle/huddle_wire.dart';
+import 'package:raiju_mobile/shared/huddle/huddle_auth.dart';
+import 'package:raiju_mobile/shared/huddle/huddle_transport.dart';
+import 'package:raiju_mobile/shared/huddle/huddle_wire.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 

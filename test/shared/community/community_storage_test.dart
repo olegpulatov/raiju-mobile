@@ -2,9 +2,9 @@ import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:buzz/shared/community/community.dart';
-import 'package:buzz/shared/community/community_storage.dart';
-import 'package:buzz/shared/push/push_subscription.dart';
+import 'package:raiju_mobile/shared/community/community.dart';
+import 'package:raiju_mobile/shared/community/community_storage.dart';
+import 'package:raiju_mobile/shared/push/push_subscription.dart';
 
 /// In-memory fake that extends Fake to satisfy all FlutterSecureStorage
 /// interface methods, but implements the core read/write/delete with real

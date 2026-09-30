@@ -1,10 +1,10 @@
 import 'dart:async';
 
-import 'package:buzz/features/pairing/pairing_provider.dart';
-import 'package:buzz/features/settings/settings_page.dart';
-import 'package:buzz/shared/auth/auth.dart';
-import 'package:buzz/shared/relay/relay.dart';
-import 'package:buzz/shared/theme/theme.dart';
+import 'package:raiju_mobile/features/pairing/pairing_provider.dart';
+import 'package:raiju_mobile/features/settings/settings_page.dart';
+import 'package:raiju_mobile/shared/auth/auth.dart';
+import 'package:raiju_mobile/shared/relay/relay.dart';
+import 'package:raiju_mobile/shared/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';

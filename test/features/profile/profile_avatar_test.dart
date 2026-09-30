@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:buzz/features/profile/profile_avatar.dart';
-import 'package:buzz/features/profile/profile_provider.dart';
-import 'package:buzz/shared/profile/user_profile.dart';
-import 'package:buzz/shared/theme/theme.dart';
-import 'package:buzz/shared/widgets/avatar_image.dart';
-import 'package:buzz/shared/widgets/masked_avatar_badge.dart';
+import 'package:raiju_mobile/features/profile/profile_avatar.dart';
+import 'package:raiju_mobile/features/profile/profile_provider.dart';
+import 'package:raiju_mobile/shared/profile/user_profile.dart';
+import 'package:raiju_mobile/shared/theme/theme.dart';
+import 'package:raiju_mobile/shared/widgets/avatar_image.dart';
+import 'package:raiju_mobile/shared/widgets/masked_avatar_badge.dart';
 
 void main() {
   Widget harness({

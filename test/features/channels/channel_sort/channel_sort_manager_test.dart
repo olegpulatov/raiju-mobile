@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:buzz/features/channels/channel_sort/channel_sort_manager.dart';
-import 'package:buzz/features/channels/channel_sort/channel_sort_storage.dart';
-import 'package:buzz/shared/relay/relay.dart';
+import 'package:raiju_mobile/features/channels/channel_sort/channel_sort_manager.dart';
+import 'package:raiju_mobile/features/channels/channel_sort/channel_sort_storage.dart';
+import 'package:raiju_mobile/shared/relay/relay.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nostr/nostr.dart' as nostr;
 import 'package:shared_preferences/shared_preferences.dart';

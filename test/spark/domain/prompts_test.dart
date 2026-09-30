@@ -1,5 +1,5 @@
-import 'package:buzz/spark/models.dart';
-import 'package:buzz/spark/prompts.dart';
+import 'package:raiju_mobile/spark/models.dart';
+import 'package:raiju_mobile/spark/prompts.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 

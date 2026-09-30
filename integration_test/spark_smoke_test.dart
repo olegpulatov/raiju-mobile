@@ -1,15 +1,15 @@
 // Modified for Raiju: synthetic Spark journey with no network, credentials, or audio.
 import 'dart:async';
-import 'package:buzz/app.dart';
-import 'package:buzz/companion_controller.dart';
-import 'package:buzz/features/channels/channel_detail_page.dart';
-import 'package:buzz/harness/harness.dart';
-import 'package:buzz/harness/voice_directive.dart';
-import 'package:buzz/raiju/companion_provider.dart';
-import 'package:buzz/shared/theme/community_theme_provider.dart';
-import 'package:buzz/spark/spark.dart';
-import 'package:buzz/shared/theme/theme_provider.dart';
-import 'package:buzz/storage/chat_store.dart';
+import 'package:raiju_mobile/app.dart';
+import 'package:raiju_mobile/companion_controller.dart';
+import 'package:raiju_mobile/features/channels/channel_detail_page.dart';
+import 'package:raiju_mobile/harness/harness.dart';
+import 'package:raiju_mobile/harness/voice_directive.dart';
+import 'package:raiju_mobile/raiju/companion_provider.dart';
+import 'package:raiju_mobile/shared/theme/community_theme_provider.dart';
+import 'package:raiju_mobile/spark/spark.dart';
+import 'package:raiju_mobile/shared/theme/theme_provider.dart';
+import 'package:raiju_mobile/storage/chat_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';

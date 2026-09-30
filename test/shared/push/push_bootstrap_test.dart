@@ -1,7 +1,7 @@
-import 'package:buzz/shared/push/dev_push_lease.dart';
-import 'package:buzz/shared/community/community.dart';
-import 'package:buzz/shared/push/push_bootstrap.dart';
-import 'package:buzz/shared/push/push_subscription.dart';
+import 'package:raiju_mobile/shared/push/dev_push_lease.dart';
+import 'package:raiju_mobile/shared/community/community.dart';
+import 'package:raiju_mobile/shared/push/push_bootstrap.dart';
+import 'package:raiju_mobile/shared/push/push_subscription.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/widgets.dart';
 

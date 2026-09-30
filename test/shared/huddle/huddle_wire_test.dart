@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
-import 'package:buzz/shared/huddle/huddle_auth.dart';
-import 'package:buzz/shared/huddle/huddle_wire.dart';
+import 'package:raiju_mobile/shared/huddle/huddle_auth.dart';
+import 'package:raiju_mobile/shared/huddle/huddle_wire.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 const _privateKey =

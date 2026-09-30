@@ -1,10 +1,10 @@
 import 'dart:async';
 
-import 'package:buzz/harness/harness.dart';
-import 'package:buzz/raiju/timeline_projection.dart';
-import 'package:buzz/harness/voice_directive.dart';
-import 'package:buzz/spark/spark.dart';
-import 'package:buzz/storage/voice_transcript.dart';
+import 'package:raiju_mobile/harness/harness.dart';
+import 'package:raiju_mobile/raiju/timeline_projection.dart';
+import 'package:raiju_mobile/harness/voice_directive.dart';
+import 'package:raiju_mobile/spark/spark.dart';
+import 'package:raiju_mobile/storage/voice_transcript.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

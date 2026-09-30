@@ -2,8 +2,8 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:buzz/features/channels/channel_messages_provider.dart';
-import 'package:buzz/shared/relay/relay.dart';
+import 'package:raiju_mobile/features/channels/channel_messages_provider.dart';
+import 'package:raiju_mobile/shared/relay/relay.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';

@@ -2,11 +2,11 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:buzz/harness/harness.dart';
-import 'package:buzz/harness/voice_directive.dart';
-import 'package:buzz/storage/chat_store.dart';
-import 'package:buzz/storage/encrypted_file_chat_store.dart';
-import 'package:buzz/storage/voice_transcript.dart';
+import 'package:raiju_mobile/harness/harness.dart';
+import 'package:raiju_mobile/harness/voice_directive.dart';
+import 'package:raiju_mobile/storage/chat_store.dart';
+import 'package:raiju_mobile/storage/encrypted_file_chat_store.dart';
+import 'package:raiju_mobile/storage/voice_transcript.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 

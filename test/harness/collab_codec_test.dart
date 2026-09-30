@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:buzz/harness/collab_codec.dart';
+import 'package:raiju_mobile/harness/collab_codec.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

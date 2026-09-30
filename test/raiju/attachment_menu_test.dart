@@ -1,12 +1,12 @@
 import 'dart:async';
 
-import 'package:buzz/companion_controller.dart';
-import 'package:buzz/features/channels/compose_bar.dart';
-import 'package:buzz/features/channels/voice_note_recording.dart';
-import 'package:buzz/harness/harness.dart';
-import 'package:buzz/raiju/companion_provider.dart';
-import 'package:buzz/shared/relay/relay.dart';
-import 'package:buzz/storage/chat_store.dart';
+import 'package:raiju_mobile/companion_controller.dart';
+import 'package:raiju_mobile/features/channels/compose_bar.dart';
+import 'package:raiju_mobile/features/channels/voice_note_recording.dart';
+import 'package:raiju_mobile/harness/harness.dart';
+import 'package:raiju_mobile/raiju/companion_provider.dart';
+import 'package:raiju_mobile/shared/relay/relay.dart';
+import 'package:raiju_mobile/storage/chat_store.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

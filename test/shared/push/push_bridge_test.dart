@@ -1,10 +1,10 @@
 import 'dart:async';
 
-import 'package:buzz/shared/community/community.dart';
-import 'package:buzz/shared/deeplink/deep_link.dart';
-import 'package:buzz/shared/push/push_bridge.dart';
-import 'package:buzz/shared/relay/relay_provider.dart';
-import 'package:buzz/shared/relay/app_lifecycle_provider.dart';
+import 'package:raiju_mobile/shared/community/community.dart';
+import 'package:raiju_mobile/shared/deeplink/deep_link.dart';
+import 'package:raiju_mobile/shared/push/push_bridge.dart';
+import 'package:raiju_mobile/shared/relay/relay_provider.dart';
+import 'package:raiju_mobile/shared/relay/app_lifecycle_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

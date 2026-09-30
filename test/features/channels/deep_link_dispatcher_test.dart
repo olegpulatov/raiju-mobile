@@ -1,12 +1,12 @@
 import 'dart:async';
 
-import 'package:buzz/features/channels/channel.dart';
-import 'package:buzz/features/channels/channels_provider.dart';
-import 'package:buzz/features/channels/deep_link_dispatcher.dart';
-import 'package:buzz/features/invites/invite_join_provider.dart';
-import 'package:buzz/shared/auth/auth.dart';
-import 'package:buzz/shared/deeplink/deep_link.dart';
-import 'package:buzz/shared/deeplink/pending_deep_link_provider.dart';
+import 'package:raiju_mobile/features/channels/channel.dart';
+import 'package:raiju_mobile/features/channels/channels_provider.dart';
+import 'package:raiju_mobile/features/channels/deep_link_dispatcher.dart';
+import 'package:raiju_mobile/features/invites/invite_join_provider.dart';
+import 'package:raiju_mobile/shared/auth/auth.dart';
+import 'package:raiju_mobile/shared/deeplink/deep_link.dart';
+import 'package:raiju_mobile/shared/deeplink/pending_deep_link_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nostr/nostr.dart' as nostr;

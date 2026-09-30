@@ -1,14 +1,14 @@
 import 'dart:async';
 import 'dart:isolate';
 
-import 'package:buzz/features/channels/channels_provider.dart';
-import 'package:buzz/shared/community/community.dart';
-import 'package:buzz/shared/community/community_provider.dart';
-import 'package:buzz/shared/profile/user_cache_provider.dart';
-import 'package:buzz/shared/profile/profile_event_parser.dart';
-import 'package:buzz/shared/push/push_presentation_cache.dart';
-import 'package:buzz/shared/push/push_presentation_export_recovery.dart';
-import 'package:buzz/shared/relay/relay.dart';
+import 'package:raiju_mobile/features/channels/channels_provider.dart';
+import 'package:raiju_mobile/shared/community/community.dart';
+import 'package:raiju_mobile/shared/community/community_provider.dart';
+import 'package:raiju_mobile/shared/profile/user_cache_provider.dart';
+import 'package:raiju_mobile/shared/profile/profile_event_parser.dart';
+import 'package:raiju_mobile/shared/push/push_presentation_cache.dart';
+import 'package:raiju_mobile/shared/push/push_presentation_export_recovery.dart';
+import 'package:raiju_mobile/shared/relay/relay.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';

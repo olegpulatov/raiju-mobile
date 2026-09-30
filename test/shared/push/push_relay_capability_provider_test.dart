@@ -1,5 +1,5 @@
-import 'package:buzz/shared/push/dev_push_lease.dart';
-import 'package:buzz/shared/push/push_relay_capability_provider.dart';
+import 'package:raiju_mobile/shared/push/dev_push_lease.dart';
+import 'package:raiju_mobile/shared/push/push_relay_capability_provider.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

@@ -1,5 +1,5 @@
-import 'package:buzz/shared/community/community_membership_provider.dart';
-import 'package:buzz/shared/relay/relay.dart';
+import 'package:raiju_mobile/shared/community/community_membership_provider.dart';
+import 'package:raiju_mobile/shared/relay/relay.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

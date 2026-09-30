@@ -1,10 +1,10 @@
-import 'package:buzz/features/channels/timeline_message.dart';
-import 'package:buzz/features/channels/date_formatters.dart';
-import 'package:buzz/harness/harness.dart';
-import 'package:buzz/raiju/timeline_projection.dart';
-import 'package:buzz/spark/models.dart';
-import 'package:buzz/spark/context.dart';
-import 'package:buzz/storage/voice_transcript.dart';
+import 'package:raiju_mobile/features/channels/timeline_message.dart';
+import 'package:raiju_mobile/features/channels/date_formatters.dart';
+import 'package:raiju_mobile/harness/harness.dart';
+import 'package:raiju_mobile/raiju/timeline_projection.dart';
+import 'package:raiju_mobile/spark/models.dart';
+import 'package:raiju_mobile/spark/context.dart';
+import 'package:raiju_mobile/storage/voice_transcript.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

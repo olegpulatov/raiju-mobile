@@ -1,6 +1,6 @@
-import 'package:buzz/harness/collab_link.dart';
-import 'package:buzz/raiju/collab_relay_preference.dart';
-import 'package:buzz/shared/theme/theme_provider.dart';
+import 'package:raiju_mobile/harness/collab_link.dart';
+import 'package:raiju_mobile/raiju/collab_relay_preference.dart';
+import 'package:raiju_mobile/shared/theme/theme_provider.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';

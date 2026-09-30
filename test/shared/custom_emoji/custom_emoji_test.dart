@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:buzz/shared/custom_emoji/custom_emoji.dart';
-import 'package:buzz/shared/relay/nostr_models.dart';
+import 'package:raiju_mobile/shared/custom_emoji/custom_emoji.dart';
+import 'package:raiju_mobile/shared/relay/nostr_models.dart';
 
 NostrEvent _event(
   String pubkey,

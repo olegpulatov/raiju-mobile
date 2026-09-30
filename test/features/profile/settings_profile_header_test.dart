@@ -1,16 +1,16 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:buzz/features/profile/profile_provider.dart';
-import 'package:buzz/features/profile/settings_profile_header.dart';
-import 'package:buzz/shared/profile/user_profile.dart';
-import 'package:buzz/features/profile/user_status.dart';
-import 'package:buzz/features/profile/user_status_provider.dart';
-import 'package:buzz/shared/custom_emoji/custom_emoji_provider.dart';
-import 'package:buzz/shared/relay/media_auth.dart';
-import 'package:buzz/shared/relay/media_image.dart';
-import 'package:buzz/shared/theme/theme.dart';
-import 'package:buzz/shared/widgets/masked_avatar_badge.dart';
+import 'package:raiju_mobile/features/profile/profile_provider.dart';
+import 'package:raiju_mobile/features/profile/settings_profile_header.dart';
+import 'package:raiju_mobile/shared/profile/user_profile.dart';
+import 'package:raiju_mobile/features/profile/user_status.dart';
+import 'package:raiju_mobile/features/profile/user_status_provider.dart';
+import 'package:raiju_mobile/shared/custom_emoji/custom_emoji_provider.dart';
+import 'package:raiju_mobile/shared/relay/media_auth.dart';
+import 'package:raiju_mobile/shared/relay/media_image.dart';
+import 'package:raiju_mobile/shared/theme/theme.dart';
+import 'package:raiju_mobile/shared/widgets/masked_avatar_badge.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';

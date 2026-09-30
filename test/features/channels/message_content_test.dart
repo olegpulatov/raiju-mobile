@@ -11,19 +11,19 @@ import 'package:http/http.dart' as http;
 import 'package:just_audio/just_audio.dart' as audio;
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:nostr/nostr.dart' as nostr;
-import 'package:buzz/features/channels/channel.dart';
-import 'package:buzz/features/channels/channels_provider.dart';
-import 'package:buzz/features/channels/message_content.dart';
-import 'package:buzz/features/channels/media_viewer_page.dart';
-import 'package:buzz/features/channels/voice_note_attachment.dart';
-import 'package:buzz/features/channels/voice_note_waveform.dart';
-import 'package:buzz/features/channels/voice_note_recording.dart';
-import 'package:buzz/shared/deeplink/deep_link.dart';
-import 'package:buzz/shared/deeplink/pending_deep_link_provider.dart';
-import 'package:buzz/shared/emoji/emoji_only.dart';
-import 'package:buzz/shared/relay/relay.dart';
-import 'package:buzz/shared/theme/theme.dart';
-import 'package:buzz/shared/widgets/buzz_loading_indicator.dart';
+import 'package:raiju_mobile/features/channels/channel.dart';
+import 'package:raiju_mobile/features/channels/channels_provider.dart';
+import 'package:raiju_mobile/features/channels/message_content.dart';
+import 'package:raiju_mobile/features/channels/media_viewer_page.dart';
+import 'package:raiju_mobile/features/channels/voice_note_attachment.dart';
+import 'package:raiju_mobile/features/channels/voice_note_waveform.dart';
+import 'package:raiju_mobile/features/channels/voice_note_recording.dart';
+import 'package:raiju_mobile/shared/deeplink/deep_link.dart';
+import 'package:raiju_mobile/shared/deeplink/pending_deep_link_provider.dart';
+import 'package:raiju_mobile/shared/emoji/emoji_only.dart';
+import 'package:raiju_mobile/shared/relay/relay.dart';
+import 'package:raiju_mobile/shared/theme/theme.dart';
+import 'package:raiju_mobile/shared/widgets/buzz_loading_indicator.dart';
 
 Widget _testable(
   Widget child, {

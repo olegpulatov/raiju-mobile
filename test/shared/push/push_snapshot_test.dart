@@ -1,5 +1,5 @@
-import 'package:buzz/shared/push/push_snapshot.dart';
-import 'package:buzz/shared/push/push_subscription.dart';
+import 'package:raiju_mobile/shared/push/push_snapshot.dart';
+import 'package:raiju_mobile/shared/push/push_subscription.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

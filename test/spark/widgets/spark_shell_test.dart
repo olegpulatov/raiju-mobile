@@ -1,10 +1,10 @@
 import 'dart:async';
 
-import 'package:buzz/harness/harness.dart';
-import 'package:buzz/storage/voice_transcript.dart';
-import 'package:buzz/shared/theme/theme.dart';
-import 'package:buzz/spark/spark.dart';
-import 'package:buzz/spark/widgets/spark_shell.dart';
+import 'package:raiju_mobile/harness/harness.dart';
+import 'package:raiju_mobile/storage/voice_transcript.dart';
+import 'package:raiju_mobile/shared/theme/theme.dart';
+import 'package:raiju_mobile/spark/spark.dart';
+import 'package:raiju_mobile/spark/widgets/spark_shell.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';

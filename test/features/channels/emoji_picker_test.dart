@@ -1,13 +1,13 @@
 import 'dart:async';
 
-import 'package:buzz/features/channels/emoji_picker.dart';
-import 'package:buzz/features/channels/recent_emoji_provider.dart';
-import 'package:buzz/shared/custom_emoji/custom_emoji.dart';
-import 'package:buzz/shared/custom_emoji/custom_emoji_provider.dart';
-import 'package:buzz/shared/emoji/emoji_data.dart';
-import 'package:buzz/shared/emoji/emoji_data_provider.dart';
-import 'package:buzz/shared/relay/relay.dart';
-import 'package:buzz/shared/theme/theme.dart';
+import 'package:raiju_mobile/features/channels/emoji_picker.dart';
+import 'package:raiju_mobile/features/channels/recent_emoji_provider.dart';
+import 'package:raiju_mobile/shared/custom_emoji/custom_emoji.dart';
+import 'package:raiju_mobile/shared/custom_emoji/custom_emoji_provider.dart';
+import 'package:raiju_mobile/shared/emoji/emoji_data.dart';
+import 'package:raiju_mobile/shared/emoji/emoji_data_provider.dart';
+import 'package:raiju_mobile/shared/relay/relay.dart';
+import 'package:raiju_mobile/shared/theme/theme.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

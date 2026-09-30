@@ -1,0 +1,16 @@
+Raiju mobile is derived from the complete Buzz mobile source tree supplied at revision e10a3607b2d4026ae57d9f32b6f6133077d21c7d.
+
+Buzz: Copyright 2026 Block, Inc. Licensed under Apache License 2.0; see buzz-apache-2.0.txt. Original file notices and asset credits are retained. Modified upstream files carry a `// MODIFIED FOR RAIJU:` or `# MODIFIED FOR RAIJU:` notice stating the change; the full reviewed change list with content hashes is the mobile Git history at the initial import commit `ac84469`. Immutable original mobile source is preserved in upstream/buzz-mobile.tar.gz (SHA-256 9b87fc49274e13f9577e103a7e2686f0d212b5adb03a4955036bf8e255f477cf), with per-file provenance in upstream/buzz-mobile.json.
+
+Raiju modifications: OMP collab transport replacing Buzz relay/Nostr/push runtime, encrypted private-state storage, portable Spark voice core, independent app identity (`dev.raiju.mobile`). Retained Buzz backend code is inactive reference material, not a working backend.
+
+Third-party components redistributed in this component:
+
+- Spark core and adapted OMP/Iskra live-voice transport, prompts, and media: MIT; see omp-mit.txt and spark-core/LICENSE. Provenance with per-file hashes: upstream/spark-omp.json. Original OMP reference revision ed7c05c288b12e69f6986d8b379eb2c33f55e914.
+- Geist and Geist Mono fonts: SIL Open Font License 1.1; see assets/fonts/Geist-LICENSE.txt. Copyright 2024 The Geist Project Authors, https://github.com/vercel/geist-font.
+- Inter fonts: SIL Open Font License 1.1; see assets/fonts/Inter-LICENSE.txt.
+- assets/emoji/emoji-data.json: projected from `@emoji-mart/data` 1.2.1 by scripts/generate-emoji-data.mjs. emoji-mart is MIT, Copyright (c) Missive. Category order, ids, names, and keywords are reproduced from that dataset.
+
+No license or generation script produces this file; it is hand-maintained. Note that the Buzz upstream tree ships no NOTICE file, so Apache-2.0 §4(d) does not apply; this document is a voluntary summary and does not replace the per-file notices in the source.
+
+Original product names and asset marks are retained for source and GUI preservation and attribution. No upstream affiliation, endorsement, or trademark grant is claimed.

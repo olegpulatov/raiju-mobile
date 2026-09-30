@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:buzz/raiju/acceptance_probe.dart';
-import 'package:buzz/storage/voice_transcript.dart';
+import 'package:raiju_mobile/raiju/acceptance_probe.dart';
+import 'package:raiju_mobile/storage/voice_transcript.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
 

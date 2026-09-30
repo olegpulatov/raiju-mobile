@@ -1,4 +1,4 @@
-import 'package:buzz/features/age_gate/age_restriction_page.dart';
+import 'package:raiju_mobile/features/age_gate/age_restriction_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

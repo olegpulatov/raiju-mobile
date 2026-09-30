@@ -1,15 +1,15 @@
 import 'dart:async';
 
-import 'package:buzz/companion_controller.dart';
-import 'package:buzz/features/channels/channel.dart';
-import 'package:buzz/features/channels/channel_detail_page.dart';
-import 'package:buzz/features/channels/local_message_send_animation_provider.dart';
-import 'package:buzz/features/channels/local_message_send_transition.dart';
-import 'package:buzz/features/channels/send_message_provider.dart';
-import 'package:buzz/harness/harness.dart';
-import 'package:buzz/raiju/companion_provider.dart';
-import 'package:buzz/shared/theme/theme.dart';
-import 'package:buzz/storage/chat_store.dart';
+import 'package:raiju_mobile/companion_controller.dart';
+import 'package:raiju_mobile/features/channels/channel.dart';
+import 'package:raiju_mobile/features/channels/channel_detail_page.dart';
+import 'package:raiju_mobile/features/channels/local_message_send_animation_provider.dart';
+import 'package:raiju_mobile/features/channels/local_message_send_transition.dart';
+import 'package:raiju_mobile/features/channels/send_message_provider.dart';
+import 'package:raiju_mobile/harness/harness.dart';
+import 'package:raiju_mobile/raiju/companion_provider.dart';
+import 'package:raiju_mobile/shared/theme/theme.dart';
+import 'package:raiju_mobile/storage/chat_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';

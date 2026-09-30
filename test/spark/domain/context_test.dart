@@ -1,6 +1,6 @@
-import 'package:buzz/harness/harness.dart';
-import 'package:buzz/spark/context.dart';
-import 'package:buzz/storage/voice_transcript.dart';
+import 'package:raiju_mobile/harness/harness.dart';
+import 'package:raiju_mobile/spark/context.dart';
+import 'package:raiju_mobile/storage/voice_transcript.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

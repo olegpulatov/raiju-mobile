@@ -1,11 +1,11 @@
 import 'dart:async';
 
-import 'package:buzz/features/profile/profile_avatar_draft.dart';
-import 'package:buzz/features/profile/profile_edit_page.dart';
-import 'package:buzz/features/profile/profile_provider.dart';
-import 'package:buzz/features/profile/profile_text_editor.dart';
-import 'package:buzz/shared/profile/user_profile.dart';
-import 'package:buzz/shared/relay/relay.dart';
+import 'package:raiju_mobile/features/profile/profile_avatar_draft.dart';
+import 'package:raiju_mobile/features/profile/profile_edit_page.dart';
+import 'package:raiju_mobile/features/profile/profile_provider.dart';
+import 'package:raiju_mobile/features/profile/profile_text_editor.dart';
+import 'package:raiju_mobile/shared/profile/user_profile.dart';
+import 'package:raiju_mobile/shared/relay/relay.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

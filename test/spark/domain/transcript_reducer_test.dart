@@ -1,4 +1,4 @@
-import 'package:buzz/spark/spark.dart';
+import 'package:raiju_mobile/spark/spark.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

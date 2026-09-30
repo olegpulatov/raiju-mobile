@@ -1,7 +1,7 @@
-import 'package:buzz/shared/reminders/remind_me_later_sheet.dart';
-import 'package:buzz/shared/reminders/reminder_service.dart';
-import 'package:buzz/shared/relay/relay.dart';
-import 'package:buzz/shared/theme/theme.dart';
+import 'package:raiju_mobile/shared/reminders/remind_me_later_sheet.dart';
+import 'package:raiju_mobile/shared/reminders/reminder_service.dart';
+import 'package:raiju_mobile/shared/relay/relay.dart';
+import 'package:raiju_mobile/shared/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';

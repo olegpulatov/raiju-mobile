@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:buzz/shared/community/community.dart';
-import 'package:buzz/shared/push/push_bridge.dart';
-import 'package:buzz/shared/push/push_lease_revocation_outbox.dart';
-import 'package:buzz/shared/push/push_subscription.dart';
+import 'package:raiju_mobile/shared/community/community.dart';
+import 'package:raiju_mobile/shared/push/push_bridge.dart';
+import 'package:raiju_mobile/shared/push/push_lease_revocation_outbox.dart';
+import 'package:raiju_mobile/shared/push/push_subscription.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nostr/nostr.dart' as nostr;
 

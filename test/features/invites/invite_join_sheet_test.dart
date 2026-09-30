@@ -1,5 +1,5 @@
-import 'package:buzz/features/invites/invite_join_provider.dart';
-import 'package:buzz/features/invites/invite_join_sheet.dart';
+import 'package:raiju_mobile/features/invites/invite_join_provider.dart';
+import 'package:raiju_mobile/features/invites/invite_join_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
