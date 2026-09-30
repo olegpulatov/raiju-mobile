@@ -1,0 +1,52 @@
+{
+  "name": "Oh My Pi Iskra live voice",
+  "repository": "https://github.com/can1357/oh-my-pi",
+  "revision": "ed7c05c288b12e69f6986d8b379eb2c33f55e914",
+  "license": "MIT",
+  "licenseFile": "spark-core/LICENSE",
+  "adaptedInto": "spark-core",
+  "sources": [
+    {
+      "path": "crates/pi-voice/src/live.rs",
+      "sha256": "024c1f8ae1f55a3569c0c64be038275c5c0458a31bda135101394f969966f57c"
+    },
+    {
+      "path": "packages/coding-agent/src/iskra/protocol.ts",
+      "sha256": "18062f386bb241dae1f58da2f52d50477bbe86261711a6cb00333f26549f77ac"
+    },
+    {
+      "path": "packages/coding-agent/src/iskra/transport.ts",
+      "sha256": "29b45325653a4cb2613ace9dadc8ae77b781bfa0d316e6453776baf06caaa6d9"
+    },
+    {
+      "path": "nexus/docs/iskra.md",
+      "sha256": "d3ec684769cc72274b45d06a5bfbab9821bffdf6e7e83f3cbd34103b70a4853e"
+    }
+  ],
+  "promptAdaptation": {
+    "revision": "f225a978e7d7f6740b0d6efee30b0482c1bb72a6",
+    "adaptedInto": "lib/spark/prompts",
+    "license": "MIT",
+    "licenseFile": "spark-core/LICENSE",
+    "sources": [
+      {
+        "path": "packages/coding-agent/src/iskra/prompts/live-instructions.md",
+        "sha256": "0449de631de4864c5756e72e5e6b28963dac8b714ec73f8d8eac561646dc5ea8"
+      },
+      {
+        "path": "packages/coding-agent/src/iskra/prompts/main-agent-mode.md",
+        "sha256": "493959b24f7d93e14ce0198d7cdf893a931fd956b156a64300387b9c6d780e34"
+      },
+      {
+        "path": "packages/coding-agent/src/iskra/prompts/agent-final-message.md",
+        "sha256": "62436b8f407b813576962552d8043ac84e2daeee01e9f9d7dc6e088742ea560e"
+      },
+      {
+        "path": "packages/coding-agent/src/iskra/controller.ts",
+        "sha256": "d1aaddeb43f9ad779f5989424bc990de0348053398dda12697cca90e38200f41"
+      }
+    ],
+    "notes": "Keeps delegation/retelling behavior with a focused collaborator persona; replaces Iskra name and OS-account seam with Spark and editable Oleg-default user name, removes pure-voice branch. Context-sharing addition is mobile-authored. OMP reference source remains unchanged."
+  },
+  "notes": "WebRTC/Opus media and private subscription signaling/protocol were adapted. Device audio, filesystem archives, N-API, Codex credential storage/refresh, app identity headers, and attestation were intentionally not copied. Service entitlement without those private desktop assertions remains an explicit live-test risk."
+}

@@ -1,0 +1,2 @@
+export IOS_DEVICE_ID="replace-with-physical-device-id"
+export IOS_BUNDLE_ID="dev.raiju.mobile"

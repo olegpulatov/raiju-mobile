@@ -1,0 +1,12 @@
+#include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"
+#include "Generated.xcconfig"
+
+// MODIFIED FOR RAIJU: independent identity; Buzz signing, push, app-group,
+// age-attestation, and per-worktree identity requirements are intentionally absent.
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) DEBUG
+BUNDLE_IDENTIFIER = dev.raiju.mobile
+APP_DISPLAY_NAME = Raiju
+
+// Optional developer-local signing overrides remain supported without being required
+// for unsigned iOS Simulator builds.
+#include? "AppOverrides.xcconfig"

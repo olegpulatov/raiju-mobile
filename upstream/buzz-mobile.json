@@ -1,0 +1,10 @@
+{
+  "repository": "https://github.com/block/buzz",
+  "commit": "e10a3607b2d4026ae57d9f32b6f6133077d21c7d",
+  "sourcePath": "mobile",
+  "destinationPath": "mobile-raiju",
+  "archive": "buzz-mobile.tar.gz",
+  "sha256": "9b87fc49274e13f9577e103a7e2686f0d212b5adb03a4955036bf8e255f477cf",
+  "license": "Apache-2.0",
+  "method": "Complete tracked mobile tree copied byte-for-byte, including GUI, assets, tests, iOS and Android projects. Backend behavior must be stripped in place; no selective GUI reconstruction."
+}

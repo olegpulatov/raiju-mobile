@@ -1,0 +1,8 @@
+[
+  {"type":"connected"},
+  {"type":"levels","input":0.25,"output":0.5},
+  {"type":"transcript","role":"user","text":"Plan the synthetic check","final":true,"id":"fixture-user-1"},
+  {"type":"transcript","role":"assistant","text":"I prepared a proposal.","final":true,"id":"fixture-spark-1"},
+  {"type":"delegation","id":"fixture-delegation-1","text":"Run the synthetic check."},
+  {"type":"closed"}
+]

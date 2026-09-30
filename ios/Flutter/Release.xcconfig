@@ -1,0 +1,10 @@
+#include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"
+#include "Generated.xcconfig"
+
+// MODIFIED FOR RAIJU: independent identity; Buzz signing, push, app-group,
+// age-attestation, and provisioning-team requirements are intentionally absent.
+BUNDLE_IDENTIFIER = dev.raiju.mobile
+APP_DISPLAY_NAME = Raiju
+
+// Distribution signing can be supplied locally or by CI when needed.
+#include? "AppOverrides.xcconfig"

@@ -1,0 +1,17 @@
+{
+  "serverNowMs": 1893456000000,
+  "credentials": [
+    {
+      "id": 7,
+      "identityKey": "fixture-account",
+      "provider": "openai-codex",
+      "credential": {
+        "type": "oauth",
+        "refresh": "__remote__",
+        "access": "synthetic-access-not-a-secret",
+        "expires": 4102444800000,
+        "accountId": "fixture-account"
+      }
+    }
+  ]
+}
