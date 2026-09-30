@@ -1,0 +1,5 @@
+# Workspace-local state and developer settings; component rules live with components.
+.work/
+.DS_Store
+.envrc
+.direnv/
