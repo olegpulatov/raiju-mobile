@@ -9,7 +9,7 @@ Third-party components redistributed in this component:
 - Spark core and adapted OMP/Iskra live-voice transport, prompts, and media: MIT; see omp-mit.txt and spark-core/LICENSE. Provenance with per-file hashes: upstream/spark-omp.json. Original OMP reference revision ed7c05c288b12e69f6986d8b379eb2c33f55e914.
 - Geist and Geist Mono fonts: SIL Open Font License 1.1; see assets/fonts/Geist-LICENSE.txt. Copyright 2024 The Geist Project Authors, https://github.com/vercel/geist-font.
 - Inter fonts: SIL Open Font License 1.1; see assets/fonts/Inter-LICENSE.txt.
-- assets/emoji/emoji-data.json: projected from `@emoji-mart/data` 1.2.1 by scripts/generate-emoji-data.mjs. emoji-mart is MIT, Copyright (c) Missive. Category order, ids, names, and keywords are reproduced from that dataset.
+- assets/emoji/emoji-data.json: projected from `@emoji-mart/data` 1.2.1 by scripts/generate-emoji-data.mjs. emoji-mart is MIT; the full licence text, including the copyright and permission notice, is in emoji-mart-mit.txt. Category order, ids, names, and keywords are reproduced from that dataset.
 
 No license or generation script produces this file; it is hand-maintained. Note that the Buzz upstream tree ships no NOTICE file, so Apache-2.0 §4(d) does not apply; this document is a voluntary summary and does not replace the per-file notices in the source.
 
