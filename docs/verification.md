@@ -249,3 +249,14 @@ Scope: ADR-016 and confirmed local deletion. Shared mobile/desktop contract and 
 - Staged-tree comparison against Raiju's previous `mobile-raiju/` tree showed only extraction documentation and ignore-rule changes; source, assets, lockfiles, licenses, and immutable upstream archive remained identical
 - Git index includes `pubspec.lock`, `ios/Podfile.lock`, and `spark-core/Cargo.lock`; private environment files, Flutter caches, local evidence, native dependency caches, and build outputs remain ignored
 - No app build, simulator journey, live-provider check, or physical-device check was run for this packaging-only change
+
+## dual-checkout builds and fresh startup — 2026-09-30
+
+- Built both standalone `raiju-mobile` checkout and Raiju's `mobile/` submodule through `node scripts/flutter-tool.mjs ios-dart run tool/ios_dev.dart build`, after locked dependency resolution. Initial builds passed in 112.67 s and 144.81 s
+- Both artifacts were ad hoc signed universal arm64/x86_64 simulator apps, `dev.raiju.mobile`, version `0.0.1+1`. `codesign --verify --deep --strict --verbose=2 build/ios/iphonesimulator/Raiju.app` passed; source commit and build-start defines were also found in compiled Dart kernels
+- Normal launch on isolated iPhone 17 Pro / iOS 26.3 simulator revealed an existing fresh-install storage error in both artifacts. Controller reported `Saved chats could not be read.`; home showed `Could not load channels`
+- Foundation `attributesOfItem(atPath:)` returns `NSFileReadNoSuchFileError` (260) for absent ciphertext or support directory. Native protection catches accepted only `NSFileNoSuchFileError` (4). Both exact missing-file codes are now accepted; Cocoa domain, path/filename confinement, symlink rejection, encryption, key migration, and file protection remain unchanged
+- Isolated Foundation predicate checks accepted missing files/directories and rejected permission, corrupt-file, and POSIX errors. Fixed standalone and submodule rebuilds passed in 44.81 s and 40.94 s, with strict signature verification. Fixed artifacts identify uncommitted source as `09e9045380df-dirty`
+- Installed and launched both fixed normal-entrypoint artifacts sequentially, without erasing or uninstalling simulator state. Reviewed screenshots show `No conversations yet` and `Connect OMP session`, with no startup error. Synthetic before/after captures remain under ignored Raiju workspace `.work/split-verification/`
+- Final `just check-preservation` passed: 18 tests, 301 original GUI files retained, 85 frozen files checked. Application locks, app identity, private developer settings, and immutable upstream remained unchanged
+- No widget tree or rendering changes, new test files, full test suite, physical-device/release build, live-host connection, provider audio, or saved-chat restart qualification was part of this check

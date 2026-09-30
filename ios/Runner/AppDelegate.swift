@@ -242,7 +242,8 @@ import Security
             throw CocoaError(.fileReadNoPermission)
           }
         } catch let error as NSError where error.domain == NSCocoaErrorDomain
-          && error.code == NSFileNoSuchFileError {
+          && (error.code == NSFileNoSuchFileError
+            || error.code == NSFileReadNoSuchFileError) {
           try manager.createDirectory(
             at: directory,
             withIntermediateDirectories: true,
@@ -263,7 +264,8 @@ import Security
             ofItemAtPath: file.path
           )
         } catch let error as NSError where error.domain == NSCocoaErrorDomain
-          && error.code == NSFileNoSuchFileError {
+          && (error.code == NSFileNoSuchFileError
+            || error.code == NSFileReadNoSuchFileError) {
           // A fresh install has no ciphertext yet. All other errors fail closed.
         }
         result(nil)
