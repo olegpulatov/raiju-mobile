@@ -65,6 +65,39 @@ Deterministic smoke captures original home/chat with synthetic data in light and
 
 If switching from a physical-iPhone build to simulator produces a native-framework error such as `have 'iOS', need 'iOS-simulator'`, run `node scripts/flutter-tool.mjs flutter clean` from this directory, then repeat the intended command. This clears generated build outputs, not installed app data or Keychain. This recovery resolved the observed `objective_c.framework` platform mismatch without source or dependency changes.
 
+## offline licenses and native notice refresh
+
+Settings → Licenses opens Flutter's standard offline viewer. `lib/raiju/licenses.dart` adds lazy local/native collectors alongside Flutter's built-in collector; it does not clear or replace automatic Dart dependency notices. All local legal texts and `licenses/native-notices.json` are explicit `pubspec.yaml` assets.
+
+Flutter 3.41.7 `flutter_tools/lib/src/license_collector.dart` scans each package in `.dart_tool/package_config.json`, prefers package-root `NOTICES`, otherwise reads `LICENSE`, and appends `flutter.additional-licenses` when declared. `asset.dart` compresses the result into `NOTICES.Z` on native platforms; the services binding registers its own lazy decoder. The app has no root `LICENSE`; its Buzz/OMP/assets are registered explicitly instead. Flutter SDK subpackages without separate root license files inherit Flutter's license, already delivered by the `flutter` package; `sky_engine/NOTICES` supplies bundled engine notices. This mechanism does not scan Cargo, CocoaPods, or arbitrary font directories.
+
+Refresh from component root after changing native dependencies and installing the locked packages/pods:
+
+```sh
+node scripts/generate-native-notices.mjs
+```
+
+- Inputs: `spark-core/Cargo.toml`, `spark-core/Cargo.lock`, offline locked `cargo metadata --filter-platform` for `aarch64-apple-ios`, `aarch64-apple-ios-sim`, and `x86_64-apple-ios`; only resolved nodes enter the union. Include build/target packages as a safe superset, not an exact linker report
+- Read installed Cargo package manifests, VCS provenance, full license/copyright/notice/author texts, license directories, and embedded C/native materials recursively. Missing full-text Apache alternatives use only the three exact reviewed versions in ADR-019
+- Inputs: `ios/Podfile.lock`, matching installed `ios/Pods/Manifest.lock`, `Pods-Runner-acknowledgements.markdown`, installed pod legal files, local podspecs, and cached CocoaPods specs. Cache defaults to `~/.cocoapods/repos/trunk/Specs`; `COCOAPODS_SPEC_REPO` must point directly to another repository's `Specs` directory, containing the three-level hash buckets
+- Output: checked-in `licenses/native-notices.json`, with input SHA-256 hashes, package names/versions, source/license declarations, explicit fallback provenance, deduplicated full texts, and `unresolved` entries. Current generation: 265 Cargo packages, 36 pods, 213 unique texts, no missing-text entries. This count is delivery evidence, not legal clearance
+- Native materials include `opusic-sys` bundled Opus COPYING/AUTHORS, ring's BoringSSL/other-bits licenses, six installed Google ML Kit NOTICES collections, CocoaPods acknowledgments, and MLImage's exact copyright declaration. Google pod copyright declarations are their actual podspec license fields; they are not presumed MIT/Apache because Buzz shipped them
+- `MLKitAppleSiliconSimulator` contains only the copied `google_mlkit_commons` Python build helper, not another framework/download. Inspected Ruby helper copies that script; inspected Python code only changes existing frameworks' `LC_BUILD_VERSION.platform`. Generated `platformAdaptations` records both helper sources and installed script hashes; copied script matches original package. No extra local legal files exist there, and locked framework notices remain applicable
+- `licenses/google-ml-kit-terms.txt` captures full official ML Kit Terms & Privacy text, last modified 2025-05-14, from https://developers.google.com/ml-kit/terms, including its incorporated https://developers.google.com/terms link (Google APIs terms last modified 2021-11-09). Neither page's website-content license licenses SDK binaries. No runtime network access or dependency removal
+- Normal development/builds use checked-in notices and do not run this generator or a new blocking license gate. Refresh requires existing installed dependency sources, not a new dependency or online notice fetch. Android Gradle-native materials and store/privacy qualification remain outside this iOS evidence
+
+Integration owner checks settled changes, not every contributor mid-edit:
+
+```sh
+node --check scripts/generate-native-notices.mjs
+node scripts/flutter-tool.mjs flutter analyze --no-pub lib/main.dart lib/raiju/licenses.dart lib/features/settings/settings_page.dart
+node scripts/check-preservation.mjs
+node scripts/flutter-tool.mjs ios-dart run tool/ios_dev.dart build
+```
+
+After simulator build, inspect `build/ios/iphonesimulator/Raiju.app/Frameworks/App.framework/flutter_assets/` for `NOTICES.Z`, all declared `licenses/` files, `spark-core/LICENSE`, and both font license assets. Opening Settings → Licenses in a launched app with network disabled verifies actual viewer delivery. Static asset declarations alone are not build or simulator evidence.
+
+
 ## normal user journey
 
 - Launch app: original chat shell appears immediately, including with empty storage or no network

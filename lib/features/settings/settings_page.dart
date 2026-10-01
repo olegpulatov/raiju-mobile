@@ -1,5 +1,6 @@
 // MODIFIED FOR RAIJU: this keeps the original frosted settings shell and
-// appearance pickers while replacing Buzz backend actions with OMP controls.
+// appearance pickers while replacing Buzz backend actions with OMP controls
+// and adding offline third-party licenses to the existing settings list.
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -255,6 +256,25 @@ class SettingsPage extends HookConsumerWidget {
                 const _SparkSection(),
                 const _ConnectionSection(),
                 const _RemoveCommunitySection(),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: Grid.gutter),
+                  child: AppListCard(
+                    children: [
+                      AppListRow(
+                        key: const ValueKey('settings-licenses'),
+                        title: 'Licenses',
+                        trailing: const _RowChevron(),
+                        onTap: () => showLicensePage(
+                          context: context,
+                          applicationName: 'Raiju',
+                          applicationVersion: packageInfo.hasData
+                              ? 'v${packageInfo.data!.version}'
+                              : null,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),

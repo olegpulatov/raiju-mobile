@@ -1,8 +1,11 @@
+// MODIFIED FOR RAIJU: verify offline license collection and the settings entry.
 import 'dart:async';
 
 import 'package:raiju_mobile/features/settings/settings_page.dart';
+import 'package:raiju_mobile/raiju/licenses.dart';
 import 'package:raiju_mobile/shared/community/community_membership_provider.dart';
 import 'package:raiju_mobile/shared/theme/theme.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -26,6 +29,7 @@ void main() {
       ),
     );
     SharedPreferences.setMockInitialValues({});
+    registerRaijuLicenses();
     final prefs = await SharedPreferences.getInstance();
     await tester.pumpWidget(
       ProviderScope(
@@ -64,6 +68,30 @@ void main() {
     });
     await tester.pumpAndSettle();
     expect(find.textContaining('v0.16.0 (432)\n'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    final licenses = (await tester.runAsync(
+      () => LicenseRegistry.licenses.toList(),
+    ))!;
+    final emojiLicense = licenses.singleWhere(
+      (entry) => entry.packages.contains('@emoji-mart/data 1.2.1'),
+    );
+    expect(
+      emojiLicense.paragraphs.map((paragraph) => paragraph.text).join('\n'),
+      contains('Permission is hereby granted'),
+    );
+    expect(
+      licenses.any(
+        (entry) => entry.packages.any((name) => name.endsWith('(Spark native)')),
+      ),
+      isTrue,
+    );
+    final licensesRow = find.byKey(const ValueKey('settings-licenses'));
+    await tester.scrollUntilVisible(licensesRow, 300);
+    await tester.pumpAndSettle();
+    await tester.tap(licensesRow);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(find.byType(LicensePage), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

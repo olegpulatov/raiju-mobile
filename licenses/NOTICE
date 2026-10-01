@@ -10,6 +10,11 @@ Third-party components redistributed in this component:
 - Geist and Geist Mono fonts: SIL Open Font License 1.1; see assets/fonts/Geist-LICENSE.txt. Copyright 2024 The Geist Project Authors, https://github.com/vercel/geist-font.
 - Inter fonts: SIL Open Font License 1.1; see assets/fonts/Inter-LICENSE.txt.
 - assets/emoji/emoji-data.json: projected from `@emoji-mart/data` 1.2.1 by scripts/generate-emoji-data.mjs. emoji-mart is MIT; the full licence text, including the copyright and permission notice, is in emoji-mart-mit.txt. Category order, ids, names, and keywords are reproduced from that dataset.
+- Dart packages and Flutter/engine materials: automatic Flutter-generated NOTICES.Z, retained alongside custom offline license collectors.
+- Spark's native Rust/C dependencies and iOS CocoaPods materials: full available license/notice texts with package names, versions, and source hashes in native-notices.json. Explicit refresh: node scripts/generate-native-notices.mjs; see docs/development.md for inputs and scope.
+- Google ML Kit/MLImage: retain exact Copyright 2025 Google LLC podspec declarations and available embedded third-party notices; official ML Kit Terms & Privacy are captured in google-ml-kit-terms.txt, with incorporated Google APIs terms URL. These SDK declarations are not an open-source license grant, and source Buzz inclusion is not legal clearance.
+
+All listed repo-local legal texts and generated native notices are packaged as assets and exposed offline through Settings → Licenses. Flutter's automatic Dart dependency notices remain available. Native inventory covers Apple targets/Runner pods; Android Gradle-native completeness is not claimed.
 
 No license or generation script produces this file; it is hand-maintained. Note that the Buzz upstream tree ships no NOTICE file, so Apache-2.0 §4(d) does not apply; this document is a voluntary summary and does not replace the per-file notices in the source.
 

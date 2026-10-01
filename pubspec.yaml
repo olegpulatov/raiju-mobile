@@ -1,4 +1,4 @@
-# Modified for Raiju: complete Buzz GUI retained; OMP transport added.
+# Modified for Raiju: complete Buzz GUI retained; OMP transport and offline licenses added.
 name: raiju_mobile
 description: Raiju personal companion mobile surface, based on Buzz
 publish_to: 'none'
@@ -73,6 +73,14 @@ flutter:
     - assets/emoji/emoji-data.json
     - lib/spark/prompts/
     - spark-core/LICENSE
+    - licenses/NOTICE
+    - licenses/buzz-apache-2.0.txt
+    - licenses/emoji-mart-mit.txt
+    - licenses/omp-mit.txt
+    - licenses/google-ml-kit-terms.txt
+    - licenses/native-notices.json
+    - assets/fonts/Geist-LICENSE.txt
+    - assets/fonts/Inter-LICENSE.txt
   fonts:
     - family: Inter
       fonts:

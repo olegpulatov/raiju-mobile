@@ -232,3 +232,17 @@ Status: accepted, user-required extraction on 2026-09-30; supersedes ADR-011's m
 - Publish the complete mobile source at product version `v0.0.1` (`pubspec.yaml` remains `0.0.1+1`); workspace pins the published mobile commit
 - Shared routing contract remains in Raiju's `docs/message-routing.md`. Standalone mobile commands require neither that file nor parent Git history
 - Historical path and checkpoint references remain provenance, not current checkout instructions. No app identity, GUI, transport, encryption, or private-state migration changes
+
+## adr-019 — offline licenses in existing settings
+
+Status: accepted, explicit user authorization on 2026-10-01
+
+- Add one Licenses action to the existing settings list, not a new top-level tab. Keep original GUI, logo, application identity, and immutable upstream archive
+- Flutter's standard license page remains the viewer. Register local legal assets and native notices lazily through `LicenseRegistry`; opening licenses works without network access and startup reads no legal files
+- Explicitly package Buzz Apache, full emoji-mart MIT, OMP MIT, Spark MIT, voluntary NOTICE, and Geist/Inter OFL texts. Flutter keeps generating Dart/SDK/engine notices through its existing `NOTICES.Z` path
+- Flutter 3.41.7 only reads package-root `NOTICES` or `LICENSE` (plus declared additional license files); it does not discover local font licenses, Cargo sources, or CocoaPods binary notices. Supply those separately instead of replacing automatic notices
+- Check in native notice output, refreshed explicitly after native dependency changes. No new dependency, runtime fetch, repeated global test, or license gate on normal development/builds
+- Native inventory covers the union of three Apple Cargo dependency graphs and installed Runner pods, including bundled Opus, ring legal materials, and Google ML Kit embedded notices. Names, versions, source references, hashes, and missing-text entries remain inspectable in the generated artifact
+- Exact `asn1-rs-impl 0.2.0`, `webrtc 0.17.2`, and `yasna 0.5.2` packages declare an Apache-2.0 alternative but omit full license files. Select that alternative and reproduce the standard text from installed `asn1-rs 0.6.2/LICENSE-APACHE`, retaining manifest/VCS/text provenance. Do not invent MIT copyright holders
+- Google ML Kit/MLImage podspecs declare copyright-only notices, not an open-source grant. Preserve those declarations, full available embedded open-source notices, and a captured official ML Kit terms page with its incorporated Google APIs terms link. This is attribution delivery, not legal approval or evidence that app redistribution is forbidden
+- Reopen only for concrete new dependencies, changed upstream terms, or a new distribution platform; Android's transitive Gradle-native inventory is not established by this iOS delivery

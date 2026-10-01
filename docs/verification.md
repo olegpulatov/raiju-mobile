@@ -260,3 +260,14 @@ Scope: ADR-016 and confirmed local deletion. Shared mobile/desktop contract and 
 - Installed and launched both fixed normal-entrypoint artifacts sequentially, without erasing or uninstalling simulator state. Reviewed screenshots show `No conversations yet` and `Connect OMP session`, with no startup error. Synthetic before/after captures remain under ignored Raiju workspace `.work/split-verification/`
 - Final `just check-preservation` passed: 18 tests, 301 original GUI files retained, 85 frozen files checked. Application locks, app identity, private developer settings, and immutable upstream remained unchanged
 - No widget tree or rendering changes, new test files, full test suite, physical-device/release build, live-host connection, provider audio, or saved-chat restart qualification was part of this check
+
+## offline license delivery — 2026-10-01
+
+- Scoped `flutter analyze --no-pub lib/main.dart lib/raiju/licenses.dart lib/features/settings/settings_page.dart` through SDK wrapper passed with no issues
+- `node --check scripts/generate-native-notices.mjs` passed; mobile preservation retained 301 original GUI files and checked 85 frozen files, with 52 existing adapted GUI paths
+- Focused `flutter test --no-pub test/features/settings/settings_page_loading_test.dart` passed 1/1. Existing doubled-text-scale loading fixture now collects real bundled licenses, verifies emoji-mart permission text and native entries, and opens the standard license page through settings
+- Test fixture initially lacked the foundation import, then blocked asset/isolate work in fake-async. `tester.runAsync` handles collection; settling scroll layout and pumping route transition handles navigation. Production code did not change to accommodate the fixture
+- Maintained `node scripts/flutter-tool.mjs ios-dart run tool/ios_dev.dart build` produced debug simulator `build/ios/iphonesimulator/Raiju.app`
+- Inspected nine packaged legal assets against source bytes: NOTICE, Buzz Apache, emoji-mart MIT, OMP MIT, Spark MIT, Google ML Kit terms, native notices, and Geist/Inter OFL. All matched; native JSON contains 265 Cargo packages, 36 pods, 213 unique texts, and no unresolved missing-text entries. Automatic Flutter `NOTICES.Z` is also present and contains Flutter attribution
+- Native refresh is explicit after dependency changes; checked-in notices ship through ordinary asset packaging. No new gate or network fetch runs at startup or during normal builds
+- Evidence is scoped analysis, widget behavior, and simulator-package contents. App was not launched on simulator or physical device; release signing/store qualification, Android native inventory, privacy behavior, and live-host/provider checks were not run
