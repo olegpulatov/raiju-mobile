@@ -1,0 +1,8 @@
+{
+  "notice": "MODIFIED FOR RAIJU: Replace inherited Buzz app icon with owner-approved Raiju ears and separate lightning bolt; preserve original only in immutable Buzz archive. AI-generation provenance and rebuild rules: brand/README.md in Raiju workspace. Rationale and hash: upstream/icon-adaptations.json.",
+  "author": "Raiju contributors; AI-generated shape source via OpenAI Codex",
+  "license": "Apache-2.0 for Raiju modifications, to extent copyright applies; AI imagery may have limited copyright protection",
+  "source": "brand/build-icons.mjs and brand/sources in Raiju workspace",
+  "originalSha256": "90966d6659fabc79f3cb43d53ca12ef71314a28d7aa23395f7b0a3d9a9f0510b",
+  "sha256": "3ceb200152b1ea308ac0e56a58f438700db5c58536c9e325eceeb6e587acba25"
+}

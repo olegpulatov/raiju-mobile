@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- MODIFIED FOR RAIJU: Use Raiju steel #3D4555 for adaptive launcher background; foreground is the owner-approved Raiju ears and lightning bolt. Rationale and hash: upstream/icon-adaptations.json. -->
 <resources>
-  <color name="ic_launcher_background">#000</color>
+  <color name="ic_launcher_background">#3D4555</color>
 </resources>

@@ -1,0 +1,186 @@
+{
+  "android/app/src/main/res/mipmap-hdpi/ic_launcher.png": {
+    "reason": "Replace inherited Buzz app icon with owner-approved Raiju ears and separate lightning bolt; preserve original only in immutable Buzz archive. AI-generation provenance and rebuild rules: brand/README.md in Raiju workspace.",
+    "sha256": "c502eaa3734a18ec4e208e475ee9d95f10acd57b91c0b0d9242c774ac47d7eed",
+    "noticeFile": "android/app/src/main/res/mipmap-hdpi/ic_launcher.png.notice.json",
+    "noticeSha256": "48ac7ce81d91702cf94b790dd2538666f0def87f30e95d9c3aac66237fad3141"
+  },
+  "android/app/src/main/res/mipmap-hdpi/ic_launcher_foreground.png": {
+    "reason": "Replace inherited Buzz app icon with owner-approved Raiju ears and separate lightning bolt; preserve original only in immutable Buzz archive. AI-generation provenance and rebuild rules: brand/README.md in Raiju workspace.",
+    "sha256": "da10d8c2e9fc348b13dc5737ed7c2cae5c9c1a81fc3226c2382a29096ce17974",
+    "noticeFile": "android/app/src/main/res/mipmap-hdpi/ic_launcher_foreground.png.notice.json",
+    "noticeSha256": "4c02868e0606ccf5ce31211efbd35bee837576daaa57ca45709f0499ea365988"
+  },
+  "android/app/src/main/res/mipmap-hdpi/ic_launcher_round.png": {
+    "reason": "Replace inherited Buzz app icon with owner-approved Raiju ears and separate lightning bolt; preserve original only in immutable Buzz archive. AI-generation provenance and rebuild rules: brand/README.md in Raiju workspace.",
+    "sha256": "9452eefaf79ff21860fcc9bdd4417804592d45447b1be105e6c526da1d7fca34",
+    "noticeFile": "android/app/src/main/res/mipmap-hdpi/ic_launcher_round.png.notice.json",
+    "noticeSha256": "5469e21e1424d3a2198999c7bdc5c7f4c6671c7b2e39ae731df20de3c2d5093e"
+  },
+  "android/app/src/main/res/mipmap-mdpi/ic_launcher.png": {
+    "reason": "Replace inherited Buzz app icon with owner-approved Raiju ears and separate lightning bolt; preserve original only in immutable Buzz archive. AI-generation provenance and rebuild rules: brand/README.md in Raiju workspace.",
+    "sha256": "ca07bdf2337838368736cd96213d0b29aedefb1894b75d8973e348de449e4fd1",
+    "noticeFile": "android/app/src/main/res/mipmap-mdpi/ic_launcher.png.notice.json",
+    "noticeSha256": "97e6a52f9292f7cdae1003babc4c1cd028c81580a5eeb9d765673a200872691d"
+  },
+  "android/app/src/main/res/mipmap-mdpi/ic_launcher_foreground.png": {
+    "reason": "Replace inherited Buzz app icon with owner-approved Raiju ears and separate lightning bolt; preserve original only in immutable Buzz archive. AI-generation provenance and rebuild rules: brand/README.md in Raiju workspace.",
+    "sha256": "ec1473e707e28cc04b42b3cd529b1ff0202ca9c2cc1919ef507d53f36beb90f7",
+    "noticeFile": "android/app/src/main/res/mipmap-mdpi/ic_launcher_foreground.png.notice.json",
+    "noticeSha256": "f9e1ec5fcbf11cb5c534d1e666902c2979cff05d68d602d90ec947c96415fb29"
+  },
+  "android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png": {
+    "reason": "Replace inherited Buzz app icon with owner-approved Raiju ears and separate lightning bolt; preserve original only in immutable Buzz archive. AI-generation provenance and rebuild rules: brand/README.md in Raiju workspace.",
+    "sha256": "b1630f8dc997adf018e69f25e56e985cb7817175a73cd1f3b25e4a93dd42d810",
+    "noticeFile": "android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png.notice.json",
+    "noticeSha256": "6b35123500cb7c6b5ecb0250bcd1ac46d18b60212a2b9bbe71689f1a336cf83b"
+  },
+  "android/app/src/main/res/mipmap-xhdpi/ic_launcher.png": {
+    "reason": "Replace inherited Buzz app icon with owner-approved Raiju ears and separate lightning bolt; preserve original only in immutable Buzz archive. AI-generation provenance and rebuild rules: brand/README.md in Raiju workspace.",
+    "sha256": "6d7d84a78caf5236b5d834e98374ee376e7e243660a217c834753a942f763d47",
+    "noticeFile": "android/app/src/main/res/mipmap-xhdpi/ic_launcher.png.notice.json",
+    "noticeSha256": "3e47eb2aa96910d06336a878dbed26b450c68ab5190a302211add17f81c1e936"
+  },
+  "android/app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.png": {
+    "reason": "Replace inherited Buzz app icon with owner-approved Raiju ears and separate lightning bolt; preserve original only in immutable Buzz archive. AI-generation provenance and rebuild rules: brand/README.md in Raiju workspace.",
+    "sha256": "8c682144f49cfd91a5f2f0f19127d034e9f6cb42ade2b4c0a42a59be78997f9f",
+    "noticeFile": "android/app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.png.notice.json",
+    "noticeSha256": "e3d95027bf5ed3cbcbdc98dad649bc6f7ea6c91a7f5f7ba1652d9cc5d0d9ca50"
+  },
+  "android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png": {
+    "reason": "Replace inherited Buzz app icon with owner-approved Raiju ears and separate lightning bolt; preserve original only in immutable Buzz archive. AI-generation provenance and rebuild rules: brand/README.md in Raiju workspace.",
+    "sha256": "994efc25c87d112c179031e984656b34cef8cd3037cc01fe7271d92307d441c0",
+    "noticeFile": "android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png.notice.json",
+    "noticeSha256": "f6302d391fde433f5fa652fa72226c3154873ac4f4b07b59ad19f62de2d81644"
+  },
+  "android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png": {
+    "reason": "Replace inherited Buzz app icon with owner-approved Raiju ears and separate lightning bolt; preserve original only in immutable Buzz archive. AI-generation provenance and rebuild rules: brand/README.md in Raiju workspace.",
+    "sha256": "34ff0bd064723a6f4c5b054306faa972852691dab9ba07d4d90f1d6ae47d5f4a",
+    "noticeFile": "android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png.notice.json",
+    "noticeSha256": "e10d938a5d5d34c0ae149169d75d9a56f3d768b86d2d4e9cda238676db4fa06f"
+  },
+  "android/app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.png": {
+    "reason": "Replace inherited Buzz app icon with owner-approved Raiju ears and separate lightning bolt; preserve original only in immutable Buzz archive. AI-generation provenance and rebuild rules: brand/README.md in Raiju workspace.",
+    "sha256": "2ef8888c09f4c311704bf4891f70596571baa1584591a14404eb4e9e52e52a10",
+    "noticeFile": "android/app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.png.notice.json",
+    "noticeSha256": "e7eb11a83542022bd616965892d678de015ccb79c14b15fb0bfea9b3a9b03a08"
+  },
+  "android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png": {
+    "reason": "Replace inherited Buzz app icon with owner-approved Raiju ears and separate lightning bolt; preserve original only in immutable Buzz archive. AI-generation provenance and rebuild rules: brand/README.md in Raiju workspace.",
+    "sha256": "dabb9a0a0b643fd4cfe3c1ea03749c8950849eacaa0096f28ef92c86a9358337",
+    "noticeFile": "android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png.notice.json",
+    "noticeSha256": "d9ca6bf4a965df94768f0c2dddd3fcf28052df40c81a0b33fba758c9015c70cf"
+  },
+  "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png": {
+    "reason": "Replace inherited Buzz app icon with owner-approved Raiju ears and separate lightning bolt; preserve original only in immutable Buzz archive. AI-generation provenance and rebuild rules: brand/README.md in Raiju workspace.",
+    "sha256": "63a1531bdc75686408b41cb1946e0f3a78920c02ab177acfd4fce7db03124c0e",
+    "noticeFile": "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png.notice.json",
+    "noticeSha256": "99bda0e15def7d3f590bcc660cb9b78dbd4d68a209ff2b0c13b7f9d224b81cf0"
+  },
+  "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png": {
+    "reason": "Replace inherited Buzz app icon with owner-approved Raiju ears and separate lightning bolt; preserve original only in immutable Buzz archive. AI-generation provenance and rebuild rules: brand/README.md in Raiju workspace.",
+    "sha256": "02a114e8cf94c54069f00d41ca5c5b91f9d6405e6b033b67f24d2a06a11326d4",
+    "noticeFile": "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png.notice.json",
+    "noticeSha256": "a2daab84f664c05f097d273c98c580d2b45c0451e79d7b7e974503019cbf4269"
+  },
+  "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png": {
+    "reason": "Replace inherited Buzz app icon with owner-approved Raiju ears and separate lightning bolt; preserve original only in immutable Buzz archive. AI-generation provenance and rebuild rules: brand/README.md in Raiju workspace.",
+    "sha256": "2d3e72999c2b1ad5aaa664ae28209eab8d2dd7e4f0886dad6198149c323e58ac",
+    "noticeFile": "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png.notice.json",
+    "noticeSha256": "0ad94a7bc19f6eb20e9c96bce1b5427312a48eebfbc130b627c26fc569559016"
+  },
+  "android/app/src/main/res/values/ic_launcher_background.xml": {
+    "reason": "Use Raiju steel #3D4555 for adaptive launcher background; foreground is the owner-approved Raiju ears and lightning bolt.",
+    "sha256": "de4b3df92a04297dff526faab344039efe3be980662aaa09cf70dd91598333de"
+  },
+  "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png": {
+    "reason": "Replace inherited Buzz app icon with owner-approved Raiju ears and separate lightning bolt; preserve original only in immutable Buzz archive. AI-generation provenance and rebuild rules: brand/README.md in Raiju workspace.",
+    "sha256": "28cdaab33ae6d88604a64e0e799ed1cd6295695dde70d124c5c533c11df9e573",
+    "noticeFile": "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png.notice.json",
+    "noticeSha256": "7bfb05a922d4494da11c2209dd7edcc543fae4f89e89df1f796246abcefdb6a1"
+  },
+  "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@1x.png": {
+    "reason": "Replace inherited Buzz app icon with owner-approved Raiju ears and separate lightning bolt; preserve original only in immutable Buzz archive. AI-generation provenance and rebuild rules: brand/README.md in Raiju workspace.",
+    "sha256": "bfaae42cbebdd1d79f4b13d9dbecd9ffd567fec53e0ea0f9dbf0a577207c56dd",
+    "noticeFile": "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@1x.png.notice.json",
+    "noticeSha256": "3d8b5d4fccb082857f788cdca2f03a4bfc88d2d6818cf335167470a6b46b4908"
+  },
+  "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@2x.png": {
+    "reason": "Replace inherited Buzz app icon with owner-approved Raiju ears and separate lightning bolt; preserve original only in immutable Buzz archive. AI-generation provenance and rebuild rules: brand/README.md in Raiju workspace.",
+    "sha256": "7e162aa8ffd440662019e7c0d7b95cefd63343fefbdd54606ad419d5cd585412",
+    "noticeFile": "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@2x.png.notice.json",
+    "noticeSha256": "356e67948b5a45fe6c67c1cd9a6dd52ebe7b58820eda890fd886b3abbfd0f9e2"
+  },
+  "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@3x.png": {
+    "reason": "Replace inherited Buzz app icon with owner-approved Raiju ears and separate lightning bolt; preserve original only in immutable Buzz archive. AI-generation provenance and rebuild rules: brand/README.md in Raiju workspace.",
+    "sha256": "5bc87c859a96173e7c20d27ae6e8d013321c965351c8b088addda3a44e8ff0b0",
+    "noticeFile": "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@3x.png.notice.json",
+    "noticeSha256": "525bb2887f39b2e1943448584cd852dac0fa97dbe9afe78c0988d3cadbb7d5fb"
+  },
+  "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@1x.png": {
+    "reason": "Replace inherited Buzz app icon with owner-approved Raiju ears and separate lightning bolt; preserve original only in immutable Buzz archive. AI-generation provenance and rebuild rules: brand/README.md in Raiju workspace.",
+    "sha256": "7c314780b63b7f54bb26db83e753b5d214dc0bf3a5e9cf88caf966b9e2e29ce4",
+    "noticeFile": "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@1x.png.notice.json",
+    "noticeSha256": "0e41362e67258f356054175ad3d76807e5bfd52efe7ce20e7d93ddab483c39c5"
+  },
+  "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@2x.png": {
+    "reason": "Replace inherited Buzz app icon with owner-approved Raiju ears and separate lightning bolt; preserve original only in immutable Buzz archive. AI-generation provenance and rebuild rules: brand/README.md in Raiju workspace.",
+    "sha256": "9f09e404e36411feca70a36b67c98d3c1fdab7f32b8e7172152140eb8429b144",
+    "noticeFile": "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@2x.png.notice.json",
+    "noticeSha256": "27180275e1cdb433196b064c44d3758ca5baec4a9ff638f042aedcbfc1befe21"
+  },
+  "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@3x.png": {
+    "reason": "Replace inherited Buzz app icon with owner-approved Raiju ears and separate lightning bolt; preserve original only in immutable Buzz archive. AI-generation provenance and rebuild rules: brand/README.md in Raiju workspace.",
+    "sha256": "3ceb200152b1ea308ac0e56a58f438700db5c58536c9e325eceeb6e587acba25",
+    "noticeFile": "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@3x.png.notice.json",
+    "noticeSha256": "01c42fab1afa348b6fbadd0cf8f4364f3866bf2f9bab06ea2780956c5037e587"
+  },
+  "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@1x.png": {
+    "reason": "Replace inherited Buzz app icon with owner-approved Raiju ears and separate lightning bolt; preserve original only in immutable Buzz archive. AI-generation provenance and rebuild rules: brand/README.md in Raiju workspace.",
+    "sha256": "7e162aa8ffd440662019e7c0d7b95cefd63343fefbdd54606ad419d5cd585412",
+    "noticeFile": "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@1x.png.notice.json",
+    "noticeSha256": "356e67948b5a45fe6c67c1cd9a6dd52ebe7b58820eda890fd886b3abbfd0f9e2"
+  },
+  "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@2x.png": {
+    "reason": "Replace inherited Buzz app icon with owner-approved Raiju ears and separate lightning bolt; preserve original only in immutable Buzz archive. AI-generation provenance and rebuild rules: brand/README.md in Raiju workspace.",
+    "sha256": "37a3ed63a6999f00e6ae760810c94a27dffa37f108a945d068ef00c2f75b42a2",
+    "noticeFile": "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@2x.png.notice.json",
+    "noticeSha256": "6f1bee5aa8350fa03ea0513ab86a3cc55fab949d6ac2a490517fddb4f6058546"
+  },
+  "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@3x.png": {
+    "reason": "Replace inherited Buzz app icon with owner-approved Raiju ears and separate lightning bolt; preserve original only in immutable Buzz archive. AI-generation provenance and rebuild rules: brand/README.md in Raiju workspace.",
+    "sha256": "39418068324a82f80d4e3a86cf5622d5dfe6c1b850adc8a8ce98858527e004b2",
+    "noticeFile": "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@3x.png.notice.json",
+    "noticeSha256": "3da0f3cb48faa20c1720aa0364fb66e090618f66855bdd2e7d587b099a0606a2"
+  },
+  "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-60x60@2x.png": {
+    "reason": "Replace inherited Buzz app icon with owner-approved Raiju ears and separate lightning bolt; preserve original only in immutable Buzz archive. AI-generation provenance and rebuild rules: brand/README.md in Raiju workspace.",
+    "sha256": "39418068324a82f80d4e3a86cf5622d5dfe6c1b850adc8a8ce98858527e004b2",
+    "noticeFile": "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-60x60@2x.png.notice.json",
+    "noticeSha256": "3da0f3cb48faa20c1720aa0364fb66e090618f66855bdd2e7d587b099a0606a2"
+  },
+  "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-60x60@3x.png": {
+    "reason": "Replace inherited Buzz app icon with owner-approved Raiju ears and separate lightning bolt; preserve original only in immutable Buzz archive. AI-generation provenance and rebuild rules: brand/README.md in Raiju workspace.",
+    "sha256": "6f8d9a25e8376f180f7d40d175045222f9fd314e58f88c2762ea982e03166d62",
+    "noticeFile": "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-60x60@3x.png.notice.json",
+    "noticeSha256": "296ff14ce190fa318519e99430f9ac7c5c39783f2c35ebd763c55481792dd35b"
+  },
+  "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-76x76@1x.png": {
+    "reason": "Replace inherited Buzz app icon with owner-approved Raiju ears and separate lightning bolt; preserve original only in immutable Buzz archive. AI-generation provenance and rebuild rules: brand/README.md in Raiju workspace.",
+    "sha256": "76f0eefab6589a63b0fac48750264881f03b40ec5ee37dccd020ed2771e14073",
+    "noticeFile": "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-76x76@1x.png.notice.json",
+    "noticeSha256": "98095b4512f402b9d57b13738e2fa1b01cf297a95834a6da8ed3b6aa7aaacfc0"
+  },
+  "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-76x76@2x.png": {
+    "reason": "Replace inherited Buzz app icon with owner-approved Raiju ears and separate lightning bolt; preserve original only in immutable Buzz archive. AI-generation provenance and rebuild rules: brand/README.md in Raiju workspace.",
+    "sha256": "d6417690d7900da6c11e51dd7a7cad470650189b317dce8055aae2b9d75801d1",
+    "noticeFile": "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-76x76@2x.png.notice.json",
+    "noticeSha256": "4f1bf540d2929b1cf9b11a67e8f1c4329c8bb5becf6ad1f1db1a9862d3511255"
+  },
+  "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-83.5x83.5@2x.png": {
+    "reason": "Replace inherited Buzz app icon with owner-approved Raiju ears and separate lightning bolt; preserve original only in immutable Buzz archive. AI-generation provenance and rebuild rules: brand/README.md in Raiju workspace.",
+    "sha256": "26db581ffb5ae07351ec8d605a0d012749fdcbf4079ead178570a51d91994920",
+    "noticeFile": "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-83.5x83.5@2x.png.notice.json",
+    "noticeSha256": "f1d585cf9e20be28e6bcfaf8c0f2597a30f37a0f1f17383f6299052f76a97cfe"
+  }
+}
