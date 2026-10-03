@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 
 import 'harness/collab_link.dart';
 import 'harness/harness.dart';
+import 'harness/ompd_connection.dart';
 import 'storage/chat_store.dart';
 import 'harness/voice_directive.dart';
 import 'storage/voice_transcript.dart';
@@ -82,19 +83,37 @@ class ChatThread {
   String? get promptTrackingError => _promptTrackingError;
 }
 
+/// Cancels only one pending local join, never the remote worker.
+final class ChatJoinCancellation {
+  bool _cancelled = false;
+  bool _claimed = false;
+  void Function()? _onCancel;
+
+  bool get isCancelled => _cancelled;
+
+  void cancel() {
+    if (_cancelled) return;
+    _cancelled = true;
+    _onCancel?.call();
+  }
+}
+
 /// Session collection independent of widget navigation and protocol details.
 class CompanionController extends ChangeNotifier {
   CompanionController({
     required HarnessClientFactory clientFactory,
     required ChatStore store,
+    HarnessClient Function(String input)? connectionClientFactory,
     String Function(String)? joinInputResolver,
     Duration writeDebounce = const Duration(milliseconds: 400),
   }) : _clientFactory = clientFactory,
+       _connectionClientFactory = connectionClientFactory,
        _joinInputResolver = joinInputResolver,
        _store = store,
        _writeDebounce = writeDebounce;
 
   final HarnessClientFactory _clientFactory;
+  final HarnessClient Function(String input)? _connectionClientFactory;
   final String Function(String)? _joinInputResolver;
   final ChatStore _store;
   final Duration _writeDebounce;
@@ -113,6 +132,18 @@ class CompanionController extends ChangeNotifier {
   List<ChatThread> get chats => List.unmodifiable(_chats);
   bool get isLoading => _isLoading;
   String? get storageError => _storageError;
+
+  /// Last endpoint comes only from the encrypted saved connection, not config.
+  OmpdEndpoint? get lastOmpdEndpoint {
+    for (final thread in _chats.reversed) {
+      if (!thread._saved || !OmpdConnection.isOmpd(thread._input)) continue;
+      return OmpdConnection.parse(thread._input).endpoint;
+    }
+    return null;
+  }
+
+  HarnessClient _clientFor(String input) =>
+      _connectionClientFactory?.call(input) ?? _clientFactory();
 
   ChatThread? chat(String id) {
     for (final thread in _chats) {
@@ -158,7 +189,7 @@ class CompanionController extends ChangeNotifier {
             relayUnverified = true;
           }
         }
-        final client = _clientFactory();
+        final client = _clientFor(resolvedInput);
         final thread = ChatThread._(
           id: item.id,
           input: resolvedInput,
@@ -187,6 +218,9 @@ class CompanionController extends ChangeNotifier {
                 : ConnectionPhase.disconnected,
             title: item.snapshot.title,
             sessionStartedAt: item.snapshot.sessionStartedAt,
+            sessionId: OmpdConnection.isOmpd(resolvedInput)
+                ? OmpdConnection.parse(resolvedInput).sessionId
+                : null,
             endpoint: item.snapshot.endpoint,
             model: item.snapshot.model,
             messages: item.snapshot.messages,
@@ -231,8 +265,22 @@ class CompanionController extends ChangeNotifier {
     }
   }
 
-  Future<ChatThread> join(String input) async {
+  Future<ChatThread> join(
+    String input, {
+    ChatJoinCancellation? cancellation,
+  }) async {
+    if (cancellation != null) {
+      if (cancellation._claimed) {
+        throw const HarnessException(
+          'This connection request is no longer active.',
+        );
+      }
+      cancellation._claimed = true;
+    }
     await initialize();
+    if (cancellation?.isCancelled ?? false) {
+      throw const HarnessException('Connection cancelled.');
+    }
     if (_disposed) throw const HarnessException('App has closed.');
     if (!_storageReady) {
       throw const HarnessException(
@@ -249,7 +297,7 @@ class CompanionController extends ChangeNotifier {
       );
     }
     final resolved = _joinInputResolver?.call(normalized) ?? normalized;
-    final client = _clientFactory();
+    final client = _clientFor(resolved);
     final thread = ChatThread._(
       id: '${++_nextId}',
       input: resolved,
@@ -265,8 +313,29 @@ class CompanionController extends ChangeNotifier {
     );
     _attach(thread);
     _chats.add(thread);
+    if (cancellation != null) {
+      cancellation._onCancel = () {
+        if (!_chats.remove(thread)) return;
+        thread._generation++;
+        thread._acceptChanges = false;
+        final wasSaved = thread._saved;
+        thread._saved = false;
+        // Dispose immediately: a late status response must not send attach.
+        unawaited(thread._subscription?.cancel().catchError((_) {}));
+        unawaited(thread.client.dispose().catchError((_) {}));
+        if (wasSaved) {
+          _markDirty(debounce: false);
+          unawaited(_persistNow().catchError((_) {}));
+        }
+        _notify();
+      };
+    }
     _notify();
     try {
+      if (cancellation?.isCancelled ?? false) {
+        cancellation?._onCancel?.call();
+        throw const HarnessException('Connection cancelled.');
+      }
       await _connect(thread);
       if (_disposed || !_chats.contains(thread) || thread._deleting) {
         throw const HarnessException('Connection cancelled.');
@@ -295,6 +364,8 @@ class CompanionController extends ChangeNotifier {
         _notify();
       }
       rethrow;
+    } finally {
+      cancellation?._onCancel = null;
     }
   }
 
@@ -603,6 +674,23 @@ class CompanionController extends ChangeNotifier {
           !_chats.contains(thread)) {
         return;
       }
+      final client = thread.client;
+      final controlLost =
+          client is OmpdControlStatus &&
+          (client as OmpdControlStatus).controlLost;
+      final ownershipLost =
+          thread._reconnect &&
+          OmpdConnection.isOmpd(thread._input) &&
+          (controlLost ||
+              (thread._snapshot.phase == ConnectionPhase.live &&
+                  !thread._snapshot.readOnly &&
+                  snapshot.phase == ConnectionPhase.live &&
+                  snapshot.readOnly));
+      if (ownershipLost) {
+        // Persist ownership loss even when bootstrap cannot complete. Never
+        // silently reclaim write control after an app restart.
+        thread._reconnect = false;
+      }
       if (snapshot.phase == ConnectionPhase.syncing ||
           snapshot.phase == ConnectionPhase.reconnecting) {
         thread._needsDirectiveRecheck = true;
@@ -642,7 +730,14 @@ class CompanionController extends ChangeNotifier {
         thread._snapshot = snapshot;
       }
       // A host rename must not replace a saved local label.
-      if (thread._saved) _markDirty();
+      if (thread._saved) {
+        _markDirty(debounce: !ownershipLost);
+        if (ownershipLost) {
+          // Reconnect intent controls remote ownership; do not defer this
+          // safety change with ordinary draft/history writes.
+          unawaited(_persistNow().catchError((_) {}));
+        }
+      }
       _notify();
     });
   }

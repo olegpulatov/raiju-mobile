@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:crypto/crypto.dart';
 
 const _smokeTarget = 'integration_test/raiju_smoke_test.dart';
+const _ompdSmokeTarget = 'integration_test/ompd_smoke_test.dart';
 const _sparkSmokeTarget = 'integration_test/spark_smoke_test.dart';
 const _liveTarget = 'integration_test/raiju_live_test.dart';
 const _sparkLiveTarget = 'integration_test/spark_live_test.dart';
@@ -77,6 +78,20 @@ Future<void> main(List<String> arguments) async {
             'drive',
             '--driver=test_driver/integration_test.dart',
             '--target=$_smokeTarget',
+            '--keep-app-running',
+            '-d',
+            device!.udid,
+          ],
+          timeout: const Duration(minutes: 10),
+          environment: nativeEnvironment,
+        );
+      case 'ompd-smoke':
+        exitCode = await _runInherited(
+          flutter,
+          [
+            'drive',
+            '--driver=test_driver/integration_test.dart',
+            '--target=$_ompdSmokeTarget',
             '--keep-app-running',
             '-d',
             device!.udid,
@@ -191,18 +206,19 @@ final class _Options {
   static _Options parse(List<String> args) {
     if (args.isEmpty || args.contains('--help') || args.contains('-h')) {
       stdout.writeln(
-        'Usage: dart run tool/ios_dev.dart <build|run|smoke|spark-smoke|spark-live|live> '
+        'Usage: dart run tool/ios_dev.dart <build|run|smoke|ompd-smoke|spark-smoke|spark-live|live> '
         '[HOST] [--device UDID] [--host HOST]\n'
         '  build       Create a signed debug simulator build without booting a device.\n'
         '  run         Boot/select an iPhone simulator and launch the app.\n'
         '  smoke       Run the deterministic native GUI integration journey.\n'
+        '  ompd-smoke  Run the synthetic TCP daemon GUI journey (no model calls).\n'
         '  spark-smoke Run the synthetic Spark voice and delegation journey.\n'
         '  spark-live  Opt-in production native voice/provider check.\n'
         '  live        Opt-in real-host GUI check; requires positional HOST or --host.',
       );
       if (args.isEmpty) {
         throw const _CliError(
-          'Choose build, run, smoke, spark-smoke, spark-live, or live.',
+          'Choose build, run, smoke, ompd-smoke, spark-smoke, spark-live, or live.',
         );
       }
       exit(0);
@@ -212,12 +228,13 @@ final class _Options {
       'build',
       'run',
       'smoke',
+      'ompd-smoke',
       'spark-smoke',
       'live',
       'spark-live',
     }.contains(command)) {
       throw _CliError(
-        'Unknown command "$command". Expected build, run, smoke, spark-smoke, spark-live, or live.',
+        'Unknown command "$command". Expected build, run, smoke, ompd-smoke, spark-smoke, spark-live, or live.',
       );
     }
     String? device;

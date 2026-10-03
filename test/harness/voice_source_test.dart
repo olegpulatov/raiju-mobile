@@ -115,4 +115,35 @@ void main() {
       expect(VoiceDirective.isPresent(replica.snapshot.rawEntries), false);
     },
   );
+
+  test(
+    'RPC user history deduplicates directive without trusting other roles',
+    () {
+      final prompt = VoiceDirective.decorate('User text', 'two models');
+      Map<String, Object?> entry(String role, Object content) => {
+        'type': 'message',
+        'message': {'role': role, 'content': content},
+      };
+      expect(VoiceDirective.isPresent([entry('user', prompt)]), isTrue);
+      expect(
+        VoiceDirective.isPresent([
+          entry('user', [
+            {'type': 'text', 'text': prompt},
+          ]),
+        ]),
+        isTrue,
+      );
+      for (final role in ['assistant', 'toolResult', 'system']) {
+        expect(VoiceDirective.isPresent([entry(role, prompt)]), isFalse);
+      }
+      expect(
+        VoiceDirective.isPresent([
+          entry('user', prompt),
+          {'type': 'compaction'},
+          entry('user', 'New request'),
+        ]),
+        isFalse,
+      );
+    },
+  );
 }

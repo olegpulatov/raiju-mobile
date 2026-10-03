@@ -14,6 +14,27 @@ String sparkSourceProse(Object? content) {
       .join('\n');
 }
 
+/// Actual remote input shapes from collaboration and RPC, not rendered text.
+String? sparkPromptSource(Map message) =>
+    message['role'] == 'user' ||
+        (message['role'] == 'custom' &&
+            message['customType'] == 'collab-prompt')
+    ? sparkSourceProse(message['content'])
+    : null;
+
+String? sparkEntryPromptSource(Map<String, Object?> entry) {
+  if (entry['type'] == 'custom_message' &&
+      entry['customType'] == 'collab-prompt') {
+    return sparkSourceProse(entry['content']);
+  }
+  final message = entry['message'];
+  return entry['type'] == 'message' &&
+          message is Map &&
+          message['role'] == 'user'
+      ? sparkSourceProse(message['content'])
+      : null;
+}
+
 String sparkVoiceSpeaker(VoiceTurnOrigin origin) =>
     origin == VoiceTurnOrigin.spark ? 'Voice Assistant Spark' : 'User';
 
@@ -164,7 +185,8 @@ String sparkConversationContext(
       final cachedRemainder =
           echoTurns.isNotEmpty &&
               message.source == null &&
-              message.origin == ChatMessageOrigin.collabUser &&
+              (message.origin == ChatMessageOrigin.collabUser ||
+                  message.origin == ChatMessageOrigin.remoteUser) &&
               echoTurns.every(
                 (turn) =>
                     turn.echoRemainder != null &&

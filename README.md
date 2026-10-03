@@ -22,6 +22,8 @@ For physical iPhone, configure repository-local `.envrc` from `.envrc.example` a
 
 App opens original chat shell directly. Choose Connect, scan OMP collab QR or paste link/token, then chat. Simulator uses paste. OMP host must stay running; reconnect never automatically replays ordinary typed prompts.
 
+Optional: Connect → Daemon relay connects to `ompd` over Tailscale or a restricted home network. Start a new session, attach a running instance, or resume a known session file/id. Existing collab remains available without a daemon. The current daemon API has no authentication or encryption of its own; restrict port access and confirm trusted-network consent. See [daemon setup and checks](docs/development.md#optional-daemon-relay).
+
 Saved connections, drafts, and bounded history cache are encrypted; key stays in OS secure storage. Appearance is local. Disconnect retains chat; Forget removes local saved state. OMP owns full history, so cache is not an independent archive.
 
 Configure voice through Settings → Spark: protected broker configuration, voice, editable Iskra prompts, user name, and tool visibility. Voice stays bound to starting chat while navigating. Bound transcript includes recognized speech, Spark replies, typing, and remote replies; local voice turns are saved even before delegation. Spark delegates automatically; no manual proposal or reply-sharing workflow. No audio is saved.

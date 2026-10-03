@@ -29,18 +29,18 @@ check-preservation:
 
 # Run active Raiju contracts and retained original visual regressions.
 test: _deps
-    {{ flutter }} test --no-pub test/widget_test.dart test/harness test/storage test/companion_controller_test.dart test/raiju test/features/home/home_page_test.dart test/features/pairing/pairing_qr_scanner_test.dart test/shared/theme/app_theme_test.dart
+    {{ flutter }} test --no-pub test/widget_test.dart test/harness test/storage test/companion_controller_test.dart test/raiju test/features/home/home_page_test.dart test/features/pairing/pairing_qr_scanner_test.dart test/features/pairing/ompd_pairing_page_test.dart test/shared/theme/app_theme_test.dart
     node scripts/spark-test.mjs all
 
 # Check preservation, formatting, analysis, and active tests without source changes.
 check: _deps check-preservation
-    {{ dart }} format --output=none --set-exit-if-changed lib/harness lib/storage lib/raiju lib/spark lib/features/settings/settings_page.dart lib/features/settings/settings_page/spark_section.dart lib/companion_controller.dart test/harness test/storage test/raiju test/spark test/features/settings/settings_page_test.dart test/features/settings/settings_page_loading_test.dart test/companion_controller_test.dart test/widget_test.dart tool integration_test test_driver
+    {{ dart }} format --output=none --set-exit-if-changed lib/harness lib/storage lib/raiju lib/spark lib/features/settings/settings_page.dart lib/features/settings/settings_page/spark_section.dart lib/features/pairing/ompd_pairing_page.dart lib/companion_controller.dart test/harness test/storage test/raiju test/spark test/features/settings/settings_page_test.dart test/features/settings/settings_page_loading_test.dart test/features/pairing/ompd_pairing_page_test.dart test/helpers/ompd_fixture.dart test/companion_controller_test.dart test/widget_test.dart tool integration_test test_driver
     {{ flutter }} analyze --no-pub
     just test
 
 # Format new adapter/tool/test code; do not restyle frozen upstream GUI.
 fix: _deps
-    {{ dart }} format lib/harness lib/storage lib/raiju lib/spark lib/features/settings/settings_page/spark_section.dart lib/companion_controller.dart test/harness test/storage test/raiju test/spark test/companion_controller_test.dart test/widget_test.dart tool integration_test test_driver
+    {{ dart }} format lib/harness lib/storage lib/raiju lib/spark lib/features/settings/settings_page/spark_section.dart lib/features/pairing/ompd_pairing_page.dart lib/companion_controller.dart test/harness test/storage test/raiju test/spark test/features/pairing/ompd_pairing_page_test.dart test/helpers/ompd_fixture.dart test/companion_controller_test.dart test/widget_test.dart tool integration_test test_driver
 
 # Build signed debug simulator app with pinned native tools after acceptance gates.
 ios-build: check
@@ -64,6 +64,14 @@ ios-device: _deps
 # Run repeatable original-GUI connect/send/reply/restore check on iOS simulator.
 ios-smoke: _deps
     node scripts/flutter-tool.mjs ios-dart run tool/ios_dev.dart smoke
+
+# Run optional daemon start/attach/chat/restore journey over local TCP on iOS.
+ompd-ios-smoke: _deps
+    node scripts/flutter-tool.mjs ios-dart run tool/ios_dev.dart ompd-smoke
+
+# Check actual daemon interoperability with a synthetic worker, without model calls.
+ompd-smoke daemon="ompd": _deps
+    {{ dart }} run tool/ompd_smoke.dart --daemon "{{ daemon }}"
 
 # Read selected real OMP session over encrypted collab without sending a prompt.
 live-smoke host: _deps

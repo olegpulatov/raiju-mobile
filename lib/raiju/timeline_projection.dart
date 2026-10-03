@@ -95,8 +95,10 @@ List<TimelineMessage> projectTimelineMessages(
   for (final entry in echoes.entries) {
     final message = byId[entry.key]!;
     if (message.source?['customType'] != 'collab-prompt' &&
+        message.source?['role'] != 'user' &&
         !(message.source == null &&
-            message.origin == ChatMessageOrigin.collabUser)) {
+            (message.origin == ChatMessageOrigin.collabUser ||
+                message.origin == ChatMessageOrigin.remoteUser))) {
       continue;
     }
     final anchored = entry.value;

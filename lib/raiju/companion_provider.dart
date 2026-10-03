@@ -6,6 +6,8 @@ import '../companion_controller.dart';
 import '../harness/collab_link.dart';
 import '../harness/harness.dart';
 import '../harness/omp_collab_client.dart';
+import '../harness/ompd_client.dart';
+import '../harness/ompd_connection.dart';
 import '../storage/chat_store.dart';
 import '../storage/encrypted_file_chat_store.dart';
 import 'collab_relay_preference.dart';
@@ -21,7 +23,17 @@ final companionControllerProvider = ChangeNotifierProvider<CompanionController>(
       clientFactory: () => OmpCollabClient.withOptions(
         OmpCollabClientOptions(defaultRelay: ref.read(collabRelayProvider)),
       ),
+      connectionClientFactory: (input) => OmpdConnection.isOmpd(input)
+          ? OmpdClient()
+          : OmpCollabClient.withOptions(
+              OmpCollabClientOptions(
+                defaultRelay: ref.read(collabRelayProvider),
+              ),
+            ),
       joinInputResolver: (input) {
+        if (OmpdConnection.isOmpd(input)) {
+          return OmpdConnection.parse(input).encode();
+        }
         try {
           return pinBareCollabLink(
             input,

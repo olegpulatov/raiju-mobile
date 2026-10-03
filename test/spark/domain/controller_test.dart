@@ -4,6 +4,7 @@ import 'package:raiju_mobile/harness/harness.dart';
 import 'package:raiju_mobile/raiju/timeline_projection.dart';
 import 'package:raiju_mobile/harness/voice_directive.dart';
 import 'package:raiju_mobile/spark/spark.dart';
+import 'package:raiju_mobile/spark/context.dart';
 import 'package:raiju_mobile/storage/voice_transcript.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -245,6 +246,297 @@ void main() {
       );
     },
   );
+
+  test(
+    'RPC echoes deliver two delegations without duplicate final speech',
+    () async {
+      final bridge = _Bridge();
+      final session = _Session();
+      final controller = _controller(session, bridge);
+      await controller.start(chatId: 'chat');
+      session.add({'type': 'connected'});
+      await _tick();
+      await controller.sendText('first words');
+      final actualFirst = VoiceDirective.decorate(
+        'User: first words',
+        'synthetic two-model instructions',
+      );
+      bridge.nextResult = SparkChatSendResult(
+        SparkSendOutcome.uncertain,
+        sentText: actualFirst,
+      );
+      session.add({'type': 'delegation', 'id': 'rpc-first', 'text': ''});
+      await _tick();
+      final first = bridge.sentBodies.single;
+      session.add({
+        'type': 'delegation',
+        'id': 'rpc-second',
+        'text': 'second task',
+      });
+      await _tick();
+      expect(bridge.sends, 1);
+      bridge.addRpcEntry('rpc-first-echo', actualFirst);
+      bridge.emitEvents([
+        {'type': 'message_start', 'message': _rpcUser(actualFirst)},
+        _rpcTerminal(actualFirst, 'first answer'),
+      ]);
+      await _tick();
+      expect(bridge.sentBodies, [first, 'second task']);
+      expect(
+        bridge.turns
+            .where((turn) => turn.routingRequestId == 'rpc-first')
+            .every((turn) => turn.delivery == VoiceDelivery.delivered),
+        isTrue,
+      );
+      final second = bridge.sentBodies.last;
+      bridge.addRpcEntry('rpc-second-echo', second);
+      bridge.emitEvents([
+        {'type': 'message_end', 'message': _rpcUser(second)},
+        _rpcTerminal(second, 'second answer'),
+      ]);
+      await _tick();
+      expect(
+        bridge.turns.every((turn) => turn.delivery == VoiceDelivery.delivered),
+        isTrue,
+      );
+      expect(session.delegationIds, [null, 'rpc-first', 'rpc-second']);
+      expect(session.sent, [
+        'first words',
+        '"Agent Final Message":\n\nfirst answer',
+        '"Agent Final Message":\n\nsecond answer',
+      ]);
+      await controller.stop();
+    },
+  );
+
+  test(
+    'RPC delivery survives controller recreation and cached echo collapse',
+    () async {
+      final bridge = _Bridge();
+      final session = _Session();
+      final controller = _controller(session, bridge);
+      await controller.start(chatId: 'chat');
+      session.add({
+        'type': 'delegation',
+        'id': 'rpc-saved',
+        'text': 'saved task',
+      });
+      await _tick();
+      bridge.addRpcEntry('saved-echo', 'saved task');
+      bridge.emitEvents([_rpcTerminal('saved task', 'saved answer')]);
+      await _tick();
+      await controller.stop();
+      final restored = _Bridge()
+        ..turns.addAll(
+          bridge.turns.map((turn) => VoiceTurn.fromJson(turn.toJson())),
+        )
+        ..entries.addAll(bridge.entries)
+        ..events.addAll(bridge.events);
+      expect(restored.turns.single.delivery, VoiceDelivery.delivered);
+      expect(restored.turns.single.hostEntryId, 'saved-echo');
+      for (final source in [_rpcUser('saved task'), null]) {
+        final messages = [
+          ChatMessage(
+            id: 'saved-echo',
+            role: MessageRole.user,
+            text: 'saved task',
+            prose: 'saved task',
+            source: source,
+            origin: ChatMessageOrigin.remoteUser,
+          ),
+        ];
+        expect(
+          projectTimelineMessages(
+            messages,
+            voiceTurns: restored.turns,
+          ).map((item) => item.content),
+          ['saved task'],
+        );
+        expect(
+          sparkConversationContext(
+            messages,
+            restored.turns,
+            characterBudget: 1000,
+          ),
+          'User request to main: saved task',
+        );
+      }
+      final restartedSession = _Session();
+      final restarted = _controller(restartedSession, restored);
+      await restarted.start(chatId: 'chat');
+      restored.emit();
+      await _tick();
+      expect(restartedSession.sent, isEmpty);
+      restartedSession.add({
+        'type': 'delegation',
+        'id': 'rpc-next',
+        'text': 'next task',
+      });
+      await _tick();
+      expect(restored.sentBodies, ['next task']);
+      restored.addRpcEntry('next-echo', 'next task');
+      restored.emitEvents([_rpcTerminal('next task', 'next answer')]);
+      await _tick();
+      expect(restartedSession.delegationIds, ['rpc-next']);
+      await restarted.stop();
+    },
+  );
+
+  test(
+    'RPC delivery requires new unique exact echo, not unrelated input',
+    () async {
+      final bridge = _Bridge()..addRpcEntry('prior-echo', 'same task');
+      bridge.emitEvents([_rpcTerminal('same task', 'old answer')]);
+      final session = _Session();
+      final controller = _controller(session, bridge);
+      await controller.start(chatId: 'chat');
+      session.add({
+        'type': 'delegation',
+        'id': 'rpc-exact',
+        'text': 'same task',
+      });
+      await _tick();
+      bridge.addRpcEntry('unrelated-echo', 'same task again');
+      bridge.emitEvents([
+        {'type': 'message_start', 'message': _rpcUser('same task again')},
+      ]);
+      await _tick();
+      expect(bridge.turns.single.delivery, VoiceDelivery.uncertain);
+      bridge.addRpcEntry('new-echo', 'same task');
+      await _tick();
+      expect(bridge.turns.single.delivery, VoiceDelivery.uncertain);
+      bridge.emitEvents([_rpcTerminal('same task', 'new answer')]);
+      await _tick();
+      expect(bridge.turns.single.delivery, VoiceDelivery.delivered);
+      expect(bridge.turns.single.hostEntryId, 'new-echo');
+      expect(session.delegationIds, ['rpc-exact']);
+      await controller.stop();
+    },
+  );
+
+  test(
+    'RPC repeated exact echoes remain uncertain without unique provenance',
+    () async {
+      final bridge = _Bridge();
+      final session = _Session();
+      final controller = _controller(session, bridge);
+      await controller.start(chatId: 'chat');
+      session.add({
+        'type': 'delegation',
+        'id': 'rpc-ambiguous',
+        'text': 'repeat',
+      });
+      await _tick();
+      bridge.addRpcEntry('repeat-one', 'repeat');
+      bridge.addRpcEntry('repeat-two', 'repeat');
+      bridge.emitEvents([_rpcTerminal('repeat', 'unproven answer')]);
+      await _tick();
+      expect(bridge.turns.single.delivery, VoiceDelivery.uncertain);
+      expect(session.sent, isEmpty);
+      session.add({'type': 'delegation', 'id': 'rpc-blocked', 'text': 'next'});
+      await _tick();
+      expect(bridge.sends, 1);
+      await controller.stop();
+    },
+  );
+
+  test(
+    'RPC uncertain reservation stays fenced after controller recreation',
+    () async {
+      final bridge = _Bridge();
+      final firstSession = _Session();
+      final first = _controller(firstSession, bridge);
+      await first.start(chatId: 'chat');
+      firstSession.add({
+        'type': 'delegation',
+        'id': 'rpc-unknown',
+        'text': 'pending task',
+      });
+      await _tick();
+      await first.stop();
+      final restored = _Bridge()
+        ..turns.addAll(
+          bridge.turns.map((turn) => VoiceTurn.fromJson(turn.toJson())),
+        );
+      final secondSession = _Session();
+      final second = _controller(secondSession, restored);
+      await second.start(chatId: 'chat');
+      restored.addRpcEntry('old-pending-echo', 'pending task');
+      restored.emitEvents([_rpcTerminal('pending task', 'unowned answer')]);
+      await _tick();
+      expect(restored.turns.single.delivery, VoiceDelivery.uncertain);
+      expect(secondSession.sent, isEmpty);
+      secondSession.add({
+        'type': 'delegation',
+        'id': 'rpc-new',
+        'text': 'new task',
+      });
+      await _tick();
+      expect(restored.sends, 0);
+      await second.stop();
+    },
+  );
+
+  test('later RPC user input cannot own the delegated final', () async {
+    final bridge = _Bridge();
+    final session = _Session();
+    final controller = _controller(session, bridge);
+    await controller.start(chatId: 'chat');
+    session.add({
+      'type': 'delegation',
+      'id': 'rpc-interrupted',
+      'text': 'my task',
+    });
+    await _tick();
+    bridge.addRpcEntry('my-echo', 'my task');
+    bridge.emitEvents([
+      {
+        'type': 'agent_end',
+        'isTerminal': true,
+        'messages': [
+          _rpcUser('my task'),
+          _rpcUser('other task'),
+          {
+            'role': 'assistant',
+            'stopReason': 'stop',
+            'content': 'other answer',
+          },
+        ],
+      },
+    ]);
+    await _tick();
+    expect(bridge.turns.single.delivery, VoiceDelivery.delivered);
+    expect(session.delegationIds, [null]);
+    expect(session.sent.single, contains('other answer'));
+    await controller.stop();
+  });
+
+  test('RPC typed echo releases queued delegation', () async {
+    final bridge = _Bridge();
+    final session = _Session();
+    final controller = _controller(session, bridge);
+    await controller.start(chatId: 'chat');
+    session.add({'type': 'connected'});
+    await _tick();
+    await controller.sendText('spoken');
+    final prepared = await bridge.preparer!('typed task');
+    session.add({
+      'type': 'delegation',
+      'id': 'rpc-after-typed',
+      'text': 'next',
+    });
+    await _tick();
+    expect(bridge.sends, 0);
+    bridge.addRpcEntry('typed-rpc-echo', prepared);
+    bridge.emitEvents([
+      {'type': 'message_end', 'message': _rpcUser(prepared)},
+    ]);
+    await _tick();
+    expect(bridge.turns.first.delivery, VoiceDelivery.delivered);
+    expect(bridge.turns.first.typedEcho, isTrue);
+    expect(bridge.sentBodies, ['next']);
+    await controller.stop();
+  });
 
   test(
     'only matching terminal run with toolUse commentary speaks final wrapper',
@@ -1716,6 +2008,28 @@ void main() {
   );
 }
 
+Map<String, Object?> _rpcUser(String text) => {
+  'role': 'user',
+  'content': [
+    {'type': 'text', 'text': text},
+  ],
+};
+
+Map<String, Object?> _rpcTerminal(String prompt, String answer) => {
+  'type': 'agent_end',
+  'isTerminal': true,
+  'messages': [
+    _rpcUser(prompt),
+    {
+      'role': 'assistant',
+      'stopReason': 'stop',
+      'content': [
+        {'type': 'text', 'text': answer},
+      ],
+    },
+  ],
+};
+
 Future<void> _tick() async {
   await Future<void>.delayed(const Duration(milliseconds: 10));
 }
@@ -1833,6 +2147,11 @@ class _Bridge implements SparkChatBridge {
       'id': id,
       'content': content,
     });
+    emit();
+  }
+
+  void addRpcEntry(String id, String content) {
+    entries.add({'type': 'message', 'id': id, 'message': _rpcUser(content)});
     emit();
   }
 

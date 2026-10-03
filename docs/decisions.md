@@ -246,3 +246,15 @@ Status: accepted, explicit user authorization on 2026-10-01
 - Exact `asn1-rs-impl 0.2.0`, `webrtc 0.17.2`, and `yasna 0.5.2` packages declare an Apache-2.0 alternative but omit full license files. Select that alternative and reproduce the standard text from installed `asn1-rs 0.6.2/LICENSE-APACHE`, retaining manifest/VCS/text provenance. Do not invent MIT copyright holders
 - Google ML Kit/MLImage podspecs declare copyright-only notices, not an open-source grant. Preserve those declarations, full available embedded open-source notices, and a captured official ML Kit terms page with its incorporated Google APIs terms link. This is attribution delivery, not legal approval or evidence that app redistribution is forbidden
 - Reopen only for concrete new dependencies, changed upstream terms, or a new distribution platform; Android's transitive Gradle-native inventory is not established by this iOS delivery
+
+## adr-020 — optional ompd session access
+
+Status: accepted, user request on 2026-10-03; extends the direct-collab-only connection scope without replacing collaboration
+
+- Keep existing encrypted OMP collaboration links and QR flow. Add optional daemon access through a separate `HarnessClient` adapter and the same chat screens; no relay or account is required to use the app
+- Target the current `ompd` TCP JSON-lines API: list running instances, start a named instance, attach for control, and resume a known session file/id through start. Saved-session browsing is not available in this API
+- Start is an explicit action, never a reconnect side effect. Save an attach-only connection in the existing encrypted chat store, pin its session identity, and reject an instance that now owns a different conversation. Disconnect/forget never stops the remote worker
+- Require explicit trusted-network consent before contacting the daemon. Its current protocol has neither authentication nor TLS; any reachable peer can control workers. Tailscale ACLs/firewall rules must restrict access. Home Wi-Fi alone does not establish trusted peers or end-to-end encryption
+- Control attachment replaces the previous controller. Bootstrap history and state through OMP RPC; never replay prompts after transport failure or silently reclaim control after takeover
+- Keep daemon and OMP sources unchanged. API feedback: add version/capability discovery, authenticated access, saved-session catalog, atomic state/history snapshots, stable error codes, and durable pending-question retrieval. These are gaps, not capabilities invented by mobile
+- Rejected: replacing collaboration with the daemon, treating daemon TCP as a collab relay URL, automatically starting a worker during restore, or claiming a saved-session picker can be built from running-instance status

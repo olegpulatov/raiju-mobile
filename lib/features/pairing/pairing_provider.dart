@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../companion_controller.dart';
 import '../../harness/harness.dart';
+import '../../harness/ompd_connection.dart';
 import '../../raiju/companion_provider.dart';
 import '../../shared/auth/auth.dart' show Community;
 import 'pairing_socket.dart';
@@ -84,7 +85,9 @@ typedef PairingCredentialValidator =
     Future<void> Function({required String relayUrl, required String? nsec});
 
 const identityExportAuthorizationTtl = Duration(minutes: 2);
-final identityExportClockProvider = Provider<DateTime Function()>((ref) => DateTime.now);
+final identityExportClockProvider = Provider<DateTime Function()>(
+  (ref) => DateTime.now,
+);
 
 class PairingNotifier extends Notifier<PairingState> {
   PairingNotifier({
@@ -106,6 +109,11 @@ class PairingNotifier extends Notifier<PairingState> {
 
     state = const PairingState(status: PairingStatus.connecting);
     try {
+      if (OmpdConnection.isOmpd(rawInput)) {
+        throw const HarnessException(
+          'Use Daemon relay to review network risks and grant consent. QR and paste accept collaboration links only.',
+        );
+      }
       final chat = await ref.read(companionControllerProvider).join(rawInput);
       if (generation != _generation) {
         await ref.read(companionControllerProvider).remove(chat.id);
@@ -126,7 +134,8 @@ class PairingNotifier extends Notifier<PairingState> {
       if (generation != _generation) return;
       state = const PairingState(
         status: PairingStatus.error,
-        errorMessage: 'Could not connect to this OMP session. Check the link and try again.',
+        errorMessage:
+            'Could not connect to this OMP session. Check the link and try again.',
       );
     }
   }

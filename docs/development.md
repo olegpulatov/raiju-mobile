@@ -108,6 +108,27 @@ After simulator build, inspect `build/ios/iphonesimulator/Raiju.app/Frameworks/A
 - Disconnect retains saved chat but disables automatic reconnect. Forget removes local saved connection/history
 - Host session replacement ends old link. Keep cached chat and show failure; user supplies new link. Do not silently attach a different conversation
 
+## optional daemon relay
+
+Open Connect → Daemon relay. Existing collab QR/link controls remain separate and work without a daemon.
+
+- Enter the daemon's reachable DNS name or IP and port (default `7420`). Use the workstation's Tailscale address or home-network address, not the phone's `localhost`
+- Confirm trusted-network access before listing or starting anything. Current `ompd` is unauthenticated plain TCP: every peer with port access can control sessions. Restrict the listener with Tailscale ACLs/firewall rules; do not expose it publicly. Home Wi-Fi does not itself make all peers trusted
+- Refresh to list daemon instances, then attach to a ready RPC instance. Attaching takes write control from its current controller; it does not create another session
+- Start a new named instance using a configured daemon profile or an absolute working directory on the workstation. Optional session file/id resumes an older conversation. There is no saved-session catalog in the current daemon API
+- Starting can succeed even if the phone loses the reply. Refresh the instance list before retrying; the app never automatically repeats a start or prompt
+- Connections, cached conversation and drafts use the existing encrypted chat store. Restoring attaches to the saved instance and checks session identity; it never restarts a stopped worker or silently follows a different session
+- Disconnect and local deletion do not stop the workstation session. The daemon and its worker must remain running for reconnect
+- Relay history comes from OMP's current model context, not a full saved-session archive. After compaction, older messages may be replaced by the host summary. Idle history is paged; oversized active history fails visibly rather than displaying an incomplete connection as live
+
+Maintained verification:
+
+- `just ompd-ios-smoke`: synthetic local TCP peer, actual app session-start/attach/chat flow and screenshots on iOS simulator
+- `just ompd-smoke /path/to/ompd`: actual isolated daemon with a synthetic RPC worker, no model/provider calls
+- Existing `just ios-smoke` and collaboration transport tests remain separate regression evidence
+
+These fixtures do not qualify physical-device Tailscale/Wi-Fi reachability or real-model behavior. No daemon or OMP source changes are required by the mobile implementation.
+
 ## quality gates
 
 - source preservation: full baseline provenance/checkpoint; original GUI/assets/native visual bridges retained; any removal explicitly classified

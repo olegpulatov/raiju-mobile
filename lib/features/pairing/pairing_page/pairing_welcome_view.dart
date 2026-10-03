@@ -10,6 +10,7 @@ class _PairingWelcomeView extends StatelessWidget {
   final VoidCallback onScan;
   final VoidCallback onTogglePairingCode;
   final VoidCallback onConnect;
+  final VoidCallback onDaemonRelay;
 
   const _PairingWelcomeView({
     required this.codeController,
@@ -19,6 +20,7 @@ class _PairingWelcomeView extends StatelessWidget {
     required this.onScan,
     required this.onTogglePairingCode,
     required this.onConnect,
+    required this.onDaemonRelay,
   });
 
   @override
@@ -174,7 +176,9 @@ class _PairingWelcomeView extends StatelessWidget {
                                     SizedBox(
                                       width: double.infinity,
                                       child: FilledButton(
-                                        key: const ValueKey('raiju-join-submit'),
+                                        key: const ValueKey(
+                                          'raiju-join-submit',
+                                        ),
                                         style: _onboardingButtonStyle,
                                         onPressed: isBusy ? null : onConnect,
                                         child: isBusy
@@ -203,6 +207,13 @@ class _PairingWelcomeView extends StatelessWidget {
                           style: context.textTheme.bodySmall?.copyWith(
                             color: _onboardingMutedInk,
                           ),
+                        ),
+                        const SizedBox(height: Grid.xxs),
+                        TextButton(
+                          key: const ValueKey('ompd-entry'),
+                          style: _onboardingSecondaryButtonStyle,
+                          onPressed: isBusy ? null : onDaemonRelay,
+                          child: const Text('Daemon relay'),
                         ),
                         if (errorMessage != null) ...[
                           const SizedBox(height: Grid.twelve),

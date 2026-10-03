@@ -5,11 +5,348 @@ import 'package:raiju_mobile/companion_controller.dart';
 import 'package:raiju_mobile/features/channels/channels_provider.dart';
 import 'package:raiju_mobile/harness/harness.dart';
 import 'package:raiju_mobile/storage/chat_store.dart';
+import 'package:raiju_mobile/harness/ompd_connection.dart';
 import 'package:raiju_mobile/storage/encrypted_file_chat_store.dart';
 import 'package:raiju_mobile/storage/voice_transcript.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test(
+    'input-aware factory keeps collab and restores encrypted daemon identity',
+    () async {
+      final disk = MemoryCiphertextBackend();
+      final keys = MemoryKeyBackend();
+      final connection = OmpdConnection(
+        endpoint: OmpdEndpoint.parse('relay.example:7420'),
+        instance: 'synthetic-worker',
+        sessionId: 'synthetic-session-identity',
+        sessionFile: '/synthetic/worker.jsonl',
+        trustedNetwork: true,
+      ).encode();
+      final collab = FakeClient(connectedSnapshot: _snapshot(['collab']));
+      final daemon = FakeClient(
+        connectedSnapshot: const HarnessSnapshot(
+          phase: ConnectionPhase.live,
+          title: 'Daemon conversation',
+          sessionId: 'synthetic-session-identity',
+          readOnly: false,
+        ),
+      );
+      final firstInputs = <String>[];
+      final first = CompanionController(
+        clientFactory: () =>
+            throw StateError('Legacy fallback must not override routing'),
+        connectionClientFactory: (input) {
+          firstInputs.add(input);
+          return OmpdConnection.isOmpd(input) ? daemon : collab;
+        },
+        store: _store(disk, keys),
+        writeDebounce: Duration.zero,
+      );
+      await first.initialize();
+      await first.join('synthetic-collab-link');
+      final chat = await first.join(connection);
+      first.updateDraft(chat.id, 'private daemon draft');
+      await first.flush();
+      expect(firstInputs, ['synthetic-collab-link', connection]);
+      expect(first.lastOmpdEndpoint.toString(), 'relay.example:7420');
+      final ciphertext = String.fromCharCodes(disk.bytes!);
+      expect(ciphertext, isNot(contains('synthetic-session-identity')));
+      expect(ciphertext, isNot(contains('private daemon draft')));
+      expect(ciphertext, isNot(contains('/synthetic/worker.jsonl')));
+      first.dispose();
+
+      final gate = Completer<void>();
+      final restoredCollab = FakeClient(
+        connectedSnapshot: _snapshot(['collab']),
+      );
+      final restoredDaemon = FakeClient(
+        connectedSnapshot: daemon.connectedSnapshot,
+        gate: gate,
+      );
+      final restoredInputs = <String>[];
+      final restored = CompanionController(
+        clientFactory: () =>
+            throw StateError('Legacy fallback must not override routing'),
+        connectionClientFactory: (input) {
+          restoredInputs.add(input);
+          return OmpdConnection.isOmpd(input) ? restoredDaemon : restoredCollab;
+        },
+        store: _store(disk, keys),
+      );
+      await restored.initialize();
+      expect(restoredInputs, firstInputs);
+      expect(
+        OmpdConnection.parse(restoredInputs.last).sessionFile,
+        '/synthetic/worker.jsonl',
+      );
+      final restoredChat = restored.chat(chat.id)!;
+      expect(restoredChat.draft, 'private daemon draft');
+      expect(restoredChat.snapshot.sessionId, 'synthetic-session-identity');
+      expect(restoredDaemon.connectedInputs, [connection]);
+      expect(restoredCollab.connectedInputs, ['synthetic-collab-link']);
+      expect(restoredDaemon.sentPrompts, isEmpty);
+      gate.complete();
+      await _settle();
+      expect(restoredChat.snapshot.sessionId, 'synthetic-session-identity');
+      await restored.disconnect(chat.id);
+      expect(restoredDaemon.abortCalls, 0);
+      restored.dispose();
+    },
+  );
+
+  test(
+    'daemon takeover persists viewer intent without changing collab restore',
+    () async {
+      final disk = MemoryCiphertextBackend();
+      final keys = MemoryKeyBackend();
+      final connection = OmpdConnection(
+        endpoint: OmpdEndpoint.parse('relay.example:7420'),
+        instance: 'synthetic-worker',
+        sessionId: 'synthetic-session-identity',
+        sessionFile: '/synthetic/worker.jsonl',
+        trustedNetwork: true,
+      ).encode();
+      const writable = HarnessSnapshot(
+        phase: ConnectionPhase.live,
+        title: 'Daemon conversation',
+        sessionId: 'synthetic-session-identity',
+        readOnly: false,
+      );
+      const viewer = HarnessSnapshot(
+        phase: ConnectionPhase.live,
+        title: 'Daemon conversation',
+        sessionId: 'synthetic-session-identity',
+        readOnly: true,
+      );
+      final daemon = FakeClient(connectedSnapshot: writable);
+      final collab = FakeClient(connectedSnapshot: _snapshot(['collab']));
+      final first = CompanionController(
+        clientFactory: () => throw StateError('Use input routing'),
+        connectionClientFactory: (input) =>
+            OmpdConnection.isOmpd(input) ? daemon : collab,
+        store: _store(disk, keys),
+        writeDebounce: const Duration(days: 1),
+      );
+      await first.initialize();
+      final daemonChat = await first.join(connection);
+      final collabChat = await first.join('synthetic-collab-link');
+      first.updateDraft(daemonChat.id, 'viewer draft');
+      final takeoverWrite = Completer<void>();
+      disk.writeEntered = takeoverWrite;
+      daemon.emit(viewer);
+      collab.emit(viewer);
+      expect(daemonChat.snapshot.phase, ConnectionPhase.live);
+      expect(daemonChat.snapshot.readOnly, isTrue);
+      expect(daemon.abortCalls, 0);
+      // No flush: ownership loss must write before the ordinary debounce.
+      await takeoverWrite.future.timeout(const Duration(seconds: 1));
+      await _settle();
+      final saved = await _store(disk, keys).load();
+      expect(
+        saved.singleWhere((chat) => chat.id == daemonChat.id).reconnect,
+        isFalse,
+      );
+      expect(
+        saved.singleWhere((chat) => chat.id == collabChat.id).reconnect,
+        isTrue,
+      );
+      first.dispose();
+
+      final restoredDaemon = FakeClient(connectedSnapshot: writable);
+      final restoredCollab = FakeClient(
+        connectedSnapshot: _snapshot(['collab']),
+      );
+      final restored = CompanionController(
+        clientFactory: () => throw StateError('Use input routing'),
+        connectionClientFactory: (input) =>
+            OmpdConnection.isOmpd(input) ? restoredDaemon : restoredCollab,
+        store: _store(disk, keys),
+      );
+      await restored.initialize();
+      await _settle();
+      expect(restoredDaemon.connectCalls, 0);
+      expect(restoredCollab.connectCalls, 1);
+      expect(restored.chat(daemonChat.id)!.draft, 'viewer draft');
+      expect(
+        restored.chat(daemonChat.id)!.snapshot.phase,
+        ConnectionPhase.disconnected,
+      );
+      expect(
+        restored.chat(daemonChat.id)!.snapshot.sessionId,
+        'synthetic-session-identity',
+      );
+      await restored.reconnect(daemonChat.id);
+      expect(restoredDaemon.connectCalls, 1);
+      expect(restoredDaemon.connectedInputs, [connection]);
+      expect(restored.chat(daemonChat.id)!.snapshot.readOnly, isFalse);
+      expect(
+        (await _store(
+          disk,
+          keys,
+        ).load()).singleWhere((chat) => chat.id == daemonChat.id).reconnect,
+        isTrue,
+      );
+      restored.dispose();
+    },
+  );
+
+  test(
+    'takeover during daemon restore bootstrap disables future auto-attach',
+    () async {
+      final disk = MemoryCiphertextBackend();
+      final keys = MemoryKeyBackend();
+      final connection = OmpdConnection(
+        endpoint: OmpdEndpoint.parse('relay.example:7420'),
+        instance: 'synthetic-worker',
+        sessionId: 'synthetic-session-identity',
+        sessionFile: '/synthetic/worker.jsonl',
+        trustedNetwork: true,
+      ).encode();
+      const writable = HarnessSnapshot(
+        phase: ConnectionPhase.live,
+        title: 'Daemon conversation',
+        sessionId: 'synthetic-session-identity',
+        readOnly: false,
+      );
+      final seed = _controller(disk, keys, [
+        FakeClient(connectedSnapshot: writable),
+      ]);
+      await seed.initialize();
+      final chat = await seed.join(connection);
+      seed.updateDraft(chat.id, 'bootstrap draft');
+      await seed.flush();
+      seed.dispose();
+
+      final gate = Completer<void>();
+      final client = FakeControlLossClient(
+        connectedSnapshot: writable,
+        gate: gate,
+        connectError: const HarnessException(
+          'Control changed during bootstrap.',
+        ),
+      );
+      final restoring = _controller(disk, keys, [client]);
+      await restoring.initialize();
+      client.controlLost = true;
+      client.emit(
+        const HarnessSnapshot(
+          phase: ConnectionPhase.syncing,
+          sessionId: 'synthetic-session-identity',
+          readOnly: true,
+        ),
+      );
+      gate.complete();
+      await _settle();
+      await restoring.flush();
+      expect(restoring.chat(chat.id)!.snapshot.phase, ConnectionPhase.error);
+      expect((await _store(disk, keys).load()).single.reconnect, isFalse);
+      restoring.dispose();
+
+      final nextClient = FakeClient(connectedSnapshot: writable);
+      final nextLaunch = _controller(disk, keys, [nextClient]);
+      await nextLaunch.initialize();
+      await _settle();
+      expect(nextClient.connectCalls, 0);
+      expect(nextLaunch.chat(chat.id)!.draft, 'bootstrap draft');
+      expect(
+        nextLaunch.chat(chat.id)!.snapshot.sessionId,
+        'synthetic-session-identity',
+      );
+      nextLaunch.dispose();
+    },
+  );
+
+  test(
+    'cancel pending join disposes only its client before late connect completes',
+    () async {
+      final disk = MemoryCiphertextBackend();
+      final keys = MemoryKeyBackend();
+      final existingClient = FakeClient(
+        connectedSnapshot: _snapshot(['existing']),
+      );
+      final gate = Completer<void>();
+      final pendingClient = FakeClient(
+        connectedSnapshot: _snapshot(['pending']),
+        gate: gate,
+      );
+      final controller = _controller(disk, keys, [
+        existingClient,
+        pendingClient,
+      ]);
+      await controller.initialize();
+      final existing = await controller.join('synthetic-collab-link');
+      final cancellation = ChatJoinCancellation();
+      final connection = OmpdConnection(
+        endpoint: OmpdEndpoint.parse('relay.example:7420'),
+        instance: 'worker',
+        sessionId: 'session-one',
+        sessionFile: '/synthetic/worker.jsonl',
+        trustedNetwork: true,
+      ).encode();
+      final joining = controller.join(connection, cancellation: cancellation);
+      final failed = expectLater(joining, throwsA(isA<HarnessException>()));
+      await _settle();
+      expect(pendingClient.connectCalls, 1);
+      cancellation.cancel();
+      expect(pendingClient.disposed, isTrue);
+      expect(existingClient.disposed, isFalse);
+      expect(controller.chats.single.id, existing.id);
+      gate.complete();
+      await failed;
+      await controller.flush();
+      expect((await _store(disk, keys).load()).single.id, existing.id);
+      expect(pendingClient.abortCalls, 0);
+      controller.dispose();
+    },
+  );
+
+  test(
+    'cancel join during encrypted save removes only that pending saved record',
+    () async {
+      final disk = MemoryCiphertextBackend();
+      final keys = MemoryKeyBackend();
+      final existingClient = FakeClient(
+        connectedSnapshot: _snapshot(['existing']),
+      );
+      final pendingClient = FakeClient(
+        connectedSnapshot: _snapshot(['pending']),
+      );
+      final controller = _controller(disk, keys, [
+        existingClient,
+        pendingClient,
+      ]);
+      await controller.initialize();
+      final existing = await controller.join('synthetic-collab-link');
+      final cancellation = ChatJoinCancellation();
+      final writeGate = Completer<void>();
+      final writeEntered = Completer<void>();
+      disk.pendingWrite = writeGate;
+      disk.writeEntered = writeEntered;
+      final connection = OmpdConnection(
+        endpoint: OmpdEndpoint.parse('relay.example:7420'),
+        instance: 'worker',
+        sessionId: 'session-one',
+        sessionFile: '/synthetic/worker.jsonl',
+        trustedNetwork: true,
+      ).encode();
+      final joining = controller.join(connection, cancellation: cancellation);
+      final failed = expectLater(joining, throwsA(isA<HarnessException>()));
+      await writeEntered.future;
+      cancellation.cancel();
+      expect(controller.chats.single.id, existing.id);
+      expect(pendingClient.disposed, isTrue);
+      expect(existingClient.disposed, isFalse);
+      disk.pendingWrite = null;
+      writeGate.complete();
+      await failed;
+      await controller.flush();
+      expect((await _store(disk, keys).load()).single.id, existing.id);
+      expect(pendingClient.abortCalls, 0);
+      controller.dispose();
+    },
+  );
+
   group('CompanionController persistence', () {
     test(
       'restores draft and cache before background reconnect completes',
@@ -1026,6 +1363,17 @@ Future<void> _settle() async {
   await Future<void>.delayed(Duration.zero);
 }
 
+class FakeControlLossClient extends FakeClient implements OmpdControlStatus {
+  FakeControlLossClient({
+    required super.connectedSnapshot,
+    super.gate,
+    super.connectError,
+  });
+
+  @override
+  bool controlLost = false;
+}
+
 class FakeClient implements HarnessClient {
   FakeClient({
     required this.connectedSnapshot,
@@ -1047,6 +1395,7 @@ class FakeClient implements HarnessClient {
   int abortCalls = 0;
   bool disposed = false;
   final List<String> sentPrompts = [];
+  final List<String> connectedInputs = [];
 
   @override
   HarnessSnapshot get snapshot => _snapshot;
@@ -1062,8 +1411,10 @@ class FakeClient implements HarnessClient {
   @override
   Future<void> connect(String input, {String displayName = 'raiju'}) async {
     connectCalls++;
+    connectedInputs.add(input);
     _snapshot = HarnessSnapshot(
       phase: ConnectionPhase.connecting,
+      sessionId: connectedSnapshot.sessionId,
       title: connectedSnapshot.title,
       endpoint: connectedSnapshot.endpoint,
       readOnly: true,

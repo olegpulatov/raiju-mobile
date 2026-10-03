@@ -19,11 +19,17 @@ abstract final class VoiceDirective {
       if (entries[i]['type'] == 'compaction') boundary = i + 1;
     }
     for (final entry in entries.skip(boundary)) {
-      if (entry['type'] != 'custom_message' ||
-          entry['customType'] != 'collab-prompt') {
-        continue;
-      }
-      if (_containsMarker(entry['content'])) {
+      final message = entry['message'];
+      final content =
+          entry['type'] == 'custom_message' &&
+              entry['customType'] == 'collab-prompt'
+          ? entry['content']
+          : entry['type'] == 'message' &&
+                message is Map &&
+                message['role'] == 'user'
+          ? message['content']
+          : null;
+      if (_containsMarker(content)) {
         return true;
       }
     }

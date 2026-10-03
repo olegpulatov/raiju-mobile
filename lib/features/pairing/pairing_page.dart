@@ -8,6 +8,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../companion_controller.dart';
 import '../../shared/theme/theme.dart';
 import '../../shared/widgets/buzz_loading_indicator.dart';
 import '../../shared/widgets/ios_glass_navigation_button.dart';
@@ -15,6 +16,7 @@ import '../../shared/widgets/tappable_flapping_bee.dart';
 import '../channels/channel_detail_page.dart';
 import '../channels/channels_provider.dart';
 import 'pairing_provider.dart';
+import 'ompd_pairing_page.dart';
 import 'pairing_qr_scanner.dart';
 
 part 'pairing_page/onboarding_background.dart';
@@ -159,6 +161,20 @@ class PairingPage extends HookConsumerWidget {
                 final input = codeController.text;
                 codeController.clear();
                 unawaited(handleScannerResult(input));
+              },
+              onDaemonRelay: () async {
+                final chat = await Navigator.of(context).push<ChatThread>(
+                  MaterialPageRoute<ChatThread>(
+                    builder: (_) => const OmpdPairingPage(),
+                  ),
+                );
+                if (chat == null || !context.mounted) return;
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute<void>(
+                    builder: (_) =>
+                        ChannelDetailPage(channel: channelFromChatThread(chat)),
+                  ),
+                );
               },
             ),
           ),

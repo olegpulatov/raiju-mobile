@@ -1047,10 +1047,7 @@ class SparkController extends ChangeNotifier {
         }
         if ((type == 'message_start' || type == 'message_end') &&
             message is Map) {
-          final isCollab =
-              message['role'] == 'custom' &&
-              message['customType'] == 'collab-prompt';
-          if (isCollab && sparkSourceProse(message['content']) == sent) {
+          if (sparkPromptSource(message) == sent) {
             if (!handoff.consumed) handoff.consumed = true;
           }
           if (type == 'message_end' &&
@@ -1083,9 +1080,7 @@ class SparkController extends ChangeNotifier {
           final matches = <int>[];
           for (var i = 0; i < runMessages.length; i++) {
             final input = runMessages[i];
-            if (input['role'] == 'custom' &&
-                input['customType'] == 'collab-prompt' &&
-                sparkSourceProse(input['content']) == sent) {
+            if (sparkPromptSource(input) == sent) {
               matches.add(i);
             }
           }
@@ -1106,11 +1101,7 @@ class SparkController extends ChangeNotifier {
                     !candidate.finished &&
                     candidate.sentText != null &&
                     runMessages.any(
-                      (input) =>
-                          input['role'] == 'custom' &&
-                          input['customType'] == 'collab-prompt' &&
-                          sparkSourceProse(input['content']) ==
-                              candidate.sentText,
+                      (input) => sparkPromptSource(input) == candidate.sentText,
                     ),
               )
               .toList();
@@ -1167,40 +1158,27 @@ class SparkController extends ChangeNotifier {
         if (record.sequence <= typed.eventFloor) return false;
         if (record.type == 'message_start' || record.type == 'message_end') {
           final message = record.event['message'];
-          return message is Map &&
-              message['role'] == 'custom' &&
-              message['customType'] == 'collab-prompt' &&
-              VoiceDirective.strip(sparkSourceProse(message['content'])) ==
-                  typed.prepared;
+          final source = message is Map ? sparkPromptSource(message) : null;
+          return source != null &&
+              VoiceDirective.strip(source) == typed.prepared;
         }
         if (record.type != 'agent_end') return false;
         final runMessages = record.event['messages'];
         return runMessages is List &&
-            runMessages
-                    .whereType<Map>()
-                    .where(
-                      (message) =>
-                          message['role'] == 'custom' &&
-                          message['customType'] == 'collab-prompt' &&
-                          VoiceDirective.strip(
-                                sparkSourceProse(message['content']),
-                              ) ==
-                              typed.prepared,
-                    )
-                    .length ==
+            runMessages.whereType<Map>().where((message) {
+                  final source = sparkPromptSource(message);
+                  return source != null &&
+                      VoiceDirective.strip(source) == typed.prepared;
+                }).length ==
                 1;
       });
-      final echoes = observation.snapshot.rawEntries
-          .where(
-            (entry) =>
-                entry['type'] == 'custom_message' &&
-                entry['customType'] == 'collab-prompt' &&
-                entry['id'] is String &&
-                !typed.priorIds.contains(entry['id']) &&
-                VoiceDirective.strip(sparkSourceProse(entry['content'])) ==
-                    typed.prepared,
-          )
-          .toList();
+      final echoes = observation.snapshot.rawEntries.where((entry) {
+        final source = sparkEntryPromptSource(entry);
+        return entry['id'] is String &&
+            !typed.priorIds.contains(entry['id']) &&
+            source != null &&
+            VoiceDirective.strip(source) == typed.prepared;
+      }).toList();
       if (consumed && echoes.length == 1 && !typed.persisting) {
         typed.persisting = true;
         unawaited(
@@ -1256,13 +1234,10 @@ class SparkController extends ChangeNotifier {
       );
       if (latestInput < 0) continue; // No positive external input provenance.
       final input = messages[latestInput];
-      final customSource =
-          input['role'] == 'custom' && input['customType'] == 'collab-prompt'
-          ? sparkSourceProse(input['content'])
-          : null;
-      final packageText = customSource == null
+      final promptSource = sparkPromptSource(input);
+      final packageText = promptSource == null
           ? null
-          : VoiceDirective.strip(customSource);
+          : VoiceDirective.strip(promptSource);
       // A socket failure can leave sentText unknown, and restart loses the
       // in-memory handoff. The encrypted uncertain reservation still fences
       // this exact package without claiming an unrelated later user input.
@@ -1285,21 +1260,19 @@ class SparkController extends ChangeNotifier {
           )
           .map((turn) => turn.hostEntryId)
           .toSet();
-      if (customSource != null && ownEchoIds.isNotEmpty) {
+      if (promptSource != null && ownEchoIds.isNotEmpty) {
         final freshEcho = observation.snapshot.rawEntries.any(
           (entry) =>
-              entry['type'] == 'custom_message' &&
-              entry['customType'] == 'collab-prompt' &&
               entry['id'] is String &&
               !ownEchoIds.contains(entry['id']) &&
-              sparkSourceProse(entry['content']) == customSource,
+              sparkEntryPromptSource(entry) == promptSource,
         );
         final completed = _delegations.values
             .where(
               (item) =>
                   item.finished &&
                   item.echoSaved &&
-                  item.sentText == customSource,
+                  item.sentText == promptSource,
             )
             .toList();
         final floor = completed.isEmpty
@@ -1321,9 +1294,7 @@ class SparkController extends ChangeNotifier {
             (message) => _delegations.values.any(
               (handoff) =>
                   handoff.sentText != null &&
-                  message['role'] == 'custom' &&
-                  message['customType'] == 'collab-prompt' &&
-                  sparkSourceProse(message['content']) == handoff.sentText &&
+                  sparkPromptSource(message) == handoff.sentText &&
                   (!handoff.finished ||
                       !handoff.echoSaved ||
                       handoff.terminalSequence == record.sequence),
@@ -1338,7 +1309,7 @@ class SparkController extends ChangeNotifier {
                 (!handoff.finished ||
                     !handoff.echoSaved ||
                     handoff.terminalSequence == record.sequence) &&
-                customSource == handoff.sentText,
+                promptSource == handoff.sentText,
           )) {
         continue;
       }
@@ -1352,15 +1323,13 @@ class SparkController extends ChangeNotifier {
         // A later ordinary user input is positively separate from our custom
         // prompt. A custom input needs its own observed raw host entry.
         if (input['role'] != 'user' &&
-            (customSource == null ||
+            (promptSource == null ||
                 !observation.snapshot.rawEntries.any(
                   (entry) =>
-                      entry['type'] == 'custom_message' &&
-                      entry['customType'] == 'collab-prompt' &&
-                      sparkSourceProse(entry['content']) == customSource &&
+                      sparkEntryPromptSource(entry) == promptSource &&
                       !_delegations.values.any(
                         (item) =>
-                            item.sentText == customSource &&
+                            item.sentText == promptSource &&
                             (!item.finished || !item.echoSaved),
                       ),
                 ))) {
@@ -1431,11 +1400,9 @@ class SparkController extends ChangeNotifier {
     final matches = entries
         .where(
           (entry) =>
-              entry['type'] == 'custom_message' &&
-              entry['customType'] == 'collab-prompt' &&
               entry['id'] is String &&
               !priorIds.contains(entry['id']) &&
-              sparkSourceProse(entry['content']) == text,
+              sparkEntryPromptSource(entry) == text,
         )
         .toList();
     return matches.length == 1 ? matches.single['id'] as String : null;
