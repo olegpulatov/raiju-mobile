@@ -1,0 +1,24 @@
+{
+  "reason": "2026-10-03 owner-authorized replacement of active Buzz logos only: startup, connect, shared loading and pull-to-refresh. Canonical source contours come from Raiju workspace brand/sources/ears-body.png and ears-bolt.png; generated masks retain separate bolt and rounded ears. Other GUI/assets and immutable upstream archive remain preserved. Native launch uses OS theme before Flutter can load saved app appearance.",
+  "blobHashes": {
+    "lib/shared/widgets/flapping_bee.dart": "d64c7e08f99f3ff6bfa8943b19803cb9219cadbc",
+    "lib/shared/widgets/tappable_flapping_bee.dart": "44500c8b7306a4338abefedd6391c8ac3cba20de",
+    "lib/shared/widgets/bee_refresh_indicator.dart": "9fd2d44203a36f97d27464ac3a0941b31a67a7ad",
+    "lib/shared/widgets/buzz_loading_indicator.dart": "c7d2ca9d58a0fdee620528be44d6b48dd0a4d12d",
+    "assets/images/raiju-mark.png": "8ced2e5339f57fdaf26af9df7b5c9a83043d5358",
+    "ios/Runner/Base.lproj/LaunchScreen.storyboard": "caf023c56617ebda53ad0e928dfe6ec206ec3772",
+    "ios/Runner/Assets.xcassets/LaunchImage.imageset/Contents.json": "f6e80b0cd0b2042eccc32477365efb87a209ce41",
+    "ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage.png": "3bd71e284ca752edfb74d45f19162adb279233cc",
+    "ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@2x.png": "97cd7e3278506ebfc3d88eb7cb1a4ae5207631de",
+    "ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@3x.png": "a5aa96d0749516adac272945d89c731e49fe4494",
+    "android/app/src/main/res/mipmap-mdpi/launch_image.png": "91c3d1f1aff3683be42273d4ab7ed565002e667c",
+    "android/app/src/main/res/mipmap-hdpi/launch_image.png": "1b1f82d299cf2495d91758c54f13ea7b23abb635",
+    "android/app/src/main/res/mipmap-xhdpi/launch_image.png": "f7f633f4b2328d657684ee9c8bdfe230a0db2837",
+    "android/app/src/main/res/mipmap-xxhdpi/launch_image.png": "3e4fdd8689dab7ba7ffa2d51a06f2687ab03b14d",
+    "android/app/src/main/res/mipmap-xxxhdpi/launch_image.png": "8637088c24487a63f9339766d23324955c8bc1e0",
+    "android/app/src/main/res/drawable/launch_background.xml": "2f4439bfe2ca3ded2bfafd1688677efc93215ea3",
+    "android/app/src/main/res/drawable-v21/launch_background.xml": "2f4439bfe2ca3ded2bfafd1688677efc93215ea3",
+    "android/app/src/main/res/values/styles.xml": "75d87c520fb14e4d64e68993e37381f8f1ef4b84",
+    "android/app/src/main/res/values-night/styles.xml": "a8e7fbc5582895c964b46fb42792a5992823a33c"
+  }
+}

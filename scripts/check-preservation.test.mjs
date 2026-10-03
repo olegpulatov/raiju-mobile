@@ -14,7 +14,7 @@ import {
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { assertBaselineComplete, blobHash, inspect, isVisual, isFrozen, loadBaseline } from './check-preservation.mjs';
+import { assertBaselineComplete, blobHash, inspect, isVisual, isFrozen, loadBaseline, reviewedBrandingAdapters } from './check-preservation.mjs';
 
 const widget = 'lib/shared/widgets/frosted_app_bar.dart';
 const screen = 'lib/features/channels/channel_detail_page.dart';
@@ -221,6 +221,10 @@ test('standalone CLI runs through a symlink instead of silently skipping checks'
       new URL('../upstream/buzz-mobile.tar.gz', import.meta.url),
       join(component, 'upstream', 'buzz-mobile.tar.gz'),
     );
+    copyFileSync(
+      new URL('../upstream/branding-adaptations.json', import.meta.url),
+      join(component, 'upstream', 'branding-adaptations.json'),
+    );
     const alias = join(root, 'mobile-alias');
     symlinkSync(component, alias, 'dir');
     const result = spawnSync(
@@ -250,6 +254,49 @@ test('baseline coverage rejects empty, partial, and narrowed frozen entry sets',
     : item);
   assert.throws(
     () => assertBaselineComplete(narrowed),
-    /expected 301 GUI files \(85 frozen\), got 301 \(84 frozen\)/,
+    /expected 315 GUI files \(99 frozen, including native launch branding\), got 315 \(98 frozen\)/,
   );
+});
+
+test('branding approval covers only explicitly authorized marks and launch surfaces', () => {
+  assert.equal(reviewedBrandingAdapters.size, 19);
+  for (const path of reviewedBrandingAdapters.keys()) {
+    assert.equal(isVisual(path), true, path);
+    assert.equal(isFrozen(path), true, path);
+    const result = inspect([entry(path)], () => Buffer.from('unreviewed branding'));
+    assert.match(result.errors[0], /changed frozen GUI/, path);
+    const missing = inspect([entry(path)], () => { throw new Error('missing'); });
+    assert.match(missing.errors[0], /removed original GUI/, path);
+  }
+});
+
+test('branding approval never thaws neighboring widgets or archived Buzz asset', () => {
+  for (const path of [
+    widget,
+    'assets/images/buzz-icon.png',
+    'lib/shared/widgets/frosted_scaffold.dart',
+    'lib/features/pairing/pairing_qr_scanner.dart',
+  ]) {
+    assert.equal(reviewedBrandingAdapters.has(path), false);
+    assert.equal(isFrozen(path), true);
+    assert.match(
+      inspect([entry(path)], () => Buffer.from('replacement')).errors[0],
+      /changed frozen GUI/,
+    );
+  }
+});
+
+test('reviewed branding binaries bind notices to canonical source layers', () => {
+  const sourceHashes = {
+    'ears-body.png': 'd853529e5fb42ea129f40807da38b3d0c2da545d0b70b8c193f89f9a14503931',
+    'ears-bolt.png': 'a8142fa1f1d7ec00ad115b5116874821b2d3d57f63aa1b3a2e8a0edf8fa6fbe3',
+  };
+  for (const path of reviewedBrandingAdapters.keys()) {
+    if (!path.endsWith('.png')) continue;
+    const bytes = readFileSync(new URL(`../${path}`, import.meta.url));
+    const notice = JSON.parse(readFileSync(new URL(`../${path}.notice.json`, import.meta.url), 'utf8'));
+    assert.deepEqual(notice.sourceSha256, sourceHashes, path);
+    assert.equal(notice.sha256, createHash('sha256').update(bytes).digest('hex'), path);
+    assert.match(notice.notice, /MODIFIED FOR RAIJU/);
+  }
 });

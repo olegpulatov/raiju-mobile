@@ -1,3 +1,4 @@
+// Modified for Raiju: theme-colored ears mark with retained tap animation.
 import 'dart:math' show cos, pi;
 
 import 'package:flutter/material.dart';
@@ -6,15 +7,14 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'flapping_bee.dart';
 
-/// The Buzz mark with wings that flutter twice when the user taps it.
+/// The Raiju mark gently pulses twice when the user taps it.
 ///
-/// The geometry and wing tuck match the desktop loading bee. When reduced
-/// motion is enabled, the mark stays static.
+/// The retained animation controller remains still when reduced motion is on.
 class TappableFlappingBee extends HookConsumerWidget {
-  /// The rendered width of the complete bee mark.
+  /// The rendered width of the complete mark.
   final double width;
 
-  /// The color used for the bee silhouette.
+  /// The color used for the mark.
   final Color color;
 
   const TappableFlappingBee({
@@ -37,8 +37,8 @@ class TappableFlappingBee extends HookConsumerWidget {
 
     return Semantics(
       button: true,
-      label: 'Buzz bee',
-      hint: 'Tap to make its wings flutter',
+      label: 'Raiju mark',
+      hint: 'Tap to animate the mark',
       onTap: flutterWings,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,

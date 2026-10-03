@@ -1,0 +1,11 @@
+{
+  "notice": "MODIFIED FOR RAIJU: owner-authorized replacement of active Buzz branding with canonical Raiju ears and separate bolt. Original Buzz artwork remains in immutable upstream archive.",
+  "author": "Raiju contributors; AI-generated shape source via OpenAI Codex",
+  "license": "Apache-2.0 for Raiju modifications, to extent copyright applies; AI imagery may have limited copyright protection",
+  "source": "brand/sources/ears-body.png and ears-bolt.png; original provenance in Raiju workspace brand/README.md",
+  "sourceSha256": {
+    "ears-body.png": "d853529e5fb42ea129f40807da38b3d0c2da545d0b70b8c193f89f9a14503931",
+    "ears-bolt.png": "a8142fa1f1d7ec00ad115b5116874821b2d3d57f63aa1b3a2e8a0edf8fa6fbe3"
+  },
+  "sha256": "e379bcfa7376fe938749e4916c31e6d6cc48371b92676a0757caa022cac271e3"
+}

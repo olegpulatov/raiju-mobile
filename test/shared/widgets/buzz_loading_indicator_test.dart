@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:raiju_mobile/shared/theme/theme.dart';
 import 'package:raiju_mobile/shared/widgets/buzz_loading_indicator.dart';
+import 'package:raiju_mobile/shared/widgets/raiju_logo.dart';
 
 Widget _testable({required bool disableAnimations}) {
   return ProviderScope(
@@ -21,7 +22,7 @@ Widget _testable({required bool disableAnimations}) {
 }
 
 void main() {
-  testWidgets('animates the shared arc spinner', (tester) async {
+  testWidgets('animates the shared Raiju loading mark', (tester) async {
     final semantics = tester.ensureSemantics();
 
     await tester.pumpWidget(_testable(disableAnimations: false));
@@ -31,6 +32,10 @@ void main() {
       find.byKey(const ValueKey('buzz-loading-indicator-spinner')),
     );
     expect(spinner.turns.value, greaterThan(0));
+    expect(find.byType(RaijuLogo), findsOneWidget);
+    final image = tester.widget<Image>(find.byType(Image));
+    expect((image.image as AssetImage).assetName, RaijuLogo.asset);
+    expect(image.colorBlendMode, BlendMode.srcIn);
     expect(find.bySemanticsLabel('Loading photos'), findsOneWidget);
     semantics.dispose();
   });

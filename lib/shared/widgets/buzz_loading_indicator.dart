@@ -1,23 +1,24 @@
-import 'dart:math' show pi;
+// Modified for Raiju: shared themed ears mark replaces the inherited arc spinner.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../theme/theme.dart';
+import 'raiju_logo.dart';
 
-/// The shared mobile loading indicator, matching the desktop arc spinner.
+/// The shared mobile loading indicator with the canonical Raiju mark.
 class BuzzLoadingIndicator extends HookConsumerWidget {
-  /// The spinner diameter.
+  /// The mark diameter.
   final double size;
 
-  /// An optional spinner color. Defaults to the active accent color.
+  /// An optional mark color. Defaults to the active accent color.
   final Color? color;
 
   /// The accessibility announcement for this loading state.
   final String semanticLabel;
 
-  /// Creates a looping arc loading indicator.
+  /// Creates a looping Raiju loading indicator.
   const BuzzLoadingIndicator({
     this.size = 40,
     this.color,
@@ -44,7 +45,6 @@ class BuzzLoadingIndicator extends HookConsumerWidget {
     }, [animation, reducedMotion]);
 
     final spinnerColor = color ?? context.colors.primary;
-    final strokeWidth = (size / 6).clamp(2.0, 4.0);
 
     return Semantics(
       liveRegion: true,
@@ -53,46 +53,9 @@ class BuzzLoadingIndicator extends HookConsumerWidget {
         child: RotationTransition(
           key: const ValueKey('buzz-loading-indicator-spinner'),
           turns: animation,
-          child: CustomPaint(
-            size: Size.square(size),
-            painter: _ArcSpinnerPainter(
-              color: spinnerColor,
-              strokeWidth: strokeWidth,
-            ),
-          ),
+          child: RaijuLogo(width: size, color: spinnerColor),
         ),
       ),
     );
-  }
-}
-
-class _ArcSpinnerPainter extends CustomPainter {
-  final Color color;
-  final double strokeWidth;
-
-  const _ArcSpinnerPainter({required this.color, required this.strokeWidth});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = size.center(Offset.zero);
-    final radius = (size.shortestSide - strokeWidth) / 2;
-    final bounds = Rect.fromCircle(center: center, radius: radius);
-    final trackPaint = Paint()
-      ..color = color.withValues(alpha: color.a * 0.1)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth;
-    final arcPaint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth;
-
-    canvas
-      ..drawCircle(center, radius, trackPaint)
-      ..drawArc(bounds, -pi / 2, pi / 2, false, arcPaint);
-  }
-
-  @override
-  bool shouldRepaint(_ArcSpinnerPainter oldDelegate) {
-    return color != oldDelegate.color || strokeWidth != oldDelegate.strokeWidth;
   }
 }

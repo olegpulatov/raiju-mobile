@@ -1,27 +1,24 @@
 import 'dart:async';
-import 'dart:ui' as ui;
 
 import 'package:raiju_mobile/shared/widgets/bee_refresh_indicator.dart';
 import 'package:raiju_mobile/shared/widgets/flapping_bee.dart';
+import 'package:raiju_mobile/shared/widgets/raiju_logo.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../helpers/widget_helpers.dart';
 
 void main() {
-  testWidgets('full eye progress fills each eye cutout to its edge', (
+  testWidgets('retained animated mark uses canonical Raiju artwork', (
     tester,
   ) async {
-    const beeKey = ValueKey('full-eye-bee');
     await tester.pumpWidget(
       const MaterialApp(
         home: Center(
           child: FlappingBee(
-            key: beeKey,
-            width: 466,
-            color: Colors.black,
+            width: 60,
+            color: Colors.green,
             flapAmount: 0,
             eyeProgress: 1,
           ),
@@ -29,29 +26,16 @@ void main() {
       ),
     );
 
-    final boundary = tester.renderObject<RenderRepaintBoundary>(
-      find.descendant(
-        of: find.byKey(beeKey),
-        matching: find.byType(RepaintBoundary),
-      ),
-    );
-    final bytes = await tester.runAsync(() async {
-      final image = await boundary.toImage();
-      final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
-      image.dispose();
-      return data;
-    });
-    expect(bytes, isNotNull);
-
-    int alphaAt(int x, int y) => bytes!.getUint8(((y * 466) + x) * 4 + 3);
-
-    // These points sit inside the 27px eye cutouts but outside the old 20px
-    // pupil radius, directly covering the light rings seen behind the emoji.
-    expect(alphaAt(217, 84), 255);
-    expect(alphaAt(300, 84), 255);
+    final logo = tester.widget<RaijuLogo>(find.byType(RaijuLogo));
+    final image = tester.widget<Image>(find.byType(Image));
+    expect(logo.width, 60);
+    expect(logo.color, Colors.green);
+    expect((image.image as AssetImage).assetName, RaijuLogo.asset);
+    expect(image.colorBlendMode, BlendMode.srcIn);
+    expect(tester.getSize(find.byType(FlappingBee)), const Size.square(60));
   });
 
-  testWidgets('shows the bee while pulling to refresh', (tester) async {
+  testWidgets('shows Raiju while pulling to refresh', (tester) async {
     const contentKey = ValueKey('loading-content');
     var refreshes = 0;
     final refreshCompleter = Completer<void>();
@@ -88,6 +72,7 @@ void main() {
       find.byKey(const ValueKey('bee-refresh-retained-gap')),
     );
     expect(beeFinder, findsOneWidget);
+    expect(find.byType(RaijuLogo), findsOneWidget);
     expect(refreshes, 1);
     expect(gapTransform.transform.getTranslation().y, closeTo(72, 1));
     expect(loadingTop - restingTop, closeTo(72, 1));

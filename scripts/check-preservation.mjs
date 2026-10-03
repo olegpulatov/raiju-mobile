@@ -27,6 +27,15 @@ const reviewedNativeAdapters = new Map([
   ['ios/Runner/NativeAttachmentPopoverCoordinator.swift', '3d8c5510c3598c12f371107a00623681dce64139'],
   ['ios/Runner/NativeAttachmentPopoverMenu.swift', '165228e59c51dc0cf3cf0a8b1f1e4b5d5e29c5c5'],
 ]);
+// Owner-authorized branding edits are frozen to exact reviewed bytes, not a
+// shared-widget exemption. This also extends coverage to native launch assets.
+export const reviewedBrandingAdapters = new Map(Object.entries(
+  JSON.parse(readFileSync(join(componentRoot, 'upstream', 'branding-adaptations.json'), 'utf8')).blobHashes,
+));
+const reviewedVisualAdapters = new Map([
+  ...reviewedNativeAdapters,
+  ...reviewedBrandingAdapters,
+]);
 // These checkpoint files are orphaned Buzz backend parts, not visual sources.
 // Their full source remains recoverable from the immutable checkpoint archive.
 const retiredBackendParts = new Set([
@@ -46,6 +55,7 @@ const sharedVisualFiles = new Set([
 
 export function isVisual(path) {
   if (retiredBackendParts.has(path)) return false;
+  if (reviewedBrandingAdapters.has(path)) return true;
   return path.startsWith('assets/') ||
     path.startsWith('lib/shared/widgets/') ||
     path.startsWith('lib/shared/theme/') ||
@@ -58,6 +68,7 @@ export function isVisual(path) {
 }
 
 export function isFrozen(path) {
+  if (reviewedBrandingAdapters.has(path)) return true;
   return path.startsWith('assets/') ||
     path.startsWith('lib/shared/widgets/') ||
     (path.startsWith('lib/shared/theme/') &&
@@ -70,7 +81,7 @@ export function blobHash(bytes, algorithm = 'sha1') {
   return createHash(algorithm).update(`blob ${bytes.length}\0`).update(bytes).digest('hex');
 }
 
-export function inspect(entries, read, algorithm = 'sha1', reviewedAdapters = reviewedNativeAdapters) {
+export function inspect(entries, read, algorithm = 'sha1', reviewedAdapters = reviewedVisualAdapters) {
   const errors = [];
   const changed = [];
   let preserved = 0;
@@ -163,9 +174,9 @@ export function assertBaselineComplete(entries) {
   // These counts belong to the immutable snapshot and reviewed GUI policy.
   const visual = entries.filter(({ path }) => isVisual(path));
   const frozen = visual.filter(({ path }) => isFrozen(path));
-  if (visual.length !== 301 || frozen.length !== 85) {
+  if (visual.length !== 315 || frozen.length !== 99) {
     throw new Error(
-      `incomplete Buzz baseline: expected 301 GUI files (85 frozen), got ${visual.length} (${frozen.length} frozen)`,
+      `incomplete Buzz baseline: expected 315 GUI files (99 frozen, including native launch branding), got ${visual.length} (${frozen.length} frozen)`,
     );
   }
 }
@@ -174,9 +185,16 @@ export function main() {
   const entries = loadBaseline();
   assertBaselineComplete(entries);
   const result = inspect(entries, (path) => readFileSync(join(componentRoot, path)));
+  // New shared mark is not present in Buzz's archive, but still requires its
+  // reviewed bytes. Original assets remain retained and checked separately.
+  const baselinePaths = new Set(entries.map(({ path }) => path));
+  const additions = [...reviewedBrandingAdapters]
+    .filter(([path]) => !baselinePaths.has(path))
+    .map(([path, hash]) => ({ path, hash }));
+  result.errors.push(...inspect(additions, (path) => readFileSync(join(componentRoot, path))).errors);
   for (const error of result.errors) console.error(error);
   console.log(`preservation: ${result.preserved} original GUI files retained; ${result.frozen} frozen files checked`);
-  console.log(`${result.reviewed} frozen native files use exact reviewed effect-adapter hashes; remaining frozen files match baseline`);
+  console.log(`${result.reviewed} frozen files use exact reviewed native-effect or branding hashes; remaining frozen files match baseline`);
   console.log(`${result.changed.length} adapted GUI files require source-diff and screenshot review`);
   if (result.errors.length) {
     console.error('do not regenerate a baseline to hide a redesign; resolve changes against ADR-001');
