@@ -26,13 +26,17 @@ import '../../shared/widgets/frosted_app_bar.dart';
 import '../../shared/widgets/frosted_scaffold.dart';
 import '../../shared/widgets/modal_presentation.dart';
 import '../../shared/widgets/skeleton.dart';
+import '../../shared/widgets/raiju_logo.dart';
 import '../../shared/custom_emoji/custom_emoji.dart';
 import '../../shared/custom_emoji/custom_emoji_provider.dart';
 import '../../shared/custom_emoji/custom_emoji_render.dart';
 import '../profile/profile_avatar.dart';
 import '../../harness/harness.dart';
+import '../../companion_controller.dart' show ChatThread;
 import '../../raiju/companion_provider.dart';
+import '../../raiju/connection_status_provider.dart';
 import '../pairing/pairing_page.dart';
+import '../pairing/ompd_pairing_page.dart';
 import '../pairing/pairing_provider.dart';
 import 'channel.dart';
 import 'channel_actions_sheet.dart';
@@ -55,7 +59,7 @@ part 'channels_page/community.dart';
 part 'channels_page/quick_actions.dart';
 part 'channels_page/quick_actions_launcher.dart';
 
-enum _QuickAction { createChannel, newDm, browseChannels }
+enum _QuickAction { attachCollab, addRemoteSession, browseRelay }
 
 const double _kChannelSectionInset = Grid.gutter;
 const double _kChannelLeadingWidth = 22.0;
@@ -96,7 +100,6 @@ const Curve _kSectionCollapseCurve = Curves.easeInCubic;
 const double _kSectionCollapsedScaleY = 0.98;
 const double _kHeaderFrostScrollDistance = Grid.xxl;
 const double _kHeaderFrostMaxBlurSigma = 23.12;
-
 
 class ChannelsPage extends HookConsumerWidget {
   const ChannelsPage({

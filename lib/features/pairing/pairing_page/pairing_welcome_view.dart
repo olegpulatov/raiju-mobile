@@ -54,14 +54,14 @@ class _PairingWelcomeView extends StatelessWidget {
                     shape: BoxShape.circle,
                     color: Color(0x4DFFFFFF),
                   ),
-                  child: const TappableFlappingBee(
+                  child: TappableFlappingBee(
                     width: 76,
-                    color: _onboardingInk,
+                    color: context.colors.primary,
                   ),
                 ),
                 const SizedBox(height: Grid.sm),
                 Text(
-                  'Connect to OMP',
+                  'Attach to collab',
                   textAlign: TextAlign.center,
                   style: context.textTheme.headlineSmall?.copyWith(
                     color: _onboardingInk,
@@ -71,7 +71,7 @@ class _PairingWelcomeView extends StatelessWidget {
                 ),
                 const SizedBox(height: Grid.xxs),
                 Text(
-                  'Scan an OMP collaboration QR code or paste the full join link or token.',
+                  'In oh-my-pi, enter /collab and scan the QR token. Or paste the full join link or token.',
                   textAlign: TextAlign.center,
                   style: context.textTheme.bodyMedium?.copyWith(
                     color: _onboardingMutedInk,
@@ -98,7 +98,7 @@ class _PairingWelcomeView extends StatelessWidget {
                                     semanticLabel: 'Opening scanner',
                                   ),
                                 )
-                              : const Text('Scan OMP QR code'),
+                              : const Text('Scan collab QR token'),
                         ),
                         const SizedBox(height: Grid.xxs),
                         TextButton(
@@ -141,7 +141,7 @@ class _PairingWelcomeView extends StatelessWidget {
                                         fillColor: Colors.white.withValues(
                                           alpha: 0.7,
                                         ),
-                                        hintText: 'OMP join link or token',
+                                        hintText: 'omp join link or token',
                                         hintStyle: context.textTheme.bodyMedium
                                             ?.copyWith(
                                               color: _onboardingMutedInk,
@@ -213,7 +213,7 @@ class _PairingWelcomeView extends StatelessWidget {
                           key: const ValueKey('ompd-entry'),
                           style: _onboardingSecondaryButtonStyle,
                           onPressed: isBusy ? null : onDaemonRelay,
-                          child: const Text('Daemon relay'),
+                          child: const Text('Browse relay'),
                         ),
                         if (errorMessage != null) ...[
                           const SizedBox(height: Grid.twelve),

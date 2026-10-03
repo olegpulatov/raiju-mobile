@@ -1,9 +1,11 @@
-import 'dart:async';
+// MODIFIED FOR RAIJU: search saved collab and relay chats locally, without
+// querying the retained Buzz relay or user directory.
 
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import '../../shared/relay/relay.dart';
+import '../../harness/harness.dart';
+import '../../raiju/companion_provider.dart';
 import '../channels/channel.dart';
 import '../channels/channel_management_provider.dart';
 import '../channels/channels_provider.dart';
@@ -19,6 +21,7 @@ class SearchHit {
   final int createdAt;
   final double score;
   final List<List<String>> tags;
+  final bool isLocal;
 
   const SearchHit({
     required this.eventId,
@@ -30,6 +33,7 @@ class SearchHit {
     required this.createdAt,
     required this.score,
     this.tags = const [],
+    this.isLocal = false,
   });
 
   factory SearchHit.fromJson(Map<String, dynamic> json) => SearchHit(
@@ -93,122 +97,79 @@ class SearchState {
 }
 
 class SearchNotifier extends Notifier<SearchState> {
-  Timer? _debounce;
-
   @override
   SearchState build() {
-    // Watch relayConfig so search state resets on community switch.
-    ref.watch(relayConfigProvider);
-    ref.onDispose(() {
-      _debounce?.cancel();
-    });
+    ref.listen(channelsProvider, (_, _) => _refreshResults());
+    ref.listen(companionControllerProvider, (_, _) => _refreshResults());
     return const SearchState.initial();
   }
 
   void search(String query) {
-    _debounce?.cancel();
-
     final trimmed = query.trim();
     if (trimmed.isEmpty) {
-      state = const SearchState.initial();
+      clear();
       return;
     }
-
-    state = SearchState(query: trimmed, isLoading: true);
-
-    _debounce = Timer(const Duration(milliseconds: 300), () {
-      _executeSearch(trimmed);
-    });
+    _searchLocal(trimmed);
   }
 
-  Future<void> _executeSearch(String query) async {
-    // If the query changed while debouncing, bail out.
-    if (state.query != query) return;
-
-    // Fire all three lookups in parallel.
-    _searchMessages(query);
-    _searchUsers(query);
-    _searchChannels(query);
+  void _refreshResults() {
+    if (state.query.isNotEmpty) _searchLocal(state.query);
   }
 
-  Future<void> _searchMessages(String query) async {
-    try {
-      final session = ref.read(relaySessionProvider.notifier);
-      final events = await session.fetchHistory(
-        NostrFilter(
-          kinds: const [9, 40002, 45001, 45003],
-          search: query,
-          limit: 20,
-        ),
-      );
-
-      // Channel-name lookup from the cached channels list — not all hits
-      // will have a known channel (e.g. ones we're not a member of).
-      final channelsById = {
-        for (final c in ref.read(channelsProvider).value ?? const <Channel>[])
-          c.id: c.name,
-      };
-
-      final hits = events
-          .map(
-            (e) => SearchHit(
-              eventId: e.id,
-              content: e.content,
-              kind: e.kind,
-              pubkey: e.pubkey,
-              channelId: e.channelId,
-              channelName: e.channelId != null
-                  ? channelsById[e.channelId!]
-                  : null,
-              createdAt: e.createdAt,
-              score: 0.0,
-              tags: e.tags,
-            ),
-          )
-          .toList();
-
-      if (state.query != query) return;
-      state = state.copyWith(messageResults: hits, isLoading: false);
-    } catch (e) {
-      if (state.query != query) return;
-      state = state.copyWith(isLoading: false, error: e.toString());
-    }
-  }
-
-  Future<void> _searchUsers(String query) async {
-    try {
-      final users = await ref
-          .read(channelActionsProvider)
-          .searchUsers(query, limit: 8);
-
-      if (state.query != query) return;
-      state = state.copyWith(
-        userResults: users,
-        isLoading: state.messageResults.isEmpty && state.channelResults.isEmpty,
-      );
-    } catch (_) {
-      // User search failure is non-critical — keep existing results.
-    }
-  }
-
-  void _searchChannels(String query) {
-    final channels = ref.read(channelsProvider).value ?? [];
+  void _searchLocal(String query) {
     final lowerQuery = query.toLowerCase();
-    final matches = channels.where((c) {
-      if (c.isDm) return false;
-      return c.name.toLowerCase().contains(lowerQuery) ||
-          c.description.toLowerCase().contains(lowerQuery);
-    }).toList();
-
-    if (state.query != query) return;
-    state = state.copyWith(
+    final controller = ref.read(companionControllerProvider);
+    final chats = controller.chats;
+    final channels =
+        ref.read(channelsProvider).asData?.value ??
+        chats.map(channelFromChatThread).toList(growable: false);
+    final channelById = {for (final channel in channels) channel.id: channel};
+    final matches = channels
+        .where((channel) {
+          return channel.name.toLowerCase().contains(lowerQuery) ||
+              channel.description.toLowerCase().contains(lowerQuery);
+        })
+        .toList(growable: false);
+    final hits = <SearchHit>[];
+    for (final chat in chats) {
+      final channel = channelById[chat.id];
+      if (channel == null) continue;
+      for (final message in chat.snapshot.messages) {
+        if (message.role != MessageRole.user &&
+            message.role != MessageRole.assistant) {
+          continue;
+        }
+        final content = message.prose ?? message.text;
+        if (!content.toLowerCase().contains(lowerQuery)) continue;
+        hits.add(
+          SearchHit(
+            eventId: '${chat.id}:${message.id}',
+            content: content,
+            kind: 9,
+            pubkey:
+                message.author ??
+                (message.role == MessageRole.user ? 'You' : 'oh-my-pi'),
+            channelId: chat.id,
+            channelName: channel.name,
+            createdAt:
+                (message.timestamp ?? chat.createdAt).millisecondsSinceEpoch ~/
+                1000,
+            score: 0,
+            isLocal: true,
+          ),
+        );
+      }
+    }
+    hits.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    state = SearchState(
+      query: query,
       channelResults: matches,
-      isLoading: state.messageResults.isEmpty && state.userResults.isEmpty,
+      messageResults: hits,
     );
   }
 
   void clear() {
-    _debounce?.cancel();
     state = const SearchState.initial();
   }
 }

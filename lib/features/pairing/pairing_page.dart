@@ -130,7 +130,7 @@ class PairingPage extends HookConsumerWidget {
                     onPressed: () => Navigator.of(context).pop(),
                   ),
             title: Text(
-              'Connect OMP Chat',
+              'Attach to collab',
               style: context.textTheme.titleMedium?.copyWith(
                 color: _onboardingInk,
               ),

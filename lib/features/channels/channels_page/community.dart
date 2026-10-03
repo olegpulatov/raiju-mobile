@@ -425,18 +425,36 @@ Future<void> _confirmRemoveCommunity(
   }
 }
 
-class _CommunityIndicator extends StatelessWidget {
+class _CommunityIndicator extends ConsumerWidget {
   const _CommunityIndicator();
 
   @override
-  Widget build(BuildContext context) {
-    return CircleAvatar(
-      radius: _kTopSectionCommunityAvatarSize / 2,
-      backgroundColor: context.colors.primaryContainer,
-      child: Icon(
-        LucideIcons.zap,
-        size: _kChannelIconSize,
-        color: context.colors.onPrimaryContainer,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final online = ref.watch(connectionOnlineProvider);
+    return Semantics(
+      label: online ? 'Online' : 'Offline',
+      child: Stack(
+        children: [
+          CircleAvatar(
+            radius: _kTopSectionCommunityAvatarSize / 2,
+            backgroundColor: context.colors.primaryContainer,
+            child: RaijuLogo(width: 26, color: context.colors.primary),
+          ),
+          Positioned(
+            right: 0,
+            bottom: 0,
+            child: Container(
+              key: const Key('home-connection-status'),
+              width: 10,
+              height: 10,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: online ? context.colors.primary : context.colors.outline,
+                border: Border.all(color: context.colors.surface, width: 1.5),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

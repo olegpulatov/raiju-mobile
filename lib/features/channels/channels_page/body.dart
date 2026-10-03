@@ -152,6 +152,10 @@ class _SliverChannelsList extends HookConsumerWidget {
       visibleChannels.where((channel) => channel.isDm),
       currentPubkey: currentPubkey,
     );
+    final collabChannels = sortChannelsForList(
+      visibleChannels.where((channel) => !channel.isDm).toList(),
+      ChannelSortMode.recent,
+    );
     final dmsExpanded = useState(true);
     final channelsExpanded = useState(true);
     final sortMode = useState(ChannelSortMode.recent);
@@ -170,21 +174,20 @@ class _SliverChannelsList extends HookConsumerWidget {
             _EmptyState(onConnect: onConnect)
           else ...[
             _ChannelSection(
-              title: 'Channels',
+              title: 'Collabs',
               icon: LucideIcons.hash,
               showTopDivider: false,
               expanded: channelsExpanded.value,
-              onToggle: () =>
-                  channelsExpanded.value = !channelsExpanded.value,
-              channels: const [],
+              onToggle: () => channelsExpanded.value = !channelsExpanded.value,
+              channels: collabChannels,
               unreadChannelIds: const {},
               mutedChannelIds: const {},
               currentPubkey: currentPubkey,
-              emptyLabel: 'OMP sessions appear in Direct messages',
+              emptyLabel: 'No collabs yet',
               onSelectChannel: onSelectChannel,
             ),
             _ChannelSection(
-              title: 'DMs',
+              title: 'Remote sessions',
               icon: LucideIcons.messagesSquare,
               showTopDivider: true,
               expanded: dmsExpanded.value,
@@ -193,7 +196,7 @@ class _SliverChannelsList extends HookConsumerWidget {
               unreadChannelIds: const {},
               mutedChannelIds: const {},
               currentPubkey: currentPubkey,
-              emptyLabel: 'No companion chats yet',
+              emptyLabel: 'No remote sessions yet',
               sortMode: sortMode.value,
               onSortModeChange: (value) => sortMode.value = value,
               onSelectChannel: onSelectChannel,

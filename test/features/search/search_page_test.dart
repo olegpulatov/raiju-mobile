@@ -510,7 +510,7 @@ void main() {
     expect(
       find.descendant(
         of: find.byKey(const Key('search-empty-state')),
-        matching: find.text('Search messages, channels, and people'),
+        matching: find.text('Search collabs, remote sessions, and messages'),
       ),
       findsOneWidget,
     );
@@ -728,7 +728,7 @@ void main() {
       expect(title.style?.fontWeight, contentListTitleTextStyle.fontWeight);
       expect(title.style?.height, contentListTitleTextStyle.height);
     }
-    for (final label in ['channels', 'people', 'messages']) {
+    for (final label in ['chats', 'people', 'messages']) {
       final sectionLabel = tester.widget<Text>(
         find.byKey(ValueKey('search-section-$label')),
       );
@@ -755,7 +755,7 @@ void main() {
       );
     }
     for (final alignment in [
-      ('channels', 'search-channel-leading-design'),
+      ('chats', 'search-channel-leading-design'),
       ('people', 'search-person-leading-maya'),
       ('messages', 'search-message-avatar-message-1'),
     ]) {

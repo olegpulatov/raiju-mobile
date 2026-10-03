@@ -1,5 +1,5 @@
-// MODIFIED FOR RAIJU: preserves Buzz's morphing launcher; its primary action
-// connects OMP, while retained Buzz-only actions explain their inactive state.
+// MODIFIED FOR RAIJU: preserves the morphing launcher while routing to real
+// collaboration and optional relay flows.
 part of '../channels_page.dart';
 
 const _kQuickActionsTabMotionDuration = Duration(milliseconds: 220);
@@ -85,16 +85,25 @@ class ChannelQuickActionsLauncher extends HookConsumerWidget {
       if (!context.mounted) return;
 
       switch (action) {
-        case _QuickAction.createChannel:
+        case _QuickAction.attachCollab:
           await openPairing();
           return;
-        case _QuickAction.newDm:
-        case _QuickAction.browseChannels:
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Buzz channel discovery is unavailable for OMP companion chats.',
+        case _QuickAction.addRemoteSession:
+        case _QuickAction.browseRelay:
+          final chat = await Navigator.of(context).push<ChatThread>(
+            MaterialPageRoute<ChatThread>(
+              builder: (_) => OmpdPairingPage(
+                initialView: action == _QuickAction.addRemoteSession
+                    ? OmpdPairingView.start
+                    : OmpdPairingView.browse,
               ),
+            ),
+          );
+          if (chat == null || !context.mounted) return;
+          await Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) =>
+                  ChannelDetailPage(channel: channelFromChatThread(chat)),
             ),
           );
           return;

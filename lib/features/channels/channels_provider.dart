@@ -14,7 +14,7 @@ import 'unread_badge/observed_unread_event.dart';
 const localChannelParticipantId = 'local';
 const assistantChannelParticipantId = 'assistant';
 
-/// Maps one persisted OMP session into the original private-DM presentation.
+/// Maps one persisted session into its collab or remote-session presentation.
 Channel channelFromChatThread(ChatThread thread) {
   final messages = thread.snapshot.messages;
   final lastTimestamp = messages
@@ -25,17 +25,17 @@ Channel channelFromChatThread(ChatThread thread) {
         return latest;
       });
   final title = thread.title.trim().isEmpty
-      ? 'OMP session'
+      ? 'omp session'
       : thread.title.trim();
 
   return Channel(
     id: thread.id,
     name: title,
-    channelType: 'dm',
+    channelType: thread.isDaemon ? 'dm' : 'stream',
     visibility: 'private',
     description: thread.snapshot.model.trim().isEmpty
-        ? 'Connected OMP companion session'
-        : 'OMP companion · ${thread.snapshot.model.trim()}',
+        ? (thread.isDaemon ? 'Remote session' : 'Collab session')
+        : 'oh-my-pi · ${thread.snapshot.model.trim()}',
     createdBy: localChannelParticipantId,
     createdAt: thread.createdAt,
     memberCount: 2,

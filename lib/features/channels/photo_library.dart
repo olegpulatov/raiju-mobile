@@ -1,3 +1,4 @@
+// MODIFIED FOR RAIJU: disabled photo access uses product-neutral copy.
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -39,7 +40,7 @@ class PhotoLibraryAccessException implements Exception {
   const PhotoLibraryAccessException();
 
   @override
-  String toString() => 'Photo access is turned off for Buzz.';
+  String toString() => 'Unavailable yet';
 }
 
 /// Provides the device photo library. Tests can override this with fixtures.

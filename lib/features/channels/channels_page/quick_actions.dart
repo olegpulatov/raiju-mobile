@@ -1,5 +1,5 @@
-// MODIFIED FOR RAIJU: the preserved Buzz quick-action card now exposes OMP
-// connection as its primary action; unsupported cards remain visible.
+// MODIFIED FOR RAIJU: the preserved quick-action card exposes collaboration
+// and optional relay actions at the same level.
 part of '../channels_page.dart';
 
 const _kMorphOpenDuration = Duration(milliseconds: 280);
@@ -265,23 +265,23 @@ class _QuickActionsMenu extends StatelessWidget {
         children: [
           _QuickActionItem(
             icon: LucideIcons.scanQrCode,
-            title: 'Connect OMP session',
-            key: const Key('quick-action-create-channel-card'),
-            onTap: () => onSelected(_QuickAction.createChannel),
+            title: 'Attach to collab',
+            key: const Key('quick-action-attach-collab-card'),
+            onTap: () => onSelected(_QuickAction.attachCollab),
           ),
           const SizedBox(height: Grid.xxs),
           _QuickActionItem(
             icon: LucideIcons.messagesSquare,
-            title: 'New direct message',
-            key: const Key('quick-action-new-dm-card'),
-            onTap: () => onSelected(_QuickAction.newDm),
+            title: 'Add remote session',
+            key: const Key('quick-action-add-remote-session-card'),
+            onTap: () => onSelected(_QuickAction.addRemoteSession),
           ),
           const SizedBox(height: Grid.xxs),
           _QuickActionItem(
             icon: LucideIcons.compass,
-            title: 'Browse channels',
-            key: const Key('quick-action-browse-channels-card'),
-            onTap: () => onSelected(_QuickAction.browseChannels),
+            title: 'Browse relay',
+            key: const Key('quick-action-browse-relay-card'),
+            onTap: () => onSelected(_QuickAction.browseRelay),
           ),
         ],
       ),

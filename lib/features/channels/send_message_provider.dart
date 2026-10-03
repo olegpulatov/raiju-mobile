@@ -82,13 +82,17 @@ class SendMessage {
     final companionSend = _companionSend;
     if (companionSend != null) {
       if (parentEventId != null || rootEventId != null) {
-        throw UnsupportedError('Thread replies are not available in OMP chats.');
+        throw UnsupportedError(
+          'Thread replies are not available in OMP chats.',
+        );
       }
       if (mediaTags.isNotEmpty) {
-        throw UnsupportedError('Media attachments are not available in OMP chats.');
+        throw UnsupportedError(
+          'Media attachments are not available in OMP chats.',
+        );
       }
       if (mentionPubkeys?.isNotEmpty == true) {
-        throw UnsupportedError('Buzz mentions are not available in OMP chats.');
+        throw UnsupportedError('Unavailable yet');
       }
       await companionSend(channelId, content);
       return;

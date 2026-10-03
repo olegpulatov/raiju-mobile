@@ -493,7 +493,29 @@ class _EmptyState extends StatelessWidget {
               key: const Key('connect-omp-session'),
               onPressed: onConnect,
               icon: const Icon(LucideIcons.scanQrCode),
-              label: const Text('Connect OMP session'),
+              label: const Text('Attach to collab'),
+            ),
+            const SizedBox(height: Grid.xxs),
+            TextButton.icon(
+              key: const Key('add-remote-session'),
+              onPressed: () async {
+                final chat = await Navigator.of(context).push<ChatThread>(
+                  MaterialPageRoute<ChatThread>(
+                    builder: (_) => const OmpdPairingPage(
+                      initialView: OmpdPairingView.start,
+                    ),
+                  ),
+                );
+                if (chat == null || !context.mounted) return;
+                await Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) =>
+                        ChannelDetailPage(channel: channelFromChatThread(chat)),
+                  ),
+                );
+              },
+              icon: const Icon(LucideIcons.messagesSquare),
+              label: const Text('Add remote session'),
             ),
           ],
         ),

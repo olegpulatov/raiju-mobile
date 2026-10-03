@@ -1,3 +1,5 @@
+// MODIFIED FOR RAIJU: existing search widgets show local saved conversations
+// and cached messages; selecting a result opens the existing chat route.
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -21,13 +23,12 @@ import '../channels/small_avatar.dart';
 import '../channels/message_content.dart';
 import '../channels/date_formatters.dart';
 import '../forum/forum_thread_page.dart';
-import '../profile/profile_provider.dart';
 import '../../shared/profile/user_cache_provider.dart';
 import '../../shared/profile/user_profile.dart';
 import 'recent_searches_provider.dart';
 import 'search_provider.dart';
 
-enum _SearchFilter { all, messages, channels, people }
+enum _SearchFilter { all, messages, collabs, remoteSessions }
 
 const _searchFieldMinHeight = 36.0;
 const _searchIdleFieldHeight = 45.0;
@@ -105,10 +106,7 @@ class SearchPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final searchState = ref.watch(searchProvider);
-    final currentPubkey = ref
-        .watch(profileProvider)
-        .whenData((value) => value?.pubkey)
-        .value;
+    const currentPubkey = localChannelParticipantId;
     final activeFilter = useState(_SearchFilter.all);
     final textController = useTextEditingController();
     final focusNode = useFocusNode();
@@ -319,7 +317,7 @@ class SearchPage extends HookConsumerWidget {
                 child: BuzzSearchField(
                   controller: textController,
                   focusNode: focusNode,
-                  hintText: 'Search messages, channels, and people',
+                  hintText: 'Search collabs, remote sessions, and messages',
                   iconColor: searchPrimaryColor,
                   inputColor: searchPrimaryColor,
                   placeholderColor: searchPlaceholderColor,
@@ -462,7 +460,7 @@ class _SearchBody extends ConsumerWidget {
               ),
               const SizedBox(height: Grid.xs),
               Text(
-                'Search messages, channels, and people',
+                'Search collabs, remote sessions, and messages',
                 textAlign: TextAlign.center,
                 style: context.textTheme.bodyMedium?.copyWith(
                   color: context.colors.onSurfaceVariant,
@@ -474,17 +472,37 @@ class _SearchBody extends ConsumerWidget {
       );
     }
 
-    final showChannels =
-        filter == _SearchFilter.all || filter == _SearchFilter.channels;
-    final showPeople =
-        filter == _SearchFilter.all || filter == _SearchFilter.people;
-    final showMessages =
-        filter == _SearchFilter.all || filter == _SearchFilter.messages;
+    final showChannels = filter != _SearchFilter.messages;
+    final filteredChannels = state.channelResults
+        .where((channel) {
+          return switch (filter) {
+            _SearchFilter.collabs => !channel.isDm,
+            _SearchFilter.remoteSessions => channel.isDm,
+            _SearchFilter.all || _SearchFilter.messages => true,
+          };
+        })
+        .toList(growable: false);
+    final channelsById = {
+      for (final channel
+          in ref.watch(channelsProvider).asData?.value ?? const <Channel>[])
+        channel.id: channel,
+    };
+    final filteredMessages = state.messageResults
+        .where((hit) {
+          final channel = channelsById[hit.channelId];
+          return switch (filter) {
+            _SearchFilter.collabs => channel != null && !channel.isDm,
+            _SearchFilter.remoteSessions => channel?.isDm == true,
+            _SearchFilter.all || _SearchFilter.messages => true,
+          };
+        })
+        .toList(growable: false);
+    final showPeople = filter == _SearchFilter.all;
 
     final hasAnyResults =
-        state.channelResults.isNotEmpty ||
-        state.userResults.isNotEmpty ||
-        state.messageResults.isNotEmpty;
+        (showChannels && filteredChannels.isNotEmpty) ||
+        (showPeople && state.userResults.isNotEmpty) ||
+        filteredMessages.isNotEmpty;
     void recordResultSelection() =>
         ref.read(recentSearchesProvider.notifier).record(state.query);
 
@@ -496,7 +514,7 @@ class _SearchBody extends ConsumerWidget {
         ),
         child: Center(
           child: Text(
-            'Search is unavailable in Raiju.',
+            state.error!,
             style: context.textTheme.bodyMedium?.copyWith(
               color: context.colors.onSurfaceVariant,
             ),
@@ -531,9 +549,9 @@ class _SearchBody extends ConsumerWidget {
             MediaQuery.viewInsetsOf(context).bottom,
       ),
       children: [
-        if (showChannels && state.channelResults.isNotEmpty)
+        if (showChannels && filteredChannels.isNotEmpty)
           _ChannelsSection(
-            channels: state.channelResults,
+            channels: filteredChannels,
             onResultSelected: recordResultSelection,
           ),
         if (showPeople && state.userResults.isNotEmpty)
@@ -541,9 +559,9 @@ class _SearchBody extends ConsumerWidget {
             users: state.userResults,
             onResultSelected: recordResultSelection,
           ),
-        if (showMessages && state.messageResults.isNotEmpty)
+        if (filteredMessages.isNotEmpty)
           _MessagesSection(
-            hits: state.messageResults,
+            hits: filteredMessages,
             currentPubkey: currentPubkey,
             onResultSelected: recordResultSelection,
           ),
@@ -669,7 +687,7 @@ class _ChannelsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _SectionLabel(label: 'Channels'),
+        _SectionLabel(label: 'Chats'),
         for (final channel in channels)
           ListTile(
             key: ValueKey('search-channel-row-${channel.id}'),
@@ -686,7 +704,7 @@ class _ChannelsSection extends StatelessWidget {
             ),
             subtitle: channel.isMember
                 ? Text(
-                    '${channel.memberCount} member${channel.memberCount == 1 ? '' : 's'}',
+                    channel.isDm ? 'Remote session' : 'Collab',
                     style: contentListBodyTextStyle.copyWith(
                       color: context.colors.onSurfaceVariant,
                     ),
@@ -777,7 +795,7 @@ class _PeopleSection extends ConsumerWidget {
   }
 }
 
-class _MessagesSection extends HookConsumerWidget {
+class _MessagesSection extends ConsumerWidget {
   final List<SearchHit> hits;
   final String? currentPubkey;
   final VoidCallback onResultSelected;
@@ -787,6 +805,43 @@ class _MessagesSection extends HookConsumerWidget {
     required this.currentPubkey,
     required this.onResultSelected,
   });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (hits.every((hit) => hit.isLocal)) {
+      final channels = ref.watch(channelsProvider).asData?.value ?? [];
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _SectionLabel(label: 'Messages'),
+          for (final hit in hits)
+            _LocalMessageTile(
+              hit: hit,
+              channel: channels.where((c) => c.id == hit.channelId).firstOrNull,
+              onResultSelected: onResultSelected,
+            ),
+        ],
+      );
+    }
+    return _LegacyMessagesSection(
+      hits: hits,
+      currentPubkey: currentPubkey,
+      onResultSelected: onResultSelected,
+    );
+  }
+}
+
+// Retained original search-result renderer for the dormant upstream surface.
+class _LegacyMessagesSection extends HookConsumerWidget {
+  const _LegacyMessagesSection({
+    required this.hits,
+    required this.currentPubkey,
+    required this.onResultSelected,
+  });
+
+  final List<SearchHit> hits;
+  final String? currentPubkey;
+  final VoidCallback onResultSelected;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -818,6 +873,57 @@ class _MessagesSection extends HookConsumerWidget {
             onResultSelected: onResultSelected,
           ),
       ],
+    );
+  }
+}
+
+class _LocalMessageTile extends StatelessWidget {
+  const _LocalMessageTile({
+    required this.hit,
+    required this.channel,
+    required this.onResultSelected,
+  });
+
+  final SearchHit hit;
+  final Channel? channel;
+  final VoidCallback onResultSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      key: ValueKey('search-message-row-${hit.eventId}'),
+      contentPadding: const EdgeInsets.symmetric(horizontal: Grid.gutter),
+      leading: const Icon(LucideIcons.messageSquare),
+      title: Text(hit.pubkey, style: contentListTitleTextStyle),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '${channel?.isDm == true ? 'Remote session' : 'Collab'} · '
+            '${hit.channelName ?? ''}',
+            style: activityContextTextStyle.copyWith(
+              color: context.colors.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: Grid.half),
+          Text(
+            hit.content,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: activityPreviewTextStyle,
+          ),
+        ],
+      ),
+      onTap: channel == null
+          ? null
+          : () {
+              onResultSelected();
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => ChannelDetailPage(channel: channel!),
+                ),
+              );
+            },
     );
   }
 }
@@ -1010,7 +1116,7 @@ extension on _SearchFilter {
   String get label => switch (this) {
     _SearchFilter.all => 'All',
     _SearchFilter.messages => 'Messages',
-    _SearchFilter.channels => 'Channels',
-    _SearchFilter.people => 'People',
+    _SearchFilter.collabs => 'Collabs',
+    _SearchFilter.remoteSessions => 'Remote sessions',
   };
 }
