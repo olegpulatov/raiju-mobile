@@ -28,7 +28,7 @@ Saved connections, drafts, and bounded history cache are encrypted; key stays in
 
 Configure voice through Settings → Spark: protected broker configuration, voice, editable Iskra prompts, user name, and tool visibility. Voice stays bound to starting chat while navigating. Bound transcript includes recognized speech, Spark replies, typing, and remote replies; local voice turns are saved even before delegation. Spark delegates automatically; no manual proposal or reply-sharing workflow. No audio is saved.
 
-Starting live sends nothing remotely. Two-model directive goes with first real delegation/user message exposing live dialogue. Existing collab remains unchanged: host may display directive and does not supply explicit handoff/run IDs or idempotent ACKs. Mobile must retain uncertain dialogue rather than invent delivery/ownership. Details and concrete limitations: [Spark](docs/spark.md); executed evidence: `docs/verification.md`.
+Starting live sends nothing remotely. Two-model directive goes with first real delegation/user message exposing live dialogue. Existing collab remains unchanged: host may display directive and does not supply explicit handoff/run IDs or idempotent ACKs. Mobile must retain uncertain dialogue rather than invent delivery/ownership. Details: [Spark](docs/spark.md); checks and coverage limits: [verification](docs/verification.md).
 
 ## real-host verification
 
@@ -45,10 +45,10 @@ Live tooling obtains capability privately; iOS test receives it through a one-sh
 ## boundaries and decisions
 
 - OMP history and Spark session retain separate internal ownership while target UI presents one connected conversation. Retained unsupported Buzz controls still explain unavailability
-- Connected Spark behavior, broker security, prompts, automatic delegation, persistence, and existing-collab limitations: [Spark](docs/spark.md), ADR-014. User intent overrides earlier checkpoint mistakes; evidence remains in `docs/verification.md`
+- Connected Spark behavior, broker security, prompts, automatic delegation, persistence, and existing-collab limitations: [Spark](docs/spark.md), ADR-014
 - Full original source/asset/native UI baseline was committed as `ac84469` in Raiju history; immutable provenance and archive live under `upstream/` in this repository
 - Preservation checks read the bundled checksum-pinned snapshot, not parent Git history; reviewed native adapter pins remain exact
-- Unit/widget tests, simulator runs, real OMP interop, and physical iPhone behavior are separate evidence. See `docs/verification.md` for observed results and remaining limits
+- Unit/widget tests, simulator runs, real OMP interop, and physical iPhone behavior support separate claims. See [verification](docs/verification.md) for checks and coverage limits
 
 Project direction: `VISION.md` · invariants: `AGENTS.md` · ADRs: `docs/decisions.md` · operating process: `docs/development.md`
 
@@ -60,7 +60,7 @@ Buzz source is Apache-2.0; OMP protocol references are MIT. Attribution summary 
 - `test/`, `integration_test/`, `test_driver/`: contract tests and native acceptance
 - `justfile`, `scripts/`, `tool/`: mobile commands, SDK/preservation helpers, native/live tooling
 - `spark-core/`, `lib/spark/`: portable Rust voice transport/media and mobile voice session/settings/UI adapter
-- `docs/`, `VISION.md`, `AGENTS.md`: mobile decisions, workflow, evidence, scope, and component rules
+- `docs/`, `VISION.md`, `AGENTS.md`: mobile decisions, workflow, verification guide, scope, and component rules
 - `upstream/`, `licenses/`: immutable Buzz snapshot, provenance, original notes, and attribution
 - `.work/`: ignored development caches and synthetic evidence; Flutter build output stays in `build/`
 

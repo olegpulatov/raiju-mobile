@@ -30,7 +30,7 @@ Delegation is incremental, not a replay of everything Spark said. Keep useful di
 - Source Buzz relay/auth/push/Nostr behavior is not the product backend. Its inactive retained code is extraction debt, not a reason to call its services
 - Live voice is the main interaction need in the Spark slice. Keep provider, personality, memory/context, and UI boundaries separable so a future backend change does not require replacing the GUI
 - Terminal-on-phone is not current priority
-- Architecture decisions and acceptance evidence must survive agent sessions. Record decisions rather than repeatedly reopening them or starting again
+- Maintain current requirements and architecture decisions across agent sessions. Report acceptance results in completion summaries or commit messages rather than accumulating run histories in docs
 
 ## sequence
 

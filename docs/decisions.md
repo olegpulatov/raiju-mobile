@@ -7,7 +7,7 @@ Each accepted record states reason, rejected alternative, consequence, and reope
 Status: accepted, user-required
 
 - Working app starts as complete tracked `block/buzz/mobile` at `e10a3607b2d4026ae57d9f32b6f6133077d21c7d`
-- Baseline checkpoint: `ac84469`; byte-for-byte comparison against archive passed before modification
+- Baseline checkpoint: `ac84469`; immutable archive and provenance identify the original source
 - Retain actual Dart part libraries, assets, original tests, platform projects, native visual bridges, and Apache notices
 - Change data sources and startup paths in place. Unsupported actions retain their interface and explain unavailable behavior
 - Rejected: fresh Flutter scaffold, curated widget extraction, handcrafted lookalikes, or archive-only preservation. These shift polishing cost back to future agents and violate user priority
@@ -209,7 +209,6 @@ Status: accepted, explicit user correction on 2026-09-25; supersedes ADR-013's w
 - Prefer real host session names when existing collab data provides them. Otherwise show a stable connection timestamp using `YY-MM-DD HH (name)` rather than indistinguishable generic chat names
 - Surface live recognized words without creating a second saved transcript. Improve visual activity responsiveness when safe; do not apply speculative output gain that may clip or damage audio
 - Shared client-neutral routing contract belongs at `docs/message-routing.md` in repository root. Mobile owns its implementation; concurrent desktop work is not permission to edit or stage desktop files. OMP reference remains read-only, with differences/advice documented rather than patched
-- User reported background voice working on device; record as user evidence, not an agent-executed physical qualification
 
 User addendum, 2026-09-25: expose local chat deletion with confirmation in chat controls. Delete the device's saved connection, draft, and local transcript; do not delete remote OMP history or abort remote work. Stop local voice if bound to the deleted chat. Persist removal and surface save failures rather than presenting an unsuccessful deletion as complete.
 

@@ -4,34 +4,34 @@ These rules govern this repository. When checked out as Raiju's `mobile/` submod
 
 Read `VISION.md`, `docs/decisions.md`, and `docs/development.md` before nontrivial work.
 
-## current R&D correction — 2026-10-03
+## relay and interface requirements
 
-- Prioritize working real-relay flows, then logical menus. User accepts private-VPN risks; remove daemon trust gates/security warnings rather than adding security polish
-- Use already-running `/srv/dev/spikes/raiju-ompd` on port `7427`, launched with `raiju-profiles.toml`. Only use its `test` profile for new instances/model calls. Do not restart, reconfigure, or modify that server or interfere with parallel development
-- Verify reported attach/create identity failures against that real server, not only synthetic workers. Persist relay endpoint and last profile independently of chats
+- Prioritize working real-relay flows and logical menus. Private-VPN relay access is an accepted deployment assumption; do not add daemon trust gates
+- Use only a user-designated test relay/profile for integration checks. Do not restart, reconfigure, or modify the server or interfere with unrelated workers
+- Verify relay failures against the designated real server, not only synthetic workers. Persist endpoint and last profile independently of chats
 - Relay endpoint/port and integration profile are runtime configuration (CLI/env/direnv), not hardcoded development values. No relay checkout location is required to connect
-- Relay session identity must work with macOS and NixOS hosts, including arbitrary remote path aliases; never special-case `/private/tmp`
-- Active Raiju logos use canonical sources from `/srv/dev/spikes/raiju/brand`; preserve upstream attribution and inactive reference assets
-- User explicitly authorizes removing obsolete identity/invite/settings-chat controls, regrouping menus and chats, enabling local search, replacing active Buzz branding, defaulting Material/green appearance, and starting Spark folded
-- Commit separate features separately. These current instructions supersede conflicting historical preservation/security requirements below
+- Relay identity must work with macOS and NixOS hosts, including arbitrary remote path aliases; do not add platform-specific path rewriting
+- Active Raiju logos use canonical sources from the Raiju workspace's `brand/`; preserve upstream attribution and inactive reference assets
+- Approved GUI adaptations include removal of obsolete identity/invite/settings-chat controls, grouped menus/chats, local search, Raiju branding, Material/green fresh defaults, and folded Spark startup
+- Commit separate features separately. These requirements take precedence over conflicting original preservation rules below
 
 ## non-negotiable product constraints
 
 - Complete Buzz mobile copy is working base. Strip backend behavior in place; never scaffold or selectively recreate GUI
 - Preserve actual screens, controls, assets, animations, native iOS visual bridges, QR, appearance choices, and original UI tests. Unsupported actions may be disabled, not silently removed
 - No login gate. Persist mobile connections, drafts, and preferences across restart. iOS is primary acceptance platform
-- User corrections are requirements, not suggestions. Record them before continuing; stop conflicting work immediately
-- If reviewer/advisor identifies conflict with these invariants, resolve it before implementing further. Record evidence if rejecting a concern; ease of implementation is not justification for overriding user intent
+- Apply user corrections immediately and stop conflicting work. Update lasting requirements where needed, not a chronological conversation log
+- Resolve demonstrated review conflicts with these invariants before continuing; explain rejected concerns in the completion summary rather than appending a documentation log
 
-## connected Spark checkpoint
+## connected Spark requirements
 
 - Read `docs/spark.md` for voice work. ADR-013 supersedes ADR-012's disconnected conversation, mandatory handoff approval, and manual reply-sharing policy
-- User authorized implementation on 2026-09-24, then corrected scope: durable local voice transcripts and NO HOST CHANGES. These corrections supersede conflicting ADR-013/checkpoint clauses
+- Durable local voice transcripts and NO HOST CHANGES supersede conflicting ADR-013 clauses
 - User intent outranks generated docs and past decisions. Starting live sends nothing: attach two-model instructions to first real outgoing delegation/user message exposing live transcript, then deduplicate against relevant context. No new docs-review gate
 - Preserve focused Spark persona, Oleg addressing, delegation ownership, and natural retelling. No invented summary instructions
 - Bind voice to chat and connection where it starts. Navigation does not rebind or stop voice. Show typed user, recognized speech, Spark replies, and remote assistant prose with distinct originators in bound timeline
 - Keep local voice overlay separate from authoritative `CollabReplica`, but persist it in protected local storage. Voice turns, including undelegated dialogue, must survive app restart, same-session reconnect, navigation, and replica updates. Future local-only sessions must also be saveable; no local-only mode is added now
-- Delegation forwards incremental, selected context, not the entire saved transcript. Never replay already-dispatched user turns or Spark's backend retellings/after-delegation acknowledgements. Suppress exact request-versus-user overlap without deduplicating distinct repeated human turns. Preserve useful Spark conversation between selected user turns, not leading/trailing filler (2026-09-25 user correction)
+- Delegation forwards incremental, selected context, not the entire saved transcript. Never replay already-dispatched user turns or Spark's backend retellings/after-delegation acknowledgements. Suppress exact request-versus-user overlap without deduplicating distinct repeated human turns. Preserve useful Spark conversation between selected user turns, not leading/trailing filler
 - Spark receives user-facing prose only, never thinking, tools, generated tool descriptions, or internal prompts. Complete instructions consume startup budget before newest eligible history
 - Implement only inside this mobile repository, using existing OMP transport and supported interfaces. Do not add host capability negotiation, host directives API, run-correlation protocol, or any other host change
 - Inspect existing host interfaces read-only when needed; do not invent capabilities or silently replace missing semantics with unsafe heuristics. Record concrete transport limitations with mobile implementation evidence
@@ -62,7 +62,8 @@ Read `VISION.md`, `docs/decisions.md`, and `docs/development.md` before nontrivi
 - Run actual iOS simulator journey for user-facing changes: launch without login, connect, send, receive, restart/restore
 - Protocol changes require encrypted interoperability check; persistence changes require controller/store recreation check
 - Inspect screenshots; tests alone do not establish visual preservation. Do not automatically bless new goldens
-- Report exact checks and failures. Distinguish simulator, live host, and physical-device evidence
+- Report exact checks and failures in completion summaries or commit messages; keep generated logs under ignored `.work/`. Distinguish simulator, live host, and physical-device evidence
+- Keep docs focused on current behavior, repeatable instructions, architecture rationale, and coverage limits. `docs/verification.md` is a check guide, not a per-run diary
 - Leave maintained commands to run app, connect, and talk. Do not finish with only “done” or unexecuted instructions
 - Commit verified scoped changes and check git status. Preserve unrelated user work; never stage it merely to make status look clean
 - Do not expand into voice, gateway deployment, or other harnesses without a concrete scoped request

@@ -4,7 +4,7 @@
 
 Spark is Iskra with remote seams: voice runs on phone, coding agent runs on workstation, one connected conversation. Spark personality is a focused, direct collaborator. Preserve Oleg addressing, delegation behavior, and natural retelling. No invented summarization instructions.
 
-User authorized implementation on 2026-09-24 and corrected earlier documentation. User intent overrides those documents:
+Current requirements:
 
 - Implement inside this mobile repository only. NO HOST CODE CHANGES, new host capability negotiation, host component, or replacement transport
 - Use existing OMP collab connection, including sending two-model instructions. No host code changes does not mean no host messages
@@ -114,7 +114,7 @@ These are transport constraints to report to user, not authorization to change O
 
 ## integrated presentation
 
-Replace `proposeHandoff`, `sendHandoff`, `dismissHandoff`, `shareAgentReply`, proposal `_handoffEnvelope`/`pendingHandoff`, and `SparkHandoff`/`SparkHandoffStatus`. Pending automatic delivery tracking remains necessary; manual proposal/share UI does not.
+Automatic delivery tracks pending dialogue and uncertain sends; it has no manual handoff-proposal or reply-sharing workflow.
 
 Move useful transcript into original bound chat. Preserve voice strip, visualizer, minimized control, typed input, mute, and stop across navigation. Plain composer input in the active bound voice chat enters Spark as a saved typed user turn for the next delegation; it does not separately submit an immediate host prompt. Keep original Buzz chat composition/native visuals.
 
@@ -163,4 +163,4 @@ Opt-in `spark-broker-auth-probe`, `spark-live-provider-probe`, and `spark-ios-li
 
 Upstream Iskra reference: OMP `ed7c05c288b12e69f6986d8b379eb2c33f55e914`, `nexus/docs/iskra.md`, `packages/coding-agent/src/iskra/`, and `crates/pi-voice/src/live.rs`; Codex comparison `7498521d288b9b3b96ffba4eedf089d8d6e06a84`. Preserve MIT notices for copied OMP assets/code; add Apache notices if copying Codex rather than consulting. Current prompt source hashes belong in component provenance manifest.
 
-Exact static/mocked, simulator, encrypted host, live provider, and physical-device results/limitations belong in [verification](verification.md). Earlier manual-workflow evidence is historical and cannot prove connected behavior.
+[Verification](verification.md) describes repeatable checks and their coverage limits. Report individual run results in completion summaries or commit messages; keep generated logs under ignored `.work/`. Static/mocked, simulator, encrypted-host, live-provider, and physical-device checks support different claims.
