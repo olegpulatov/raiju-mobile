@@ -111,7 +111,7 @@ class PairingNotifier extends Notifier<PairingState> {
     try {
       if (OmpdConnection.isOmpd(rawInput)) {
         throw const HarnessException(
-          'Use Daemon relay to review network risks and grant consent. QR and paste accept collaboration links only.',
+          'Use Browse relay for remote sessions. QR and paste accept collaboration links only.',
         );
       }
       final chat = await ref.read(companionControllerProvider).join(rawInput);
@@ -147,9 +147,7 @@ class PairingNotifier extends Notifier<PairingState> {
 
   /// Buzz identity export is deliberately unavailable in Raiju.
   Future<bool> authorizeIdentityExport({required Community community}) async {
-    state = state.copyWith(
-      errorMessage: 'Buzz identity transfer is unavailable in Raiju.',
-    );
+    state = state.copyWith(errorMessage: 'Unavailable yet.');
     return false;
   }
 

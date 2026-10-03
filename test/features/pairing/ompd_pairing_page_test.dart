@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:raiju_mobile/companion_controller.dart';
 import 'package:raiju_mobile/features/pairing/ompd_pairing_page.dart';
 import 'package:raiju_mobile/features/pairing/pairing_page.dart';
@@ -11,11 +12,19 @@ import 'package:raiju_mobile/harness/harness.dart';
 import 'package:raiju_mobile/harness/ompd_api.dart';
 import 'package:raiju_mobile/harness/ompd_connection.dart';
 import 'package:raiju_mobile/raiju/companion_provider.dart';
+import 'package:raiju_mobile/raiju/ompd_relay_preferences.dart';
+import 'package:raiju_mobile/shared/theme/theme_provider.dart';
 import 'package:raiju_mobile/storage/chat_store.dart';
 
 void main() {
+  late SharedPreferences prefs;
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({});
+    prefs = await SharedPreferences.getInstance();
+  });
+
   test(
-    'QR and paste cannot supply daemon consent or create a client',
+    'QR and paste keep relay entry separate from collaboration pairing',
     () async {
       var controllerCreations = 0;
       final container = ProviderContainer(
@@ -41,7 +50,7 @@ void main() {
       expect(container.read(pairingProvider).status, PairingStatus.error);
       expect(
         container.read(pairingProvider).errorMessage,
-        contains('Use Daemon relay'),
+        contains('Use Browse relay'),
       );
     },
   );
@@ -62,6 +71,7 @@ void main() {
       ProviderScope(
         overrides: [
           companionControllerProvider.overrideWith((ref) => controller),
+          savedPrefsProvider.overrideWithValue(prefs),
           ompdApiProvider.overrideWithValue(api),
         ],
         child: const MaterialApp(home: PairingPage()),
@@ -85,22 +95,164 @@ void main() {
     expect(api.statusCalls, 0);
   });
 
-  testWidgets('no networking before consent; editing endpoint revokes it', (
+  testWidgets('last chat prefills relay without writing during page build', (
     tester,
   ) async {
     final api = _Api();
-    final client = _Client();
-    await _open(tester, api, client);
+    await _open(
+      tester,
+      api,
+      _Client(),
+      savedRelay: OmpdConnection(
+        endpoint: OmpdEndpoint.parse('legacy.example:8543'),
+        instance: 'worker',
+        sessionId: 'session-one',
+        sessionFile: '/synthetic/worker.jsonl',
+        trustedNetwork: true,
+      ).encode(),
+    );
+    expect(tester.takeException(), isNull);
+    expect(
+      _button<TextField>(tester, 'ompd-endpoint').controller!.text,
+      'legacy.example:8543',
+    );
+    expect(prefs.getStringList(ompdRelayPreferencesKey), isNull);
+    await _tap(tester, 'ompd-save');
+    expect(prefs.getStringList(ompdRelayPreferencesKey), [
+      'legacy.example:8543',
+      '',
+    ]);
     expect(api.statusCalls, 0);
     expect(api.startCalls, 0);
-    expect(_button<OutlinedButton>(tester, 'ompd-refresh').onPressed, isNull);
+  });
+
+  testWidgets('save confirms persistence without contacting the relay', (
+    tester,
+  ) async {
+    final api = _Api();
+    await _open(tester, api, _Client(), view: OmpdPairingView.start);
     await tester.enterText(
       find.byKey(const ValueKey('ompd-endpoint')),
-      'host.example:7420',
+      '  HOST.example:8543  ',
     );
-    await _tap(tester, 'ompd-consent');
+    await _show(tester, find.byKey(const ValueKey('ompd-profile')));
+    await tester.enterText(find.byKey(const ValueKey('ompd-profile')), 'test');
+    await _tap(tester, 'ompd-save');
+    expect(find.byKey(const ValueKey('ompd-saved')), findsOneWidget);
+    expect(prefs.getStringList(ompdRelayPreferencesKey), [
+      'host.example:8543',
+      'test',
+    ]);
+    expect(api.statusCalls, 0);
+    expect(api.startCalls, 0);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Open relay'));
+    await tester.pumpAndSettle();
+    expect(
+      _button<TextField>(tester, 'ompd-endpoint').controller!.text,
+      'host.example:8543',
+    );
+    await _show(tester, find.byKey(const ValueKey('ompd-profile')));
+    expect(_button<TextField>(tester, 'ompd-profile').controller!.text, 'test');
+  });
+
+  testWidgets('typed endpoint and profile survive failed join and recreation', (
+    tester,
+  ) async {
+    final api = _Api();
+    final client = _Client()
+      ..error = const HarnessException('Synthetic join failure.');
+    await _open(tester, api, client, view: OmpdPairingView.start);
+    await tester.enterText(
+      find.byKey(const ValueKey('ompd-endpoint')),
+      'other.example:8543',
+    );
+    await _show(tester, find.byKey(const ValueKey('ompd-profile')));
+    await tester.enterText(find.byKey(const ValueKey('ompd-profile')), 'test');
+    await _tap(tester, 'ompd-view-browse');
     await _tap(tester, 'ompd-refresh');
-    expect(api.statusCalls, 1);
+    await _tap(
+      tester,
+      'ompd-attach-worker',
+      completion: client.disposal.future,
+    );
+    expect(
+      OmpdConnection.parse(client.inputs.single).endpoint.toString(),
+      'other.example:8543',
+    );
+    await tester.pumpWidget(const SizedBox());
+    await prefs.reload();
+    await _open(tester, _Api(), _Client(), view: OmpdPairingView.start);
+    expect(
+      _button<TextField>(tester, 'ompd-endpoint').controller!.text,
+      'other.example:8543',
+    );
+    await _show(tester, find.byKey(const ValueKey('ompd-profile')));
+    expect(_button<TextField>(tester, 'ompd-profile').controller!.text, 'test');
+  });
+
+  testWidgets('unfinished edits return before any save or connection', (
+    tester,
+  ) async {
+    await _open(tester, _Api(), _Client(), view: OmpdPairingView.start);
+    await tester.enterText(
+      find.byKey(const ValueKey('ompd-endpoint')),
+      'unfinished:',
+    );
+    await _show(tester, find.byKey(const ValueKey('ompd-profile')));
+    await tester.enterText(
+      find.byKey(const ValueKey('ompd-profile')),
+      'last typed profile',
+    );
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Open relay'));
+    await tester.pumpAndSettle();
+    expect(
+      _button<TextField>(tester, 'ompd-endpoint').controller!.text,
+      'unfinished:',
+    );
+    await _show(tester, find.byKey(const ValueKey('ompd-profile')));
+    expect(
+      _button<TextField>(tester, 'ompd-profile').controller!.text,
+      'last typed profile',
+    );
+  });
+
+  testWidgets('save requires an explicit editable port', (tester) async {
+    final api = _Api();
+    await _open(tester, api, _Client());
+    await tester.enterText(
+      find.byKey(const ValueKey('ompd-endpoint')),
+      'host.example',
+    );
+    await _tap(tester, 'ompd-save');
+    await _show(tester, find.byKey(const ValueKey('ompd-error')));
+    expect(find.byKey(const ValueKey('ompd-saved')), findsNothing);
+    expect(api.statusCalls, 0);
+    expect(api.startCalls, 0);
+  });
+
+  testWidgets('relay actions need no consent and use edited endpoint', (
+    tester,
+  ) async {
+    final api = _Api();
+    await _open(tester, api, _Client());
+    expect(api.statusCalls, 0);
+    expect(api.startCalls, 0);
+    expect(find.byKey(const ValueKey('ompd-consent')), findsNothing);
+    expect(find.textContaining('no authentication'), findsNothing);
+    expect(
+      _button<OutlinedButton>(tester, 'ompd-refresh').onPressed,
+      isNotNull,
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('ompd-endpoint')),
+      'host.example:8550',
+    );
+    await _tap(tester, 'ompd-refresh');
+    expect(api.endpoints, ['host.example:8550']);
     await _show(
       tester,
       find.byKey(const ValueKey('ompd-endpoint')),
@@ -108,12 +260,12 @@ void main() {
     );
     await tester.enterText(
       find.byKey(const ValueKey('ompd-endpoint')),
-      'other.example:7420',
+      'other.example:8543',
     );
     await tester.pump();
-    await _show(tester, find.byKey(const ValueKey('ompd-refresh')));
-    expect(_button<OutlinedButton>(tester, 'ompd-refresh').onPressed, isNull);
-    expect(api.statusCalls, 1);
+    expect(find.byKey(const ValueKey('ompd-attach-worker')), findsNothing);
+    await _tap(tester, 'ompd-refresh');
+    expect(api.endpoints, ['host.example:8550', 'other.example:8543']);
   });
 
   testWidgets('attach uses bound session identity and never starts', (
@@ -123,7 +275,7 @@ void main() {
     final client = _Client();
     ChatThread? result;
     await _open(tester, api, client, onJoined: (chat) => result = chat);
-    await _consent(tester);
+    await _enterEndpoint(tester);
     await _tap(tester, 'ompd-refresh');
     await _show(
       tester,
@@ -148,7 +300,7 @@ void main() {
         OmpdInstance(name: 'worker', state: 'running', ready: true, rpc: true),
       ];
     await _open(tester, api, _Client());
-    await _consent(tester);
+    await _enterEndpoint(tester);
     await _tap(tester, 'ompd-refresh');
     expect(_button<TextButton>(tester, 'ompd-attach-worker').onPressed, isNull);
     expect(find.textContaining('session identity are ready'), findsOneWidget);
@@ -168,7 +320,7 @@ void main() {
           ),
         ];
       await _open(tester, api, _Client());
-      await _consent(tester);
+      await _enterEndpoint(tester);
       await _tap(tester, 'ompd-refresh');
       expect(
         _button<TextButton>(tester, 'ompd-attach-worker').onPressed,
@@ -182,8 +334,8 @@ void main() {
     (tester) async {
       final api = _Api()
         ..waitError = const HarnessException('Session did not become ready.');
-      await _open(tester, api, _Client());
-      await _consent(tester);
+      await _open(tester, api, _Client(), view: OmpdPairingView.start);
+      await _enterEndpoint(tester);
       await tester.ensureVisible(find.byKey(const ValueKey('ompd-name')));
       await tester.enterText(find.byKey(const ValueKey('ompd-name')), 'worker');
       await tester.ensureVisible(find.byKey(const ValueKey('ompd-profile')));
@@ -204,6 +356,7 @@ void main() {
       expect(_button<FilledButton>(tester, 'ompd-start').onPressed, isNull);
       await _show(tester, find.byKey(const ValueKey('ompd-error')));
       expect(find.textContaining('instance may still run'), findsOneWidget);
+      await _tap(tester, 'ompd-view-browse');
       await _tap(tester, 'ompd-refresh');
       expect(api.startCalls, 1);
       expect(find.byKey(const ValueKey('ompd-attach-worker')), findsOneWidget);
@@ -216,8 +369,14 @@ void main() {
       final api = _Api();
       final client = _Client();
       ChatThread? result;
-      await _open(tester, api, client, onJoined: (chat) => result = chat);
-      await _consent(tester);
+      await _open(
+        tester,
+        api,
+        client,
+        view: OmpdPairingView.start,
+        onJoined: (chat) => result = chat,
+      );
+      await _enterEndpoint(tester);
       await tester.ensureVisible(find.byKey(const ValueKey('ompd-name')));
       await tester.enterText(find.byKey(const ValueKey('ompd-name')), 'worker');
       await tester.ensureVisible(find.byKey(const ValueKey('ompd-cwd')));
@@ -238,8 +397,8 @@ void main() {
   ) async {
     final api = _Api()..readyGate = Completer<OmpdInstance>();
     final client = _Client();
-    await _open(tester, api, client);
-    await _consent(tester);
+    await _open(tester, api, client, view: OmpdPairingView.start);
+    await _enterEndpoint(tester);
     await tester.ensureVisible(find.byKey(const ValueKey('ompd-name')));
     await tester.enterText(find.byKey(const ValueKey('ompd-name')), 'worker');
     await tester.ensureVisible(find.byKey(const ValueKey('ompd-profile')));
@@ -267,7 +426,7 @@ void main() {
       final status = Completer<void>();
       final client = _Client()..statusGate = status;
       final controller = await _open(tester, api, client);
-      await _consent(tester);
+      await _enterEndpoint(tester);
       await _tap(tester, 'ompd-refresh');
       await tester.ensureVisible(
         find.byKey(const ValueKey('ompd-attach-worker')),
@@ -296,7 +455,7 @@ void main() {
     final client = _Client()
       ..error = const HarnessException('Conversation identity changed.');
     await _open(tester, api, client);
-    await _consent(tester);
+    await _enterEndpoint(tester);
     await _tap(tester, 'ompd-refresh');
     await _tap(
       tester,
@@ -345,7 +504,12 @@ Future<void> _tap(
   await _show(
     tester,
     find.byKey(ValueKey(key)),
-    scrollDelta: key == 'ompd-refresh' || key == 'ompd-consent' ? -300 : 300,
+    scrollDelta:
+        key == 'ompd-refresh' ||
+            key == 'ompd-save' ||
+            key.startsWith('ompd-view-')
+        ? -300
+        : 300,
   );
   await tester.tap(find.byKey(ValueKey(key)));
   if (completion != null) {
@@ -355,12 +519,12 @@ Future<void> _tap(
   await tester.pumpAndSettle();
 }
 
-Future<void> _consent(WidgetTester tester) async {
+Future<void> _enterEndpoint(WidgetTester tester) async {
   await tester.enterText(
     find.byKey(const ValueKey('ompd-endpoint')),
     'host.example:7420',
   );
-  await _tap(tester, 'ompd-consent');
+  await tester.pumpAndSettle();
 }
 
 Future<CompanionController> _open(
@@ -368,6 +532,8 @@ Future<CompanionController> _open(
   _Api api,
   _Client client, {
   void Function(ChatThread?)? onJoined,
+  OmpdPairingView view = OmpdPairingView.browse,
+  String? savedRelay,
 }) async {
   final controller = CompanionController(
     clientFactory: () => client,
@@ -375,10 +541,13 @@ Future<CompanionController> _open(
   );
   await controller.initialize();
   addTearDown(controller.dispose);
+  if (savedRelay != null) await controller.join(savedRelay);
+  final prefs = await SharedPreferences.getInstance();
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         companionControllerProvider.overrideWith((ref) => controller),
+        savedPrefsProvider.overrideWithValue(prefs),
         ompdApiProvider.overrideWithValue(api),
       ],
       child: MaterialApp(
@@ -388,7 +557,7 @@ Future<CompanionController> _open(
               onPressed: () async {
                 final chat = await Navigator.of(context).push<ChatThread>(
                   MaterialPageRoute<ChatThread>(
-                    builder: (_) => const OmpdPairingPage(),
+                    builder: (_) => OmpdPairingPage(initialView: view),
                   ),
                 );
                 onJoined?.call(chat);
@@ -410,6 +579,7 @@ class _Api extends OmpdApi {
   int startCalls = 0;
   int waitCalls = 0;
   final calls = <String>[];
+  final endpoints = <String>[];
   String? startedSession;
   String? startedProfile;
   HarnessException? waitError;
@@ -428,6 +598,7 @@ class _Api extends OmpdApi {
   @override
   Future<List<OmpdInstance>> status(OmpdEndpoint endpoint) async {
     statusCalls++;
+    endpoints.add(endpoint.toString());
     return instances;
   }
 

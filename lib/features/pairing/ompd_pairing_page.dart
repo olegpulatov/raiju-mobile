@@ -6,13 +6,18 @@ import '../../harness/harness.dart';
 import '../../harness/ompd_api.dart';
 import '../../harness/ompd_connection.dart';
 import '../../raiju/companion_provider.dart';
+import '../../raiju/ompd_relay_preferences.dart';
 import '../../shared/theme/theme.dart';
 
 final ompdApiProvider = Provider<OmpdApi>((ref) => const OmpdApi());
 
-/// Optional raw TCP relay. Consent belongs to this endpoint, not the app.
+enum OmpdPairingView { browse, start }
+
+/// Optional relay with independently saved connection and start preferences.
 class OmpdPairingPage extends ConsumerStatefulWidget {
-  const OmpdPairingPage({super.key});
+  const OmpdPairingPage({super.key, this.initialView = OmpdPairingView.browse});
+
+  final OmpdPairingView initialView;
 
   @override
   ConsumerState<OmpdPairingPage> createState() => _OmpdPairingPageState();
@@ -21,11 +26,12 @@ class OmpdPairingPage extends ConsumerStatefulWidget {
 class _OmpdPairingPageState extends ConsumerState<OmpdPairingPage> {
   late final TextEditingController _endpoint;
   final _name = TextEditingController();
-  final _profile = TextEditingController();
+  late final TextEditingController _profile;
   final _cwd = TextEditingController();
   final _session = TextEditingController();
   List<OmpdInstance> _instances = const [];
-  bool _trusted = false;
+  late OmpdPairingView _view;
+  bool _saved = false;
   bool _busy = false;
   bool _startAttempted = false;
   bool _cancelled = false;
@@ -37,11 +43,15 @@ class _OmpdPairingPageState extends ConsumerState<OmpdPairingPage> {
   @override
   void initState() {
     super.initState();
+    final preferences = ref.read(ompdRelayPreferencesProvider);
     _endpoint = TextEditingController(
       text:
+          preferences.endpoint ??
           ref.read(companionControllerProvider).lastOmpdEndpoint?.toString() ??
           '',
     );
+    _profile = TextEditingController(text: preferences.profile);
+    _view = widget.initialView;
   }
 
   @override
@@ -62,12 +72,22 @@ class _OmpdPairingPageState extends ConsumerState<OmpdPairingPage> {
     _pendingJoin?.cancel();
   }
 
-  OmpdEndpoint _confirmedEndpoint() {
-    if (!_trusted) {
-      throw const HarnessException('Confirm trusted-network access first.');
+  OmpdEndpoint _editedEndpoint() =>
+      OmpdEndpoint.parse(_endpoint.text, requirePort: true);
+
+  Future<void> _rememberEdits() async {
+    try {
+      await ref
+          .read(ompdRelayPreferencesProvider.notifier)
+          .setDraft(endpoint: _endpoint.text, profile: _profile.text);
+    } catch (_) {
+      if (_active) setState(() => _error = 'Could not save relay settings.');
     }
-    return OmpdEndpoint.parse(_endpoint.text);
   }
+
+  Future<void> _save() => _run((_) async {
+    if (_active) setState(() => _saved = true);
+  });
 
   bool _attachable(OmpdInstance instance) =>
       instance.ready &&
@@ -83,14 +103,20 @@ class _OmpdPairingPageState extends ConsumerState<OmpdPairingPage> {
       _error = null;
     });
     try {
-      await action(_confirmedEndpoint());
+      final endpoint = _editedEndpoint();
+      await ref
+          .read(ompdRelayPreferencesProvider.notifier)
+          .setDraft(endpoint: endpoint.toString(), profile: _profile.text);
+      if (!_active) return;
+      _endpoint.text = endpoint.toString();
+      await action(endpoint);
     } on HarnessException catch (error) {
       if (_active) setState(() => _error = error.message);
     } catch (_) {
       if (_active) {
         setState(
           () => _error =
-              'Could not reach the daemon. Check endpoint and network.',
+              'Could not save or connect. Check relay endpoint and network.',
         );
       }
     } finally {
@@ -232,106 +258,140 @@ class _OmpdPairingPageState extends ConsumerState<OmpdPairingPage> {
       if (didPop) _cancelPending();
     },
     child: Scaffold(
-      appBar: AppBar(title: const Text('Daemon relay')),
+      appBar: AppBar(
+        title: Text(
+          _view == OmpdPairingView.browse
+              ? 'Browse relay'
+              : 'Add remote session',
+        ),
+      ),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(Grid.gutter),
           children: [
-            Text(
-              'Optional connection to ompd',
-              style: context.textTheme.titleMedium,
-            ),
-            const SizedBox(height: Grid.twelve),
-            const Text(
-              'This relay uses raw TCP with no authentication and no transport encryption. Anyone who can reach the port can read conversations, take control, or start and stop host processes. Use only a network whose access you control, such as an access-restricted private VPN. Wi-Fi alone is not protection.',
-            ),
-            const SizedBox(height: Grid.twelve),
             _field(
               'ompd-endpoint',
               'Endpoint host:port',
               _endpoint,
-              hint: 'host:7420 or [IPv6]:7420',
+              hint: 'host:port or [IPv6]:port',
               onChanged: (_) {
                 setState(() {
-                  _trusted = false;
                   _instances = const [];
                   _hasRefreshed = false;
                   _error = null;
+                  _saved = false;
                 });
+                _rememberEdits();
               },
             ),
-            CheckboxListTile(
-              key: const ValueKey('ompd-consent'),
-              contentPadding: EdgeInsets.zero,
-              value: _trusted,
-              onChanged: _busy
-                  ? null
-                  : (value) => setState(() => _trusted = value ?? false),
-              title: const Text(
-                'I trust access to this network and accept these risks',
-              ),
-              subtitle: const Text(
-                'Saved encrypted on this device for automatic reconnect. No login required.',
-              ),
-            ),
-            const Text(
-              'Attaching takes write control from the current controller. Leaving or disconnecting never stops the worker.',
-            ),
-            const SizedBox(height: Grid.twelve),
             OutlinedButton.icon(
-              key: const ValueKey('ompd-refresh'),
-              onPressed: _trusted && !_busy ? _refresh : null,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Refresh running instances'),
+              key: const ValueKey('ompd-save'),
+              onPressed: _busy ? null : _save,
+              icon: const Icon(Icons.save_outlined),
+              label: const Text('Save'),
             ),
-            if (_hasRefreshed && _instances.isEmpty)
-              const Text('No running instances. Start a new one below.'),
-            for (final instance in _instances)
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(
-                  instance.sessionName?.isNotEmpty == true
-                      ? '${instance.name} — ${instance.sessionName}'
-                      : instance.name,
+            if (_saved)
+              const Text('Relay settings saved', key: ValueKey('ompd-saved')),
+            const SizedBox(height: Grid.twelve),
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    key: const ValueKey('ompd-view-browse'),
+                    onPressed: _busy
+                        ? null
+                        : () => setState(() => _view = OmpdPairingView.browse),
+                    child: Text(
+                      'Browse relay',
+                      style: _view == OmpdPairingView.browse
+                          ? const TextStyle(fontWeight: FontWeight.bold)
+                          : null,
+                    ),
+                  ),
                 ),
-                subtitle: Text(
-                  '${instance.state}${_attachable(instance) ? '' : ' — unavailable until RPC and session identity are ready'}',
+                Expanded(
+                  child: TextButton(
+                    key: const ValueKey('ompd-view-start'),
+                    onPressed: _busy
+                        ? null
+                        : () => setState(() => _view = OmpdPairingView.start),
+                    child: Text(
+                      'Start or resume',
+                      style: _view == OmpdPairingView.start
+                          ? const TextStyle(fontWeight: FontWeight.bold)
+                          : null,
+                    ),
+                  ),
                 ),
-                trailing: TextButton(
-                  key: ValueKey('ompd-attach-${instance.name}'),
-                  onPressed: _trusted && !_busy && _attachable(instance)
-                      ? () => _run((endpoint) => _join(endpoint, instance))
-                      : null,
-                  child: const Text('Attach'),
-                ),
-              ),
-            const SizedBox(height: Grid.md),
-            Text(
-              'Start new or resume known session',
-              style: context.textTheme.titleMedium,
+              ],
             ),
             const SizedBox(height: Grid.twelve),
-            _field('ompd-name', 'Instance name', _name),
-            _field(
-              'ompd-profile',
-              'Profile (or enter working directory)',
-              _profile,
-            ),
-            _field('ompd-cwd', 'Absolute host working directory', _cwd),
-            _field('ompd-session', 'Session file or ID (optional)', _session),
-            const Text(
-              'Leave session empty for a new conversation. To resume, enter a known session ID or absolute session-file path on the host. Archive browsing is not available yet. Paths refer to the host, not this phone.',
-            ),
-            const SizedBox(height: Grid.twelve),
-            FilledButton(
-              key: const ValueKey('ompd-start'),
-              onPressed: _trusted && !_busy && !_startAttempted ? _start : null,
-              child: const Text('Start once and connect'),
-            ),
-            if (_startAttempted && !_busy)
+            if (_view == OmpdPairingView.browse) ...[
               const Text(
-                'A start attempt was made. Use Refresh to find and attach that instance. Returning to this screen never retries it automatically.',
+                'Attaching takes write control from the current controller. Leaving or disconnecting never stops the worker.',
               ),
+              const SizedBox(height: Grid.twelve),
+              OutlinedButton.icon(
+                key: const ValueKey('ompd-refresh'),
+                onPressed: _busy ? null : _refresh,
+                icon: const Icon(Icons.refresh),
+                label: const Text('Refresh running instances'),
+              ),
+              if (_hasRefreshed && _instances.isEmpty)
+                const Text('No running instances. Use Start or resume.'),
+              for (final instance in _instances)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    instance.sessionName?.isNotEmpty == true
+                        ? '${instance.name} — ${instance.sessionName}'
+                        : instance.name,
+                  ),
+                  subtitle: Text(
+                    '${instance.state}${_attachable(instance) ? '' : ' — unavailable until RPC and session identity are ready'}',
+                  ),
+                  trailing: TextButton(
+                    key: ValueKey('ompd-attach-${instance.name}'),
+                    onPressed: !_busy && _attachable(instance)
+                        ? () => _run((endpoint) => _join(endpoint, instance))
+                        : null,
+                    child: const Text('Attach'),
+                  ),
+                ),
+            ],
+            if (_view == OmpdPairingView.start) ...[
+              const SizedBox(height: Grid.md),
+              Text(
+                'Start new or resume known session',
+                style: context.textTheme.titleMedium,
+              ),
+              const SizedBox(height: Grid.twelve),
+              _field('ompd-name', 'Instance name', _name),
+              _field(
+                'ompd-profile',
+                'Profile (or enter working directory)',
+                _profile,
+                onChanged: (_) {
+                  setState(() => _saved = false);
+                  _rememberEdits();
+                },
+              ),
+              _field('ompd-cwd', 'Absolute host working directory', _cwd),
+              _field('ompd-session', 'Session file or ID (optional)', _session),
+              const Text(
+                'Leave session empty for a new conversation. To resume, enter a known session ID or absolute session-file path on the host. Paths refer to the host, not this phone.',
+              ),
+              const SizedBox(height: Grid.twelve),
+              FilledButton(
+                key: const ValueKey('ompd-start'),
+                onPressed: !_busy && !_startAttempted ? _start : null,
+                child: const Text('Start once and connect'),
+              ),
+              if (_startAttempted && !_busy)
+                const Text(
+                  'A start attempt was made. Use Browse relay to find and attach that instance. Returning to this screen never retries it automatically.',
+                ),
+            ],
             if (_busy) ...[
               const SizedBox(height: Grid.twelve),
               const LinearProgressIndicator(),
