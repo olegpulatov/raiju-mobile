@@ -6,6 +6,63 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  test(
+    'fresh appearance is Material and green without writing saved choices',
+    () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final storage = CommunityThemeStorage(prefs);
+      final preference = storage.legacyPreference();
+      expect(preference, defaultCommunityTheme);
+      expect(preference.theme, 'material-theme-lighter');
+      expect(preference.accent, '#22c55e');
+      expect(preference.mode, ThemeMode.system);
+      expect(prefs.getKeys(), isEmpty);
+      final schemes = resolveSchemes(preference.theme, preference.mode);
+      expect(schemes.lightTheme?.name, 'material-theme-lighter');
+      expect(schemes.darkTheme?.name, 'material-theme');
+      expect(schemes.forcedMode, isNull);
+    },
+  );
+
+  test(
+    'saved complete appearance survives default changes and reload',
+    () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      const explicit = CommunityThemePreference(
+        theme: 'buzz-dark',
+        accent: 'neutral',
+        followSystem: false,
+      );
+      await CommunityThemeStorage(prefs).writeLegacy(explicit);
+      final savedValues = prefs
+          .getKeys()
+          .map((key) => (key, prefs.get(key)))
+          .toList();
+      expect(CommunityThemeStorage(prefs).legacyPreference(), explicit);
+      expect(
+        prefs.getKeys().map((key) => (key, prefs.get(key))).toList(),
+        savedValues,
+      );
+    },
+  );
+
+  test('explicit legacy theme mode and accent stay unchanged', () async {
+    SharedPreferences.setMockInitialValues({
+      'buzz_theme_mode': 'light',
+      'buzz_color_scheme': 'github-light',
+      'buzz_accent_color': 0,
+    });
+    final prefs = await SharedPreferences.getInstance();
+    final preference = CommunityThemeStorage(prefs).legacyPreference();
+    expect(preference.theme, 'github-light');
+    expect(preference.accent, '#3b82f6');
+    expect(preference.mode, ThemeMode.light);
+    expect(prefs.getString('buzz_color_scheme'), 'github-light');
+    expect(prefs.getInt('buzz_accent_color'), 0);
+  });
+
   test('desktop v1 payload round-trips exactly', () {
     final preference = CommunityThemePreference.fromJson({
       'version': 1,

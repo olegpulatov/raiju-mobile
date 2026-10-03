@@ -1,9 +1,10 @@
+// MODIFIED FOR RAIJU: obsolete identity/invite controls are removed; retain
+// profile editing, appearance navigation, offline push placeholder and metadata.
 import 'package:raiju_mobile/features/settings/settings_page.dart';
 import 'package:raiju_mobile/shared/community/community_membership_provider.dart';
 import 'package:raiju_mobile/shared/community/community.dart';
 import 'package:raiju_mobile/shared/community/community_provider.dart';
 import 'package:raiju_mobile/shared/theme/theme.dart';
-import 'package:raiju_mobile/shared/push/push_bridge.dart';
 import 'package:raiju_mobile/shared/relay/app_lifecycle_provider.dart';
 import 'package:raiju_mobile/shared/widgets/app_list.dart';
 import 'package:raiju_mobile/shared/widgets/app_list_card.dart';
@@ -66,7 +67,7 @@ void main() {
           ),
         ),
       );
-      expect(find.text('Invite to community'), findsOneWidget);
+      expect(find.text('Invite to community'), findsNothing);
       await tester.pumpAndSettle();
       expect(
         find.textContaining(
@@ -78,7 +79,7 @@ void main() {
     });
   }
 
-  testWidgets('shows the persisted per-community push opt-in on iOS', (
+  testWidgets('retains push placeholder without Buzz registration on iOS', (
     tester,
   ) async {
     debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
@@ -96,9 +97,6 @@ void main() {
           savedPrefsProvider.overrideWithValue(prefs),
           activeCommunityProvider.overrideWith((ref) async => community),
           appLifecycleProvider.overrideWith(_SettingsLifecycleNotifier.new),
-          buzzPushAuthorizationStatusReaderProvider.overrideWithValue(
-            () async => BuzzPushAuthorizationStatus.authorized,
-          ),
         ],
         child: MaterialApp(
           theme: AppTheme.light(),
@@ -112,110 +110,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(
-      find.byKey(const ValueKey('push-notifications-enabled')),
-      findsOneWidget,
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('push-notifications-unavailable')),
     );
-    expect(tester.widget<Switch>(find.byType(Switch)).value, isTrue);
-    debugDefaultTargetPlatformOverride = null;
-  });
-
-  testWidgets('shows denied display permission and opens iOS settings', (
-    tester,
-  ) async {
-    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
-    addTearDown(() => debugDefaultTargetPlatformOverride = null);
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
-    final community = Community.create(
-      name: 'Team',
-      relayUrl: 'wss://relay.example',
-    ).copyWith(pushNotificationsEnabled: true);
-    var openSettingsCalls = 0;
-
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          savedPrefsProvider.overrideWithValue(prefs),
-          activeCommunityProvider.overrideWith((ref) async => community),
-          appLifecycleProvider.overrideWith(_SettingsLifecycleNotifier.new),
-          buzzPushAuthorizationStatusReaderProvider.overrideWithValue(
-            () async => BuzzPushAuthorizationStatus.denied,
-          ),
-          buzzPushNotificationSettingsOpenerProvider.overrideWithValue(
-            () async {
-              openSettingsCalls += 1;
-              return true;
-            },
-          ),
-        ],
-        child: MaterialApp(
-          theme: AppTheme.light(),
-          home: SettingsPage(
-            profileHeader: const SizedBox.shrink(),
-            invitePageBuilder: (_) => const SizedBox.shrink(),
-            identityRecoveryPageBuilder: (_) => const SizedBox.shrink(),
-          ),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    expect(tester.widget<Switch>(find.byType(Switch)).value, isTrue);
-    expect(
-      find.text('Enabled in Buzz, but disabled in iOS Settings'),
-      findsOneWidget,
-    );
-    await tester.tap(
-      find.byKey(const ValueKey('push-notifications-open-settings')),
-    );
-    await tester.pump();
-    expect(openSettingsCalls, 1);
-    debugDefaultTargetPlatformOverride = null;
-  });
-
-  testWidgets('shows permission lookup errors with settings recovery', (
-    tester,
-  ) async {
-    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
-    addTearDown(() => debugDefaultTargetPlatformOverride = null);
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
-    final community = Community.create(
-      name: 'Team',
-      relayUrl: 'wss://relay.example',
-    ).copyWith(pushNotificationsEnabled: true);
-
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          savedPrefsProvider.overrideWithValue(prefs),
-          activeCommunityProvider.overrideWith((ref) async => community),
-          appLifecycleProvider.overrideWith(_SettingsLifecycleNotifier.new),
-          buzzPushAuthorizationStatusReaderProvider.overrideWithValue(
-            () async => throw StateError('authorization unavailable'),
-          ),
-        ],
-        child: MaterialApp(
-          theme: AppTheme.light(),
-          home: SettingsPage(
-            profileHeader: const SizedBox.shrink(),
-            invitePageBuilder: (_) => const SizedBox.shrink(),
-            identityRecoveryPageBuilder: (_) => const SizedBox.shrink(),
-          ),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    expect(
-      find.text('Enabled in Buzz; iOS permission status unavailable'),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(const ValueKey('push-notifications-open-settings')),
-      findsOneWidget,
-    );
+    expect(find.text('Unavailable yet'), findsOneWidget);
+    expect(find.byType(Switch), findsNothing);
     debugDefaultTargetPlatformOverride = null;
   });
 
@@ -325,7 +224,7 @@ void main() {
     expect(opened, ['name', 'description']);
   });
 
-  testWidgets('places Theme second in the Community section', (tester) async {
+  testWidgets('groups appearance controls under Interface', (tester) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
 
@@ -349,14 +248,12 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    final themeRow = find.byKey(const ValueKey('community-theme-row'));
+    await tester.ensureVisible(themeRow);
     expect(find.text('Theme'), findsOneWidget);
-    expect(
-      tester.getTopLeft(find.text('Theme')).dy,
-      greaterThan(tester.getTopLeft(find.text('Invite to community')).dy),
-    );
-    expect(find.byKey(const ValueKey('community-theme-row')), findsOneWidget);
-    expect(find.text('Appearance'), findsNothing);
-    expect(find.text('Style · This community'), findsNothing);
+    expect(find.text('Interface'), findsOneWidget);
+    expect(find.text('Invite to community'), findsNothing);
+    expect(find.byKey(const ValueKey('settings-appearance')), findsOneWidget);
 
     await tester.tap(find.byKey(const ValueKey('community-theme-row')));
     await tester.pumpAndSettle();
@@ -401,105 +298,56 @@ void main() {
     debugDefaultTargetPlatformOverride = null;
   });
 
-  testWidgets('shows community invite navigation to owners and admins', (
-    tester,
-  ) async {
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
-
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          savedPrefsProvider.overrideWithValue(prefs),
-          currentCommunityRoleProvider.overrideWithValue(
-            const AsyncData<CommunityMemberRole?>(CommunityMemberRole.admin),
-          ),
-        ],
-        child: MaterialApp(
-          theme: AppTheme.light(),
-          home: SettingsPage(
-            profileHeader: const SizedBox.shrink(),
-            invitePageBuilder: (_) => const Text('Invite destination'),
-            identityRecoveryPageBuilder: (_) => const SizedBox.shrink(),
-          ),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.text('Invite to community'), findsOneWidget);
-    expect(
-      find.text('Add people directly or share an invite link'),
-      findsNothing,
-    );
-    await tester.tap(find.text('Invite to community'));
-    await tester.pumpAndSettle();
-    expect(find.text('Invite destination'), findsOneWidget);
-  });
-
-  testWidgets('keeps invite navigation available when role lookup fails', (
-    tester,
-  ) async {
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
-
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          savedPrefsProvider.overrideWithValue(prefs),
-          currentCommunityRoleProvider.overrideWithValue(
-            AsyncError<CommunityMemberRole?>(
-              Exception('membership query failed'),
-              StackTrace.empty,
+  for (final role in CommunityMemberRole.values) {
+    testWidgets('removes obsolete community controls for $role', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(900, 1600);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            savedPrefsProvider.overrideWithValue(prefs),
+            currentCommunityRoleProvider.overrideWithValue(AsyncData(role)),
+          ],
+          child: MaterialApp(
+            theme: AppTheme.light(),
+            home: SettingsPage(
+              profileHeader: const SizedBox.shrink(),
+              invitePageBuilder: (_) => const Text('Invite destination'),
             ),
           ),
-        ],
-        child: MaterialApp(
-          theme: AppTheme.light(),
-          home: SettingsPage(
-            profileHeader: const SizedBox.shrink(),
-            invitePageBuilder: (_) => const Text('Invite destination'),
-            identityRecoveryPageBuilder: (_) => const SizedBox.shrink(),
-          ),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.text('Invite to community'), findsOneWidget);
-    await tester.tap(find.text('Invite to community'));
-    await tester.pumpAndSettle();
-    expect(find.text('Invite destination'), findsOneWidget);
-  });
-
-  testWidgets('hides community invite navigation from plain members', (
-    tester,
-  ) async {
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
-
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          savedPrefsProvider.overrideWithValue(prefs),
-          currentCommunityRoleProvider.overrideWithValue(
-            const AsyncData<CommunityMemberRole?>(CommunityMemberRole.member),
-          ),
-        ],
-        child: MaterialApp(
-          theme: AppTheme.light(),
-          home: SettingsPage(
-            profileHeader: const SizedBox.shrink(),
-            invitePageBuilder: (_) => const Text('Invite destination'),
-            identityRecoveryPageBuilder: (_) => const SizedBox.shrink(),
-          ),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.text('Invite to community'), findsNothing);
-  });
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Invite to community'), findsNothing);
+      expect(find.text('Identity (pubkey)'), findsNothing);
+      expect(find.text('Send identity to desktop'), findsNothing);
+      expect(find.text('Remove community'), findsNothing);
+      expect(find.text('Saved connections'), findsNothing);
+      expect(find.text('No saved connections'), findsNothing);
+      expect(find.text('Attach to collab'), findsOneWidget);
+      expect(find.text('Browse relay'), findsOneWidget);
+      final sections = tester
+          .widgetList<AppListCard>(find.byType(AppListCard))
+          .map((section) => section.label)
+          .whereType<String>()
+          .toList();
+      expect(sections, ['Spark live voice', 'Connection', 'Interface']);
+      final policy = tester.widget<AppListRow>(
+        find.byKey(const ValueKey('settings-licenses')),
+      );
+      final relay = tester.widget<AppListRow>(
+        find.byKey(const ValueKey('settings-browse-relay')),
+      );
+      expect(policy.title, 'Policy');
+      expect(policy.icon, isNotNull);
+      expect(policy.trailing.runtimeType, relay.trailing.runtimeType);
+    });
+  }
 
   testWidgets('uses a 24dp rhythm between profile settings groups', (
     tester,

@@ -214,7 +214,7 @@ void main() {
       );
       expect(
         huddleContainer.read(huddleSessionProvider).error,
-        contains('unavailable'),
+        'Unavailable yet.',
       );
     },
   );

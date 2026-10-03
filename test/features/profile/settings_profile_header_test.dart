@@ -1,64 +1,28 @@
-import 'dart:async';
-import 'dart:convert';
-
-import 'package:raiju_mobile/features/profile/profile_provider.dart';
+// MODIFIED FOR RAIJU: local profile header and reactive aggregate connectivity.
 import 'package:raiju_mobile/features/profile/settings_profile_header.dart';
-import 'package:raiju_mobile/shared/profile/user_profile.dart';
-import 'package:raiju_mobile/features/profile/user_status.dart';
-import 'package:raiju_mobile/features/profile/user_status_provider.dart';
-import 'package:raiju_mobile/shared/custom_emoji/custom_emoji_provider.dart';
-import 'package:raiju_mobile/shared/relay/media_auth.dart';
-import 'package:raiju_mobile/shared/relay/media_image.dart';
+import 'package:raiju_mobile/raiju/connection_status_provider.dart';
 import 'package:raiju_mobile/shared/theme/theme.dart';
-import 'package:raiju_mobile/shared/widgets/masked_avatar_badge.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:http/http.dart' as http;
-import 'package:http/testing.dart' as http_testing;
-import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:hooks_riverpod/legacy.dart';
 
 import '../../helpers/widget_helpers.dart';
 
-void main() {
-  testWidgets('reserves half of the 24dp settings section gap', (tester) async {
-    await tester.pumpWidget(
-      WidgetHelpers.testable(
-        overrides: [
-          profileProvider.overrideWith(_FakeProfileNotifier.new),
-          presenceProvider.overrideWith(() => _FakePresenceNotifier('online')),
-          userStatusProvider.overrideWith(() => _FakeUserStatusNotifier(null)),
-          customEmojiListProvider.overrideWithValue(const []),
-        ],
-        child: const SettingsProfileHeader(),
-      ),
-    );
-    await tester.pumpAndSettle();
+final _online = StateProvider<bool>((ref) => false);
 
+void main() {
+  testWidgets('retains local avatar, name and settings spacing', (
+    tester,
+  ) async {
+    await _pumpHeader(tester);
     final header = tester.widget<Padding>(
       find.byKey(const ValueKey('settings-profile-header')),
     );
     expect((header.padding as EdgeInsets).bottom, Grid.twelve);
-  });
-
-  testWidgets('shows the display name directly beneath the avatar', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      WidgetHelpers.testable(
-        overrides: [
-          profileProvider.overrideWith(_FakeProfileNotifier.new),
-          presenceProvider.overrideWith(() => _FakePresenceNotifier('online')),
-          userStatusProvider.overrideWith(() => _FakeUserStatusNotifier(null)),
-          customEmojiListProvider.overrideWithValue(const []),
-        ],
-        child: const SettingsProfileHeader(),
-      ),
-    );
-    await tester.pumpAndSettle();
-
     final avatar = find.byKey(const ValueKey('settings-profile-avatar'));
-    final name = find.text('Test');
+    expect(tester.getSize(avatar), const Size(128, 128));
+    final name = find.text('You');
     expect(name, findsOneWidget);
     expect(
       tester.getTopLeft(name).dy,
@@ -66,254 +30,28 @@ void main() {
     );
   });
 
-  testWidgets('shows the poster until the animated avatar is ready', (
-    tester,
-  ) async {
-    const posterUrl = 'https://relay.example/media/poster.png';
-    const animationUrl = 'https://relay.example/media/animation.png';
-    final profileUrl =
-        '$posterUrl#buzz-anim=${Uri.encodeComponent(animationUrl)}';
-    final animationResponse = Completer<http.Response>();
-    final client = http_testing.MockClient(
-      (request) => request.url.toString() == animationUrl
-          ? animationResponse.future
-          : Future.value(http.Response.bytes(_transparentPng, 200)),
-    );
-    addTearDown(client.close);
-
-    await tester.pumpWidget(
-      WidgetHelpers.testable(
-        overrides: [
-          profileProvider.overrideWith(
-            () => _FakeProfileNotifier(avatarUrl: profileUrl),
-          ),
-          presenceProvider.overrideWith(() => _FakePresenceNotifier('online')),
-          userStatusProvider.overrideWith(() => _FakeUserStatusNotifier(null)),
-          customEmojiListProvider.overrideWithValue(const []),
-          mediaGetAuthServiceProvider.overrideWithValue(
-            MediaGetAuthService(baseUrl: 'https://relay.example', nsec: null),
-          ),
-          mediaHttpClientProvider.overrideWithValue(client),
-        ],
-        child: const SettingsProfileHeader(),
-      ),
-    );
-    await tester.pump();
-    await tester.pump();
-
-    expect(
-      find.byKey(const ValueKey('progressive-animated-avatar-poster')),
-      findsOneWidget,
-    );
-    expect(
-      tester
-          .widget<ColoredBox>(
-            find.byKey(const ValueKey('settings-profile-avatar-background')),
-          )
-          .color,
-      Colors.transparent,
-    );
-    expect(
-      find.byKey(
-        const ValueKey('progressive-animated-avatar-animation-loading'),
-      ),
-      findsOneWidget,
-    );
-    expect(
-      tester
-          .widgetList<MediaImage>(find.byType(MediaImage, skipOffstage: false))
-          .map((image) => image.url),
-      containsAll([posterUrl, animationUrl]),
-    );
-    animationResponse.complete(http.Response.bytes(_transparentPng, 200));
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 50)),
-    );
-    await tester.pumpAndSettle();
-
-    expect(
-      find.byKey(const ValueKey('progressive-animated-avatar-animation-ready')),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(const ValueKey('progressive-animated-avatar-poster')),
-      findsNothing,
-    );
-    expect(
-      tester
-          .widgetList<MediaImage>(find.byType(MediaImage))
-          .map((image) => image.url),
-      [animationUrl],
-    );
-
-    await tester.tap(find.byKey(const ValueKey('settings-profile-avatar')));
-    await tester.pumpAndSettle();
-
-    expect(
-      find.byKey(const ValueKey('progressive-animated-avatar-animation')),
-      findsNothing,
-    );
-    expect(tester.widget<MediaImage>(find.byType(MediaImage)).url, posterUrl);
-
-    await tester.tap(find.byKey(const ValueKey('settings-profile-avatar')));
-    await tester.pumpAndSettle();
-
-    expect(
-      find.byKey(const ValueKey('progressive-animated-avatar-animation')),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(const ValueKey('progressive-animated-avatar-poster')),
-      findsNothing,
-    );
-  });
-
-  testWidgets('warms and clears a paused animated-avatar handoff', (
-    tester,
-  ) async {
-    const posterUrl = 'https://relay.example/media/poster.png';
-    const animationUrl = 'https://relay.example/media/animation.png';
-    final profileUrl =
-        '$posterUrl#buzz-anim=${Uri.encodeComponent(animationUrl)}';
-    final posterResponse = Completer<http.Response>();
-    final animationResponse = Completer<http.Response>();
-    final client = http_testing.MockClient(
-      (request) => switch (request.url.toString()) {
-        posterUrl => posterResponse.future,
-        animationUrl => animationResponse.future,
-        _ => Future.value(http.Response.bytes(_transparentPng, 200)),
-      },
-    );
-    addTearDown(client.close);
-    final container = ProviderContainer(
-      overrides: [
-        profileProvider.overrideWith(
-          () => _FakeProfileNotifier(avatarUrl: profileUrl),
-        ),
-        presenceProvider.overrideWith(() => _FakePresenceNotifier('online')),
-        userStatusProvider.overrideWith(() => _FakeUserStatusNotifier(null)),
-        customEmojiListProvider.overrideWithValue(const []),
-        mediaGetAuthServiceProvider.overrideWithValue(
-          MediaGetAuthService(baseUrl: 'https://relay.example', nsec: null),
-        ),
-        mediaHttpClientProvider.overrideWithValue(client),
-      ],
-    );
-    addTearDown(container.dispose);
-    container
-        .read(profileAvatarHandoffProvider.notifier)
-        .show(
-          ProfileAvatarHandoff(
-            avatarUrl: profileUrl,
-            animation: _transparentPng,
-            poster: _transparentPng,
-          ),
-        );
-
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: MaterialApp(
-          theme: AppTheme.light(),
-          home: const Scaffold(body: SettingsProfileHeader()),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('settings-profile-avatar')));
-    await tester.pump();
-
-    expect(
-      find.byKey(
-        ValueKey('settings-profile-paused-handoff-$profileUrl'),
-        skipOffstage: false,
-      ),
-      findsOneWidget,
-    );
-    expect(container.read(profileAvatarHandoffProvider), isNotNull);
-
-    posterResponse.complete(http.Response.bytes(_transparentPng, 200));
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 50)),
-    );
-    await tester.pumpAndSettle();
-
-    expect(container.read(profileAvatarHandoffProvider), isNull);
-  });
-  testWidgets('uses a bounded icon for an unresolved status shortcode', (
-    tester,
-  ) async {
-    const missingShortcode = ':very_long_missing_custom_emoji:';
-    await tester.pumpWidget(
-      WidgetHelpers.testable(
-        overrides: [
-          profileProvider.overrideWith(_FakeProfileNotifier.new),
-          presenceProvider.overrideWith(() => _FakePresenceNotifier('online')),
-          userStatusProvider.overrideWith(
-            () => _FakeUserStatusNotifier(
-              const UserStatus(
-                text: 'Focusing',
-                emoji: missingShortcode,
-                updatedAt: 1,
-              ),
-            ),
-          ),
-          customEmojiListProvider.overrideWithValue(const []),
-        ],
-        child: const SettingsProfileHeader(),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.byType(Hero), findsNothing);
-    final badge = find.byType(MaskedAvatarBadge);
-    expect(
-      find.descendant(of: badge, matching: find.text(missingShortcode)),
-      findsNothing,
-    );
-    expect(
-      find.descendant(of: badge, matching: find.byIcon(LucideIcons.smile)),
-      findsOneWidget,
-    );
-  });
-
   testWidgets(
-    'keeps text-only status visible beside a changeable presence pill',
+    'presence follows aggregate online state without reopening settings',
     (tester) async {
-      final presenceNotifier = _FakePresenceNotifier('away');
-      await tester.pumpWidget(
-        WidgetHelpers.testable(
-          overrides: [
-            profileProvider.overrideWith(_FakeProfileNotifier.new),
-            presenceProvider.overrideWith(() => presenceNotifier),
-            userStatusProvider.overrideWith(
-              () => _FakeUserStatusNotifier(
-                const UserStatus(text: 'Focusing', emoji: '', updatedAt: 1),
-              ),
-            ),
-            customEmojiListProvider.overrideWithValue(const []),
-          ],
-          child: const SettingsProfileHeader(),
-        ),
+      await _pumpHeader(tester);
+      expect(find.text('Offline'), findsOneWidget);
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(SettingsProfileHeader)),
       );
-      await tester.pumpAndSettle();
-
-      expect(find.text('Focusing'), findsOneWidget);
-      await tester.tap(find.text('Focusing'));
-      await tester.pumpAndSettle();
-      expect(find.text('Set a status'), findsOneWidget);
+      container.read(_online.notifier).state = true;
+      await tester.pump();
+      expect(find.text('Online'), findsOneWidget);
+      expect(find.text('Offline'), findsNothing);
+      container.read(_online.notifier).state = false;
+      await tester.pump();
+      expect(find.text('Offline'), findsOneWidget);
+      expect(find.text('Online'), findsNothing);
       expect(
-        tester.widget<TextField>(find.byType(TextField)).controller?.text,
-        'Focusing',
+        tester
+            .getSize(find.byKey(const ValueKey('settings-presence-target')))
+            .height,
+        Grid.xl,
       );
-      await tester.binding.handlePopRoute();
-      await tester.pumpAndSettle();
-
-      expect(
-        find.byKey(const ValueKey('settings-presence-label')),
-        findsOneWidget,
-      );
-      expect(find.text('Away'), findsOneWidget);
       expect(
         tester
             .widget<Text>(find.byKey(const ValueKey('settings-presence-label')))
@@ -321,91 +59,43 @@ void main() {
             ?.fontSize,
         filterChipTextStyle.fontSize,
       );
-      expect(
-        tester
-            .getSize(find.byKey(const ValueKey('settings-presence-target')))
-            .height,
-        48,
-      );
-      expect(
-        tester
-            .getSize(find.byKey(const ValueKey('settings-presence-pill')))
-            .height,
-        greaterThanOrEqualTo(31),
-      );
-
-      final presenceTarget = find.byKey(
-        const ValueKey('settings-presence-target'),
-      );
-      final targetRect = tester.getRect(presenceTarget);
-      await tester.tapAt(Offset(targetRect.center.dx, targetRect.bottom - 1));
-      await tester.pump();
-
-      final scale = tester.widget<ScaleTransition>(
-        find.byKey(const ValueKey('activity-popover-scale')),
-      );
-      expect(scale.alignment, Alignment.topCenter);
-      expect(
-        find.byKey(const ValueKey('settings-presence-popover')),
-        findsOneWidget,
-      );
-      await tester.pumpAndSettle();
-
-      expect(
-        find.byKey(const ValueKey('settings-presence-online')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey('settings-presence-away')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey('settings-presence-offline')),
-        findsOneWidget,
-      );
-
-      await tester.tap(find.byKey(const ValueKey('settings-presence-offline')));
-      await tester.pumpAndSettle();
-      expect(presenceNotifier.selected, ['offline']);
     },
   );
+
+  testWidgets('unsupported avatar action has a simple explanation', (
+    tester,
+  ) async {
+    await _pumpHeader(tester);
+    await tester.tap(find.byKey(const ValueKey('settings-profile-avatar')));
+    await tester.pump();
+    expect(find.text('Unavailable yet'), findsOneWidget);
+  });
+
+  testWidgets('manual presence selection cannot override connection state', (
+    tester,
+  ) async {
+    await _pumpHeader(tester);
+    await tester.tap(find.byKey(const ValueKey('settings-presence-target')));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('settings-presence-online')),
+      findsOneWidget,
+    );
+    await tester.tap(find.byKey(const ValueKey('settings-presence-online')));
+    await tester.pumpAndSettle();
+    expect(find.text('Unavailable yet'), findsOneWidget);
+    expect(find.text('Offline'), findsOneWidget);
+  });
 }
 
-class _FakeProfileNotifier extends ProfileNotifier {
-  _FakeProfileNotifier({this.avatarUrl});
-
-  final String? avatarUrl;
-
-  @override
-  Future<UserProfile?> build() async =>
-      UserProfile(pubkey: 'aabb', displayName: 'Test', avatarUrl: avatarUrl);
+Future<void> _pumpHeader(WidgetTester tester) async {
+  await tester.pumpWidget(
+    WidgetHelpers.testable(
+      overrides: [
+        connectionOnlineProvider.overrideWith((ref) => ref.watch(_online)),
+      ],
+      child: const SettingsProfileHeader(),
+    ),
+  );
+  await tester.pumpAndSettle();
 }
-
-class _FakeUserStatusNotifier extends UserStatusNotifier {
-  _FakeUserStatusNotifier(this._status);
-
-  final UserStatus? _status;
-
-  @override
-  Future<UserStatus?> build() async => _status;
-}
-
-class _FakePresenceNotifier extends PresenceNotifier {
-  _FakePresenceNotifier(this._presence);
-
-  final String _presence;
-  final List<String> selected = [];
-
-  @override
-  Future<String> build() async => _presence;
-
-  @override
-  Future<void> setPresence(String status) async {
-    selected.add(status);
-  }
-}
-
-final _transparentPng = base64Decode(
-  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAA'
-  'AAYAAjCB0C8AAAAASUVORK5CYII=',
-);

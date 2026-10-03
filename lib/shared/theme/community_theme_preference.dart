@@ -1,3 +1,4 @@
+// MODIFIED FOR RAIJU: use Material/green only when no saved choice exists.
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -5,12 +6,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'accent_colors.dart';
 import 'theme_catalog.dart';
-import 'theme_provider.dart' show effectiveTheme, schemeForAppearanceMode;
+import 'theme_provider.dart'
+    show defaultSchemeName, effectiveTheme, schemeForAppearanceMode;
 
 const communityThemeDTag = 'community-theme';
 const defaultCommunityTheme = CommunityThemePreference(
-  theme: 'buzz',
-  accent: '#3b82f6',
+  theme: defaultSchemeName,
+  accent: '#22c55e',
   followSystem: true,
 );
 
@@ -135,10 +137,7 @@ class CommunityThemeStorage {
       prefs.setBool('$_migrationPrefix:$pubkey', true);
 
   Future<void> writeLegacy(CommunityThemePreference preference) async {
-    await prefs.setString(
-      _localPreferenceKey,
-      jsonEncode(preference.toJson()),
-    );
+    await prefs.setString(_localPreferenceKey, jsonEncode(preference.toJson()));
     await prefs.setString(_legacyModeKey, preference.mode.name);
     await prefs.setString(_legacySchemeKey, preference.theme);
     await prefs.setInt(
@@ -155,7 +154,8 @@ class CommunityThemeStorage {
         ThemeMode.values.where((value) => value.name == modeName).firstOrNull ??
         ThemeMode.system;
     final storedTheme = prefs.getString(_legacySchemeKey);
-    final theme = findTheme(storedTheme ?? 'buzz')?.name ?? 'buzz';
+    final theme =
+        findTheme(storedTheme ?? defaultSchemeName)?.name ?? defaultSchemeName;
     final legacyAccent = prefs.getInt(_legacyAccentKey);
     final resolvedTheme = switch (mode) {
       ThemeMode.system => schemeForAppearanceMode(theme, mode) ?? theme,
@@ -164,7 +164,9 @@ class CommunityThemeStorage {
     };
     return CommunityThemePreference(
       theme: resolvedTheme,
-      accent: legacyAccentWireValue(legacyAccent),
+      accent: legacyAccent == null
+          ? defaultCommunityTheme.accent
+          : legacyAccentWireValue(legacyAccent),
       followSystem: mode == ThemeMode.system,
     );
   }

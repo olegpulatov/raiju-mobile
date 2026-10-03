@@ -1,27 +1,28 @@
-// MODIFIED FOR RAIJU: preserves the original settings-header geometry while
-// preventing Buzz profile, status, presence, emoji, and media provider access.
+// MODIFIED FOR RAIJU: preserves settings-header geometry with local identity,
+// reactive connection state and no Buzz profile/media provider access.
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../raiju/connection_status_provider.dart';
 import '../../shared/theme/theme.dart';
 import '../../shared/widgets/anchored_popover_menu.dart';
 import '../../shared/widgets/masked_avatar_badge.dart';
 
 /// The original large centred avatar/header treatment, backed only by local
 /// presentation data because Raiju has no Buzz identity.
-class SettingsProfileHeader extends StatelessWidget {
+class SettingsProfileHeader extends ConsumerWidget {
   const SettingsProfileHeader({super.key});
 
   static const _avatarSize = 128.0;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final online = ref.watch(connectionOnlineProvider);
     void explainUnavailable() {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Buzz profile and presence are unavailable in Raiju.'),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Unavailable yet')));
     }
 
     return Padding(
@@ -49,7 +50,7 @@ class SettingsProfileHeader extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           _PresencePill(
-            presence: 'offline',
+            presence: online ? 'online' : 'offline',
             onSelected: (_) => explainUnavailable(),
           ),
         ],
@@ -203,11 +204,12 @@ String _presenceLabel(String presence) => switch (presence) {
   _ => 'Offline',
 };
 
-Color _presenceColor(BuildContext context, String presence) => switch (presence) {
-  'online' => context.appColors.success,
-  'away' => context.appColors.warning,
-  _ => context.colors.outline,
-};
+Color _presenceColor(BuildContext context, String presence) =>
+    switch (presence) {
+      'online' => context.appColors.success,
+      'away' => context.appColors.warning,
+      _ => context.colors.outline,
+    };
 
 class _StatusBadge extends StatelessWidget {
   const _StatusBadge({required this.emoji, required this.onTap});

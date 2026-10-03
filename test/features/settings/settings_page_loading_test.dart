@@ -1,4 +1,4 @@
-// MODIFIED FOR RAIJU: verify offline license collection and the settings entry.
+// MODIFIED FOR RAIJU: verify offline policy collection and logical settings.
 import 'dart:async';
 
 import 'package:raiju_mobile/features/settings/settings_page.dart';
@@ -55,7 +55,10 @@ void main() {
         ),
       ),
     );
-    expect(find.text('Invite to community'), findsOneWidget);
+    expect(find.text('Invite to community'), findsNothing);
+    expect(find.text('Spark live voice'), findsOneWidget);
+    expect(find.text('Connection'), findsOneWidget);
+    expect(find.text('Attach to collab'), findsOneWidget);
 
     expect(find.text('v0.16.0 (432)'), findsNothing);
     expect(find.byTooltip('Close settings'), findsOneWidget);
@@ -81,12 +84,15 @@ void main() {
     );
     expect(
       licenses.any(
-        (entry) => entry.packages.any((name) => name.endsWith('(Spark native)')),
+        (entry) =>
+            entry.packages.any((name) => name.endsWith('(Spark native)')),
       ),
       isTrue,
     );
     final licensesRow = find.byKey(const ValueKey('settings-licenses'));
     await tester.scrollUntilVisible(licensesRow, 300);
+    expect(find.text('Policy'), findsOneWidget);
+    expect(find.text('Licenses'), findsNothing);
     await tester.pumpAndSettle();
     await tester.tap(licensesRow);
     await tester.pump();

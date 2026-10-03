@@ -7,17 +7,11 @@ class _NotificationsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const AppListCard(
-      label: 'Notifications',
-      verticalPadding: Grid.twelve,
-      children: [
-        AppListRow(
-          key: ValueKey('push-notifications-unavailable'),
-          icon: LucideIcons.bell,
-          title: 'Push notifications',
-          subtitle: 'Unavailable for OMP chats in this build',
-        ),
-      ],
+    return const AppListRow(
+      key: ValueKey('push-notifications-unavailable'),
+      icon: LucideIcons.bell,
+      title: 'Push notifications',
+      subtitle: 'Unavailable yet',
     );
   }
 }

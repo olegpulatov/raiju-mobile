@@ -3,10 +3,7 @@
 
 /// Stable fail-closed error for every retained Buzz backend operation.
 class BuzzBackendUnavailableException implements Exception {
-  const BuzzBackendUnavailableException([
-    this.message =
-        'Buzz account, relay, media, and push services are unavailable in Raiju.',
-  ]);
+  const BuzzBackendUnavailableException([this.message = 'Unavailable yet.']);
 
   final String message;
 

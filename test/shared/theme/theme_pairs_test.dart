@@ -155,8 +155,8 @@ void main() {
 
       expect(resolved.forcedMode, ThemeMode.dark);
       expect(resolved.dark.brightness, Brightness.dark);
-      expect(resolved.darkTheme?.name, buzzDarkThemeName);
-      expect(resolved.dark, generateColorScheme(findTheme(buzzDarkThemeName)!));
+      expect(resolved.darkTheme?.name, 'material-theme');
+      expect(resolved.dark, generateColorScheme(findTheme('material-theme')!));
     });
 
     test('light mode falls back to the default pair when pick is unpaired', () {
@@ -164,8 +164,11 @@ void main() {
 
       expect(resolved.forcedMode, ThemeMode.light);
       expect(resolved.light.brightness, Brightness.light);
-      expect(resolved.lightTheme?.name, buzzThemeName);
-      expect(resolved.light, generateColorScheme(findTheme(buzzThemeName)!));
+      expect(resolved.lightTheme?.name, defaultSchemeName);
+      expect(
+        resolved.light,
+        generateColorScheme(findTheme(defaultSchemeName)!),
+      );
     });
 
     test('an unknown scheme name falls back to the default theme', () {

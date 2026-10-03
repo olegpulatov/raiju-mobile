@@ -8,6 +8,7 @@ class _SparkSection extends ConsumerWidget {
     final controller = ref.watch(sparkControllerProvider);
     return AppListCard(
       key: const ValueKey('spark-settings-section'),
+      verticalPadding: Grid.twelve,
       label: 'Spark live voice',
       children: [
         AppListRow(

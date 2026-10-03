@@ -10,12 +10,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-import '../../companion_controller.dart';
 import '../../harness/collab_link.dart';
-import '../../harness/harness.dart';
 import '../../raiju/collab_relay_preference.dart';
-import '../../raiju/companion_provider.dart';
 import '../../spark/spark.dart';
+import '../pairing/ompd_pairing_page.dart';
 import '../pairing/pairing_page.dart';
 import '../../shared/theme/theme.dart';
 import '../../shared/widgets/app_list.dart';
@@ -28,6 +26,7 @@ import '../../shared/widgets/immediate_page_route.dart';
 import '../../shared/widgets/modal_presentation.dart';
 import 'accent_picker_page.dart';
 import 'theme_picker_page.dart';
+import 'theme_option_sheets.dart';
 
 part 'settings_page/community_section.dart';
 part 'settings_page/connection_section.dart';
@@ -78,11 +77,9 @@ class SettingsPage extends HookConsumerWidget {
       if (profileEditPageBuilder == null &&
           onEditDisplayName == null &&
           onEditProfileDescription == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Buzz profile editing is unavailable in Raiju.'),
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Unavailable yet')));
         return;
       }
       final action = await showBuzzModalBottomSheet<_ProfileEditAction>(
@@ -143,24 +140,18 @@ class SettingsPage extends HookConsumerWidget {
           if (onEditDisplayName != null) {
             await onEditDisplayName!(context);
           } else if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Buzz display names are unavailable in Raiju.'),
-              ),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('Unavailable yet')));
           }
           break;
         case _ProfileEditAction.description:
           if (onEditProfileDescription != null) {
             await onEditProfileDescription!(context);
           } else if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Buzz profile descriptions are unavailable in Raiju.',
-                ),
-              ),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('Unavailable yet')));
           }
           break;
         case _ProfileEditAction.photo:
@@ -169,11 +160,9 @@ class SettingsPage extends HookConsumerWidget {
               context,
             ).push(immediatePageRoute<void>(builder: profileEditPageBuilder!));
           } else if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Buzz profile photos are unavailable in Raiju.'),
-              ),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('Unavailable yet')));
           }
           break;
       }
@@ -251,29 +240,26 @@ class SettingsPage extends HookConsumerWidget {
               padding: EdgeInsets.only(top: topSectionHeight, bottom: Grid.xs),
               children: [
                 profileHeader,
-                _CommunitySection(invitePageBuilder: invitePageBuilder),
-                const _NotificationsSection(),
                 const _SparkSection(),
                 const _ConnectionSection(),
-                const _RemoveCommunitySection(),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: Grid.gutter),
-                  child: AppListCard(
-                    children: [
-                      AppListRow(
-                        key: const ValueKey('settings-licenses'),
-                        title: 'Licenses',
-                        trailing: const _RowChevron(),
-                        onTap: () => showLicensePage(
-                          context: context,
-                          applicationName: 'Raiju',
-                          applicationVersion: packageInfo.hasData
-                              ? 'v${packageInfo.data!.version}'
-                              : null,
-                        ),
+                const _InterfaceSection(),
+                AppListCard(
+                  verticalPadding: Grid.twelve,
+                  children: [
+                    AppListRow(
+                      key: const ValueKey('settings-licenses'),
+                      icon: LucideIcons.scale,
+                      title: 'Policy',
+                      trailing: const _RowChevron(),
+                      onTap: () => showLicensePage(
+                        context: context,
+                        applicationName: 'Raiju',
+                        applicationVersion: packageInfo.hasData
+                            ? 'v${packageInfo.data!.version}'
+                            : null,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ],
             ),

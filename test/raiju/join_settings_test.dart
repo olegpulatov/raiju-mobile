@@ -1,3 +1,4 @@
+// MODIFIED FOR RAIJU: verify retained connection settings and aggregate online state.
 import 'dart:async';
 
 import 'package:raiju_mobile/companion_controller.dart';
@@ -7,10 +8,13 @@ import 'package:raiju_mobile/features/pairing/pairing_provider.dart';
 import 'package:raiju_mobile/features/settings/settings_page.dart';
 import 'package:raiju_mobile/harness/collab_link.dart';
 import 'package:raiju_mobile/harness/harness.dart';
+import 'package:raiju_mobile/harness/ompd_connection.dart';
 import 'package:raiju_mobile/raiju/collab_relay_preference.dart';
 import 'package:raiju_mobile/raiju/companion_provider.dart';
+import 'package:raiju_mobile/raiju/connection_status_provider.dart';
 import 'package:raiju_mobile/shared/theme/theme.dart';
 import 'package:raiju_mobile/storage/chat_store.dart';
+import 'package:raiju_mobile/spark/spark.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -19,6 +23,69 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  test('online reacts to any collab, daemon or Spark connection', () async {
+    final clients = <_Client>[];
+    final controller = CompanionController(
+      clientFactory: () {
+        final client = _Client(onConnect: (_) {});
+        clients.add(client);
+        return client;
+      },
+      store: _Store(),
+      writeDebounce: Duration.zero,
+    );
+    final spark = _OnlineSparkController();
+    final container = ProviderContainer(
+      overrides: [
+        companionControllerProvider.overrideWith((ref) => controller),
+        sparkControllerProvider.overrideWith((ref) => spark),
+      ],
+    );
+    addTearDown(container.dispose);
+    final observed = <bool>[];
+    container.listen(
+      connectionOnlineProvider,
+      (_, next) => observed.add(next),
+      fireImmediately: true,
+    );
+    bool online() => container.read(connectionOnlineProvider);
+    expect(online(), isFalse);
+    final collab = await controller.join('synthetic-collab');
+    expect(online(), isTrue);
+    final daemon = await controller.join(
+      OmpdConnection(
+        endpoint: OmpdEndpoint.parse('relay.example:12345'),
+        instance: 'synthetic-settings',
+        trustedNetwork: true,
+      ).encode(),
+    );
+    expect(daemon.isDaemon, isTrue);
+    await controller.disconnect(collab.id);
+    expect(online(), isTrue);
+    await controller.disconnect(daemon.id);
+    expect(online(), isFalse);
+    await controller.reconnect(daemon.id);
+    expect(online(), isTrue);
+    for (final phase in ConnectionPhase.values) {
+      clients.last.setPhase(phase);
+      expect(online(), phase == ConnectionPhase.live);
+    }
+    clients.last.setPhase(ConnectionPhase.disconnected);
+    for (final phase in SparkPhase.values) {
+      spark.setPhase(phase);
+      expect(
+        online(),
+        {
+          SparkPhase.listening,
+          SparkPhase.working,
+          SparkPhase.speaking,
+          SparkPhase.muted,
+        }.contains(phase),
+      );
+    }
+    expect(observed, containsAllInOrder([false, true, false, true, false]));
+  });
 
   test('full QR link and ordinary token use the same join operation', () async {
     final inputs = <String>[];
@@ -225,6 +292,10 @@ void main() {
     expect(find.byKey(const ValueKey('community-accent-row')), findsOneWidget);
     expect(find.byKey(const ValueKey('settings-connect-omp')), findsOneWidget);
 
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('community-accent-row')),
+    );
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('community-accent-row')));
     await tester.pumpAndSettle();
     await tester.tap(find.text(accentColors[1].name));
@@ -503,6 +574,11 @@ class _Client implements HarnessClient {
     _changes.add(_snapshot);
   }
 
+  void setPhase(ConnectionPhase phase) {
+    _snapshot = HarnessSnapshot(phase: phase);
+    _changes.add(_snapshot);
+  }
+
   @override
   Future<void> abort() async {}
 
@@ -524,4 +600,19 @@ class _Client implements HarnessClient {
 
   @override
   Future<void> sendPrompt(String text) async {}
+}
+
+class _OnlineSparkController extends ChangeNotifier implements SparkController {
+  SparkSnapshot _snapshot = const SparkSnapshot();
+
+  @override
+  SparkSnapshot get snapshot => _snapshot;
+
+  void setPhase(SparkPhase phase) {
+    _snapshot = SparkSnapshot(phase: phase);
+    notifyListeners();
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

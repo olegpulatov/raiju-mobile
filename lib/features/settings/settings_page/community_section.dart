@@ -1,12 +1,9 @@
-// MODIFIED FOR RAIJU: original Community card and appearance controls remain;
-// the Buzz invite action is visible but explicitly unavailable.
+// MODIFIED FOR RAIJU: appearance remains local in the Interface group;
+// obsolete community invitation controls are removed.
 part of '../settings_page.dart';
 
-class _CommunitySection extends ConsumerWidget {
-  const _CommunitySection({this.invitePageBuilder});
-
-  /// Retained for source compatibility. Buzz invitation routes are inactive.
-  final WidgetBuilder? invitePageBuilder;
+class _InterfaceSection extends ConsumerWidget {
+  const _InterfaceSection();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -15,15 +12,9 @@ class _CommunitySection extends ConsumerWidget {
         accentIndexForWireValue(preference.accent) ?? defaultAccentIndex;
 
     return AppListCard(
-      label: 'Community',
+      label: 'Interface',
       verticalPadding: Grid.twelve,
       children: [
-        const AppListRow(
-          key: ValueKey('community-invites-unavailable'),
-          icon: LucideIcons.userPlus,
-          title: 'Invite to community',
-          subtitle: 'Unavailable in Raiju; OMP links connect chats directly',
-        ),
         AppListRow(
           key: const ValueKey('community-theme-row'),
           icon: LucideIcons.palette,
@@ -32,6 +23,20 @@ class _CommunitySection extends ConsumerWidget {
           trailing: const _RowChevron(),
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute<void>(builder: (_) => const ThemePickerPage()),
+          ),
+        ),
+        AppListRow(
+          key: const ValueKey('settings-appearance'),
+          icon: LucideIcons.sunMoon,
+          title: 'Appearance',
+          value: appearanceModeLabel(preference.mode),
+          trailing: const _RowChevron(),
+          onTap: () => unawaited(
+            showAppearanceModePickerSheet(
+              context: context,
+              selectedMode: preference.mode,
+              onSelected: ref.read(communityThemeProvider.notifier).setMode,
+            ),
           ),
         ),
         AppListRow(
@@ -44,6 +49,7 @@ class _CommunitySection extends ConsumerWidget {
             MaterialPageRoute<void>(builder: (_) => const AccentPickerPage()),
           ),
         ),
+        const _NotificationsSection(),
       ],
     );
   }

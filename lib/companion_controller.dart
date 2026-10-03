@@ -66,6 +66,7 @@ class ChatThread {
   int _generation = 0;
 
   HarnessSnapshot get snapshot => _snapshot;
+  bool get isDaemon => OmpdConnection.isOmpd(_input);
   String get title {
     final label = _label.trim();
     if (_localLabel && !_genericSessionTitle(label)) return label;
@@ -130,6 +131,8 @@ class CompanionController extends ChangeNotifier {
   Future<void>? _persisting;
 
   List<ChatThread> get chats => List.unmodifiable(_chats);
+  bool get hasLiveConnection =>
+      _chats.any((chat) => chat.snapshot.phase == ConnectionPhase.live);
   bool get isLoading => _isLoading;
   String? get storageError => _storageError;
 

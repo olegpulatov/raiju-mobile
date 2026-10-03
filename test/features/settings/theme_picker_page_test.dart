@@ -1,3 +1,5 @@
+// MODIFIED FOR RAIJU: fresh preview is Material/green; existing Buzz fixtures
+// retain their original visual regression coverage as explicit selections.
 import 'package:raiju_mobile/features/settings/theme_picker_page.dart';
 import 'package:raiju_mobile/shared/theme/theme.dart';
 import 'package:flutter/foundation.dart';
@@ -15,7 +17,7 @@ Future<SharedPreferences> _prefs(Map<String, Object> initial) async {
 
 Future<SharedPreferences> _pumpPicker(
   WidgetTester tester, {
-  Map<String, Object> prefs = const {},
+  Map<String, Object> prefs = const {'buzz_color_scheme': 'buzz'},
   bool reduceMotion = false,
   CommunityThemeNotifier Function()? themeNotifier,
 }) async {
@@ -56,7 +58,7 @@ void main() {
         addTearDown(tester.view.resetPhysicalSize);
         addTearDown(tester.view.resetDevicePixelRatio);
 
-        await _pumpPicker(tester);
+        await _pumpPicker(tester, prefs: {});
 
         expect(
           find.byKey(const ValueKey('theme-preview-pages')),
@@ -72,22 +74,30 @@ void main() {
           findsNothing,
         );
         expect(
-          find.byKey(const ValueKey('theme-preview-name-buzz')),
+          find.byKey(
+            const ValueKey('theme-preview-name-material-theme-lighter'),
+          ),
           findsOneWidget,
         );
 
         final nameBounds = tester.getRect(
-          find.byKey(const ValueKey('theme-preview-name-buzz')),
+          find.byKey(
+            const ValueKey('theme-preview-name-material-theme-lighter'),
+          ),
         );
         final previewBounds = tester.getRect(
-          find.byKey(const ValueKey('theme-device-pair-preview-buzz')),
+          find.byKey(
+            const ValueKey('theme-device-pair-preview-material-theme-lighter'),
+          ),
         );
         expect(nameBounds.bottom, lessThan(previewBounds.bottom));
         expect(previewBounds.top - nameBounds.bottom, closeTo(Grid.md, 1));
         expect(
           tester
               .widget<FittedBox>(
-                find.byKey(const ValueKey('theme-full-preview-buzz')),
+                find.byKey(
+                  const ValueKey('theme-full-preview-material-theme-lighter'),
+                ),
               )
               .alignment,
           Alignment.center,

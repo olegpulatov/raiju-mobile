@@ -190,7 +190,7 @@ final class HuddleSessionNotifier extends Notifier<HuddleSessionState> {
       startedEventId: startedEventId,
       currentPubkey: currentPubkey?.toLowerCase(),
       isCreator: isCreator,
-      error: 'Buzz Huddles are unavailable in Raiju.',
+      error: 'Unavailable yet.',
     );
   }
 
