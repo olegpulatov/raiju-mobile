@@ -99,6 +99,30 @@ Future<void> main(List<String> arguments) async {
           timeout: const Duration(minutes: 10),
           environment: nativeEnvironment,
         );
+      case 'ompd-live':
+        // Runtime endpoint/profile stay out of compiled app flags.
+        final runtimeServer = await _serveOmpdRuntimeOnce(
+          options.endpoint!,
+          options.profile!,
+        );
+        try {
+          exitCode = await _runInherited(
+            flutter,
+            [
+              'drive',
+              '--driver=test_driver/integration_test.dart',
+              '--target=$_ompdSmokeTarget',
+              '--keep-app-running',
+              '-d',
+              device!.udid,
+              '--dart-define=OMPD_LIVE_IPC_PORT=${runtimeServer.port}',
+            ],
+            timeout: const Duration(minutes: 10),
+            environment: nativeEnvironment,
+          );
+        } finally {
+          await _closeServer(runtimeServer);
+        }
       case 'spark-smoke':
         exitCode = await _runInherited(
           flutter,
@@ -198,27 +222,38 @@ Future<void> main(List<String> arguments) async {
 }
 
 final class _Options {
-  const _Options(this.command, this.deviceId, this.host);
+  const _Options(
+    this.command,
+    this.deviceId,
+    this.host,
+    this.endpoint,
+    this.profile,
+  );
   final String command;
   final String? deviceId;
   final String? host;
+  final String? endpoint;
+  final String? profile;
 
   static _Options parse(List<String> args) {
     if (args.isEmpty || args.contains('--help') || args.contains('-h')) {
       stdout.writeln(
-        'Usage: dart run tool/ios_dev.dart <build|run|smoke|ompd-smoke|spark-smoke|spark-live|live> '
-        '[HOST] [--device UDID] [--host HOST]\n'
+        'Usage: dart run tool/ios_dev.dart <build|run|smoke|ompd-smoke|ompd-live|spark-smoke|spark-live|live> '
+        '[HOST] [--device UDID] [--host HOST] [--endpoint HOST:PORT] [--profile PROFILE]\n'
         '  build       Create a signed debug simulator build without booting a device.\n'
         '  run         Boot/select an iPhone simulator and launch the app.\n'
         '  smoke       Run the deterministic native GUI integration journey.\n'
         '  ompd-smoke  Run the synthetic TCP daemon GUI journey (no model calls).\n'
+        '  ompd-live   Run against an already-running relay; requires --endpoint/--profile\n'
+        '              or OMPD_TEST_ENDPOINT/OMPD_TEST_PROFILE. Creates one unique instance,\n'
+        '              sends one harmless prompt, and leaves that instance running.\n'
         '  spark-smoke Run the synthetic Spark voice and delegation journey.\n'
         '  spark-live  Opt-in production native voice/provider check.\n'
         '  live        Opt-in real-host GUI check; requires positional HOST or --host.',
       );
       if (args.isEmpty) {
         throw const _CliError(
-          'Choose build, run, smoke, ompd-smoke, spark-smoke, spark-live, or live.',
+          'Choose build, run, smoke, ompd-smoke, ompd-live, spark-smoke, spark-live, or live.',
         );
       }
       exit(0);
@@ -229,29 +264,53 @@ final class _Options {
       'run',
       'smoke',
       'ompd-smoke',
+      'ompd-live',
       'spark-smoke',
       'live',
       'spark-live',
     }.contains(command)) {
       throw _CliError(
-        'Unknown command "$command". Expected build, run, smoke, ompd-smoke, spark-smoke, spark-live, or live.',
+        'Unknown command "$command". Expected build, run, smoke, ompd-smoke, ompd-live, spark-smoke, spark-live, or live.',
       );
     }
     String? device;
     String? host;
+    String? endpoint;
+    String? profile;
     for (var index = 1; index < args.length; index++) {
       final flag = args[index];
       if (command == 'live' && !flag.startsWith('-') && host == null) {
         host = flag.trim();
         continue;
       }
-      if (flag != '--device' && flag != '--host') {
+      if (!const [
+        '--device',
+        '--host',
+        '--endpoint',
+        '--profile',
+      ].contains(flag)) {
         throw _CliError('Unknown option "$flag".', 64);
       }
       if (++index >= args.length || args[index].trim().isEmpty) {
         throw _CliError('$flag requires a value.', 64);
       }
       if (flag == '--device') device = args[index].trim();
+      if (flag == '--endpoint' || flag == '--profile') {
+        if (command != 'ompd-live') {
+          throw _CliError('$flag is valid only with ompd-live.', 64);
+        }
+        if (flag == '--endpoint') {
+          if (endpoint != null) {
+            throw const _CliError('Specify the relay endpoint once.', 64);
+          }
+          endpoint = args[index].trim();
+        } else {
+          if (profile != null) {
+            throw const _CliError('Specify the relay profile once.', 64);
+          }
+          profile = args[index].trim();
+        }
+      }
       if (flag == '--host') {
         if (host != null) {
           throw const _CliError('Specify the live host once.', 64);
@@ -268,7 +327,39 @@ final class _Options {
     if (command != 'live' && host != null) {
       throw const _CliError('--host is valid only with live.', 64);
     }
-    return _Options(command, device, host);
+    if (command == 'ompd-live') {
+      endpoint ??= Platform.environment['OMPD_TEST_ENDPOINT']?.trim();
+      profile ??= Platform.environment['OMPD_TEST_PROFILE']?.trim();
+      if (endpoint == null ||
+          endpoint.isEmpty ||
+          profile == null ||
+          profile.isEmpty) {
+        throw const _CliError(
+          'ompd-live requires explicit --endpoint and --profile, or '
+          'OMPD_TEST_ENDPOINT and OMPD_TEST_PROFILE.',
+          64,
+        );
+      }
+      final uri = Uri.tryParse(
+        endpoint.contains('://') ? endpoint : 'tcp://$endpoint',
+      );
+      if (uri == null ||
+          uri.scheme != 'tcp' ||
+          uri.host.isEmpty ||
+          !uri.hasPort ||
+          uri.port < 1 ||
+          uri.port > 65535 ||
+          uri.userInfo.isNotEmpty ||
+          uri.path.isNotEmpty ||
+          uri.hasQuery ||
+          uri.hasFragment) {
+        throw const _CliError(
+          'Relay endpoint must be HOST:PORT or tcp://HOST:PORT.',
+          64,
+        );
+      }
+    }
+    return _Options(command, device, host, endpoint, profile);
   }
 }
 
@@ -389,6 +480,35 @@ Future<ServerSocket> _serveCapabilityOnce(String capability) async {
         await socket.flush().timeout(const Duration(seconds: 2));
       } catch (_) {
         // The live driver reports a failed or incomplete capability handoff.
+      } finally {
+        socket.destroy();
+      }
+    }());
+  });
+  return server;
+}
+
+Future<ServerSocket> _serveOmpdRuntimeOnce(
+  String endpoint,
+  String profile,
+) async {
+  final server = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
+  late final StreamSubscription<Socket> subscription;
+  subscription = server.listen((socket) {
+    unawaited(() async {
+      try {
+        await subscription.cancel().timeout(const Duration(seconds: 2));
+        socket.write(
+          jsonEncode({
+            'endpoint': endpoint,
+            'profile': profile,
+            'instance':
+                'mobile-acceptance-${DateTime.now().toUtc().microsecondsSinceEpoch}',
+          }),
+        );
+        await socket.flush().timeout(const Duration(seconds: 2));
+      } catch (_) {
+        // The app reports a bounded runtime handoff failure.
       } finally {
         socket.destroy();
       }

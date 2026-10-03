@@ -1,2 +1,6 @@
 export IOS_DEVICE_ID="replace-with-physical-device-id"
 export IOS_BUNDLE_ID="dev.raiju.mobile"
+
+# Optional live relay checks; connect to an already-running daemon.
+export OMPD_TEST_ENDPOINT="replace-with-host:port"
+export OMPD_TEST_PROFILE="test"

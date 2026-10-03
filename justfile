@@ -30,6 +30,7 @@ check-preservation:
 # Run active Raiju contracts and retained original visual regressions.
 test: _deps
     {{ flutter }} test --no-pub test/widget_test.dart test/harness test/storage test/companion_controller_test.dart test/raiju test/features/home/home_page_test.dart test/features/pairing/pairing_qr_scanner_test.dart test/features/pairing/ompd_pairing_page_test.dart test/shared/theme/app_theme_test.dart
+    {{ flutter }} test --no-pub test/features/settings/connection_section_test.dart test/features/settings/settings_page_test.dart test/features/settings/settings_page_loading_test.dart test/features/settings/theme_picker_page_test.dart test/features/profile/settings_profile_header_test.dart test/features/search/search_page_test.dart test/shared/widgets/raiju_logo_test.dart test/shared/widgets/bee_refresh_indicator_test.dart test/shared/widgets/buzz_loading_indicator_test.dart test/shared/theme/accent_colors_test.dart test/shared/theme/community_theme_preference_test.dart test/shared/theme/theme_pairs_test.dart test/shared/theme/buzz_theme_test.dart
     node scripts/spark-test.mjs all
 
 # Check preservation, formatting, analysis, and active tests without source changes.
@@ -68,6 +69,10 @@ ios-smoke: _deps
 # Run optional daemon start/attach/chat/restore journey over local TCP on iOS.
 ompd-ios-smoke: _deps
     node scripts/flutter-tool.mjs ios-dart run tool/ios_dev.dart ompd-smoke
+
+# Verify the app against an already-running relay using direnv-configured endpoint/profile.
+ompd-ios-live: _deps
+    node scripts/flutter-tool.mjs ios-dart run tool/ios_dev.dart ompd-live --endpoint "${OMPD_TEST_ENDPOINT:?set OMPD_TEST_ENDPOINT via direnv}" --profile "${OMPD_TEST_PROFILE:?set OMPD_TEST_PROFILE via direnv}"
 
 # Check actual daemon interoperability with a synthetic worker, without model calls.
 ompd-smoke daemon="ompd": _deps

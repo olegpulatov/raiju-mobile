@@ -104,12 +104,12 @@ void main() {
       );
       await tester.pump(const Duration(milliseconds: 400));
       expect(
-        find.byKey(const Key('quick-action-create-channel-card')),
+        find.byKey(const Key('quick-action-attach-collab-card')),
         findsOneWidget,
       );
       await _tapWhenHittable(
         tester,
-        find.byKey(const Key('quick-action-create-channel-card')),
+        find.byKey(const Key('quick-action-attach-collab-card')),
       );
     }
     await _pumpUntil(tester, find.byKey(const ValueKey('raiju-paste-toggle')));
