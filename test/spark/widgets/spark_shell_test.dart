@@ -11,12 +11,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 void main() {
-  testWidgets('expanded and minimized Spark leave chat child interactive', (
+  testWidgets('Spark starts folded without audio and chat stays interactive', (
     tester,
   ) async {
     var chatTaps = 0;
+    final session = _FakeSession();
     await tester.pumpWidget(
       _fixture(
+        session: session,
         child: TextButton(
           key: const ValueKey('chat-child'),
           onPressed: () => chatTaps++,
@@ -26,9 +28,26 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.byKey(const ValueKey('spark-strip')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('spark-minimized-button')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('spark-strip')), findsNothing);
+    expect(find.byKey(const ValueKey('spark-start')), findsNothing);
+    final compactSize = tester.getSize(
+      find.byKey(const ValueKey('spark-minimized-button')),
+    );
+    expect(compactSize.width, compactSize.height);
+    expect(session.startCalls, 0);
+    expect(session.stopCalls, 0);
     await tester.tap(find.byKey(const ValueKey('chat-child')));
     expect(chatTaps, 1);
+
+    await _expandSpark(tester);
+    expect(find.byKey(const ValueKey('spark-strip')), findsOneWidget);
+    expect(session.startCalls, 0);
+    await tester.tap(find.byKey(const ValueKey('chat-child')));
+    expect(chatTaps, 2);
 
     await tester.tap(find.byKey(const ValueKey('spark-minimize')));
     await tester.pump();
@@ -37,7 +56,9 @@ void main() {
       findsOneWidget,
     );
     await tester.tap(find.byKey(const ValueKey('chat-child')));
-    expect(chatTaps, 2);
+    expect(chatTaps, 3);
+    expect(session.startCalls, 0);
+    expect(session.stopCalls, 0);
   });
 
   testWidgets('Spark sheet keeps typed input without manual handoff controls', (
@@ -45,6 +66,7 @@ void main() {
   ) async {
     await tester.pumpWidget(_fixture(child: const Text('Main chat')));
     await tester.pump();
+    await _expandSpark(tester);
     final start = tester.widget<IconButton>(
       find.byKey(const ValueKey('spark-start')),
     );
@@ -65,6 +87,7 @@ void main() {
       _fixture(child: const Text('Main chat'), session: session),
     );
     await tester.pump();
+    await _expandSpark(tester);
     await tester.tap(find.text('Spark'));
     await tester.pumpAndSettle();
 
@@ -87,6 +110,7 @@ void main() {
       await tester.pumpWidget(
         _fixture(child: const Text('Main chat'), controller: controller),
       );
+      await _expandSpark(tester);
       await controller.start(chatId: 'bound-chat');
       session.emit(const {'type': 'connected'});
       await _pumpSessionUpdate(tester);
@@ -173,6 +197,7 @@ void main() {
     await tester.pumpWidget(
       _fixture(child: const Text('Main chat'), controller: controller),
     );
+    await _expandSpark(tester);
     await controller.start(chatId: 'bound-chat');
     session.emit(const {'type': 'connected'});
     session.emit(const {
@@ -205,6 +230,7 @@ void main() {
       await tester.pumpWidget(
         _fixture(child: const Text('Main chat'), controller: controller),
       );
+      await _expandSpark(tester);
       await controller.start(chatId: 'bound-chat');
       session.emit(const {'type': 'connected'});
       session.emit(const {
@@ -297,6 +323,7 @@ void main() {
           ),
         ),
       );
+      await _expandSpark(tester);
       await controller.start(chatId: 'bound-chat');
       session.emit(const {'type': 'connected'});
       session.emit({
@@ -348,6 +375,7 @@ void main() {
       await tester.pumpWidget(
         _fixture(child: const Text('Main chat'), controller: controller),
       );
+      await _expandSpark(tester);
       await controller.start(chatId: 'bound-chat');
       session.emit(const {'type': 'connected'});
       session.emit(const {'type': 'levels', 'input': 0.0, 'output': .05});
@@ -540,6 +568,11 @@ void main() {
     }
     debugDefaultTargetPlatformOverride = null;
   });
+}
+
+Future<void> _expandSpark(WidgetTester tester) async {
+  await tester.tap(find.byTooltip('Expand Spark controls'));
+  await tester.pump();
 }
 
 // Broadcast voice events can arrive after a pump's frame. Render the notified

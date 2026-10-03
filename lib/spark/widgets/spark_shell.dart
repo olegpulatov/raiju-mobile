@@ -57,7 +57,7 @@ class SparkShell extends ConsumerStatefulWidget {
 
 class _SparkShellState extends ConsumerState<SparkShell>
     with WidgetsBindingObserver {
-  bool _minimized = false;
+  bool _minimized = true;
   bool _modalActive = false;
   SparkController? _controller;
   bool _startRequested = false;

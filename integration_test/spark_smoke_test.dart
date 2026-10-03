@@ -54,8 +54,18 @@ void main() {
         ),
       );
       await _pumpFrames(tester);
+      expect(
+        find.byKey(const ValueKey('spark-minimized-button')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('spark-strip')), findsNothing);
+      expect(session.started, isFalse);
+      await binding.takeScreenshot('spark-folded-launch');
       await tester.tap(find.text(boundChat.title).first);
       await _pumpFrames(tester);
+      await tester.tap(find.byTooltip('Expand Spark controls'));
+      await _pumpFrames(tester);
+      expect(session.started, isFalse);
       await tester.tap(find.byKey(const ValueKey('spark-start')));
       await _pumpFrames(tester);
       expect(session.started, isTrue);
@@ -320,7 +330,14 @@ void main() {
         ),
       );
       await _pumpFrames(tester);
+      expect(
+        find.byKey(const ValueKey('spark-minimized-button')),
+        findsOneWidget,
+      );
+      expect(restartedSession.started, isFalse);
       await tester.tap(find.text(boundChat.title).first);
+      await _pumpFrames(tester);
+      await tester.tap(find.byTooltip('Expand Spark controls'));
       await _pumpFrames(tester);
       final startFinder = find.byKey(const ValueKey('spark-start'));
       final startScope = ProviderScope.containerOf(
