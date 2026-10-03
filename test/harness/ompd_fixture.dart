@@ -21,6 +21,7 @@ class OmpdFixture {
   int nextClient = 0;
   int polls = 0;
   String sessionFile = '/synthetic/session.jsonl';
+  String? rpcSessionFile;
   List<Map<String, Object?>> messages = [];
   Future<void> Function(Socket, Map<String, Object?>, String)? onRpc;
   Future<void> Function(Socket, Map<String, Object?>)? onControl;
@@ -118,7 +119,7 @@ class OmpdFixture {
   Map<String, Object?> get state => {
     'sessionId': sessionId,
     'sessionName': 'Fixture chat',
-    'sessionFile': sessionFile,
+    'sessionFile': rpcSessionFile ?? sessionFile,
     'model': {'id': 'fixture-model'},
     'isStreaming': streaming,
     'isCompacting': false,

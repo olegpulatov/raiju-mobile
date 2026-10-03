@@ -23,8 +23,18 @@ void main() {
         sessionFile: '/synthetic/worker.jsonl',
         trustedNetwork: true,
       ).encode();
+      final originalUri = Uri.parse(connection);
+      final boundConnection = originalUri
+          .replace(
+            queryParameters: {
+              ...originalUri.queryParameters,
+              'rpc-file': '/worker-alias/worker.jsonl',
+            },
+          )
+          .toString();
       final collab = FakeClient(connectedSnapshot: _snapshot(['collab']));
-      final daemon = FakeClient(
+      final daemon = _BoundDaemonClient(
+        savedConnection: boundConnection,
         connectedSnapshot: const HarnessSnapshot(
           phase: ConnectionPhase.live,
           title: 'Daemon conversation',
@@ -50,10 +60,16 @@ void main() {
       await first.flush();
       expect(firstInputs, ['synthetic-collab-link', connection]);
       expect(first.lastOmpdEndpoint.toString(), 'relay.example:7420');
+      expect(daemon.connectedInputs, [connection]);
+      await first.disconnect(chat.id);
+      await first.reconnect(chat.id);
+      expect(daemon.connectedInputs, [connection, boundConnection]);
+      await first.flush();
       final ciphertext = String.fromCharCodes(disk.bytes!);
       expect(ciphertext, isNot(contains('synthetic-session-identity')));
       expect(ciphertext, isNot(contains('private daemon draft')));
       expect(ciphertext, isNot(contains('/synthetic/worker.jsonl')));
+      expect(ciphertext, isNot(contains('/worker-alias/worker.jsonl')));
       first.dispose();
 
       final gate = Completer<void>();
@@ -75,15 +91,19 @@ void main() {
         store: _store(disk, keys),
       );
       await restored.initialize();
-      expect(restoredInputs, firstInputs);
+      expect(restoredInputs, ['synthetic-collab-link', boundConnection]);
       expect(
         OmpdConnection.parse(restoredInputs.last).sessionFile,
         '/synthetic/worker.jsonl',
       );
+      expect(
+        Uri.parse(restoredInputs.last).queryParameters['rpc-file'],
+        '/worker-alias/worker.jsonl',
+      );
       final restoredChat = restored.chat(chat.id)!;
       expect(restoredChat.draft, 'private daemon draft');
       expect(restoredChat.snapshot.sessionId, 'synthetic-session-identity');
-      expect(restoredDaemon.connectedInputs, [connection]);
+      expect(restoredDaemon.connectedInputs, [boundConnection]);
       expect(restoredCollab.connectedInputs, ['synthetic-collab-link']);
       expect(restoredDaemon.sentPrompts, isEmpty);
       gate.complete();
@@ -1372,6 +1392,19 @@ class FakeControlLossClient extends FakeClient implements OmpdControlStatus {
 
   @override
   bool controlLost = false;
+}
+
+class _BoundDaemonClient extends FakeClient implements OmpdBoundConnection {
+  _BoundDaemonClient({
+    required super.connectedSnapshot,
+    required String savedConnection,
+  }) : _savedConnection = savedConnection;
+
+  final String _savedConnection;
+
+  @override
+  String? get savedConnection =>
+      connectedInputs.isEmpty ? null : _savedConnection;
 }
 
 class FakeClient implements HarnessClient {

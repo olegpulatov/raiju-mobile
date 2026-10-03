@@ -9,7 +9,7 @@ final class OmpdEndpoint {
   final String host;
   final int port;
 
-  static OmpdEndpoint parse(String input) {
+  static OmpdEndpoint parse(String input, {bool requirePort = false}) {
     const invalid = HarnessException('Enter a relay host and TCP port.');
     final text = input.trim();
     if (text.isEmpty || text.length > 512 || RegExp(r'\s').hasMatch(text)) {
@@ -17,7 +17,7 @@ final class OmpdEndpoint {
     }
     try {
       String host;
-      int port = 7420;
+      int? port = requirePort ? null : 7420;
       if (text.contains('://')) {
         final uri = Uri.parse(text);
         if (uri.scheme != 'tcp' ||
@@ -69,7 +69,7 @@ final class OmpdEndpoint {
         }
         host = host.toLowerCase();
       }
-      if (port < 1 || port > 65535) throw invalid;
+      if (port == null || port < 1 || port > 65535) throw invalid;
       return OmpdEndpoint._(host, port);
     } catch (_) {
       throw invalid;
@@ -86,6 +86,7 @@ final class OmpdConnection {
     required this.instance,
     this.sessionId,
     this.sessionFile,
+    this.rpcSessionFile,
     required this.trustedNetwork,
   }) {
     validateOmpdName(instance);
@@ -101,12 +102,19 @@ final class OmpdConnection {
             RegExp(r'[\x00-\x1f\x7f]').hasMatch(sessionFile!))) {
       throw const HarnessException('Invalid relay transcript identity.');
     }
+    if (rpcSessionFile != null &&
+        (rpcSessionFile!.isEmpty ||
+            rpcSessionFile!.length > 4096 ||
+            RegExp(r'[\x00-\x1f\x7f]').hasMatch(rpcSessionFile!))) {
+      throw const HarnessException('Invalid relay RPC transcript identity.');
+    }
   }
 
   final OmpdEndpoint endpoint;
   final String instance;
   final String? sessionId;
   final String? sessionFile;
+  final String? rpcSessionFile;
   final bool trustedNetwork;
 
   String encode() => Uri(
@@ -117,6 +125,7 @@ final class OmpdConnection {
     queryParameters: {
       'session': ?sessionId,
       'file': ?sessionFile,
+      'rpc-file': ?rpcSessionFile,
       'trusted': trustedNetwork ? '1' : '0',
     },
   ).toString();
@@ -136,7 +145,7 @@ final class OmpdConnection {
           uri.pathSegments.length != 1 ||
           uri.queryParametersAll.values.any((values) => values.length != 1) ||
           uri.queryParameters.keys.any(
-            (key) => !['session', 'file', 'trusted'].contains(key),
+            (key) => !['session', 'file', 'rpc-file', 'trusted'].contains(key),
           ) ||
           !['0', '1'].contains(uri.queryParameters['trusted'])) {
         throw invalid;
@@ -150,6 +159,7 @@ final class OmpdConnection {
         instance: uri.pathSegments.single,
         sessionId: uri.queryParameters['session'],
         sessionFile: uri.queryParameters['file'],
+        rpcSessionFile: uri.queryParameters['rpc-file'],
         trustedNetwork: uri.queryParameters['trusted'] == '1',
       );
     } catch (_) {
@@ -164,6 +174,11 @@ final class OmpdConnection {
 /// The controller persists this loss even when takeover interrupted bootstrap.
 abstract interface class OmpdControlStatus {
   bool get controlLost;
+}
+
+/// Supplies the bound relay identity for encrypted connection persistence.
+abstract interface class OmpdBoundConnection {
+  String? get savedConnection;
 }
 
 void validateOmpdName(String name) {

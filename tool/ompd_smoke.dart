@@ -11,8 +11,13 @@ const _limit = Duration(seconds: 10);
 const _mainId = 'synthetic-main';
 const _resumeId = 'synthetic-resume';
 
-/// Real ompd interoperability, deliberately without OMP or any model provider.
+/// Synthetic isolated daemon checks and opt-in existing-relay model probes.
 Future<void> main(List<String> arguments) async {
+  if (arguments.isNotEmpty &&
+      ['--live', '--live-start'].contains(arguments.first)) {
+    await _live(arguments);
+    return;
+  }
   if (arguments.length == 1 &&
       (arguments.single == '--help' || arguments.single == '-h')) {
     stdout.writeln(
@@ -23,7 +28,16 @@ uses temporary config/state and a synthetic Dart RPC v1 worker, never OMP,
 credentials, real sessions, or a model. checks status/start/readiness, attach,
 state/history, send/prompt events, takeover, resume, and reconnect without
 worker restart or prompt replay. removes its own processes and temp files.
-this is real-daemon wire evidence, not real-model or OMP persistence evidence.''',
+this is real-daemon wire evidence, not real-model or OMP persistence evidence.
+
+live mode (uses an already-running relay; never starts/stops its daemon):
+  ompd_smoke.dart --live INSTANCE [--send]
+  ompd_smoke.dart --live-start UNIQUE_INSTANCE [--send]
+requires OMPD_TEST_ENDPOINT=host:port and OMPD_TEST_PROFILE=test.
+optional OMPD_TEST_SESSION is a remote saved-file/id for --live-start resume.
+--send makes one harmless model call, then recreates the client and checks
+history without replay. --live-start starts exactly once, never retries.
+live workers remain running; disconnect does not stop or delete remote work.''',
     );
     return;
   }
@@ -462,6 +476,120 @@ env = { RAIJU_OMPD_FIXTURE_SESSION = ${jsonEncode(mainSession.path)}, RAIJU_OMPD
       '0 model calls; state/history, prompt events, takeover, resume, '
       'reconnect without restart/replay, and cleanup verified',
     );
+  }
+}
+
+Future<void> _live(List<String> arguments) async {
+  OmpdClient? client;
+  try {
+    _require(
+      (arguments.length == 2 ||
+          (arguments.length == 3 && arguments.last == '--send')),
+      'usage: --live|--live-start INSTANCE [--send]',
+    );
+    final endpointText = Platform.environment['OMPD_TEST_ENDPOINT'];
+    final profile = Platform.environment['OMPD_TEST_PROFILE'];
+    _require(
+      endpointText != null && profile == 'test',
+      'set OMPD_TEST_ENDPOINT=host:port and OMPD_TEST_PROFILE=test',
+    );
+    final endpoint = OmpdEndpoint.parse(endpointText!, requirePort: true);
+    final name = arguments[1];
+    validateOmpdName(name);
+    const api = OmpdApi(timeout: Duration(seconds: 30));
+    if (arguments.first == '--live-start') {
+      await api.start(
+        endpoint,
+        name: name,
+        profile: profile,
+        session: Platform.environment['OMPD_TEST_SESSION'],
+      );
+    }
+    final instance = await api.waitUntilReady(endpoint, name);
+    final status = _map(
+      await _call(endpoint, {'method': 'status', 'name': name}),
+    );
+    _require(
+      status['profile'] == 'test',
+      'live instance must use test profile',
+    );
+    final encoded = OmpdConnection(
+      endpoint: endpoint,
+      instance: name,
+      sessionId: instance.sessionId,
+      sessionFile: instance.sessionFile,
+      trustedNetwork: true,
+    ).encode();
+    client = OmpdClient(timeout: const Duration(seconds: 30));
+    await client.connect(encoded);
+    _require(client.snapshot.canSend, 'live attachment is not writable');
+    stdout.writeln('live attach passed: session identity and history loaded');
+    if (arguments.last == '--send') {
+      final marker = 'mobile-relay-${DateTime.now().microsecondsSinceEpoch}';
+      await client.sendPrompt('Reply with exactly this text: $marker');
+      final clock = Stopwatch()..start();
+      while (clock.elapsed < const Duration(seconds: 90)) {
+        _require(
+          client.snapshot.phase != ConnectionPhase.error,
+          'live connection failed while waiting for reply',
+        );
+        if (!client.snapshot.isStreaming &&
+            client.snapshot.messages.any(
+              (message) =>
+                  message.role == MessageRole.assistant &&
+                  message.text.contains(marker),
+            )) {
+          break;
+        }
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+      }
+      _require(
+        !client.snapshot.isStreaming &&
+            client.snapshot.messages.any(
+              (message) =>
+                  message.role == MessageRole.assistant &&
+                  message.text.contains(marker),
+            ),
+        'live model did not return the marker',
+      );
+      stdout.writeln('live send passed: one prompt and actual model reply');
+    }
+    final messages = client.snapshot.messages;
+    final session = client.snapshot.sessionId;
+    final saved = client.savedConnection;
+    _require(saved != null, 'live raw transcript identity was not bound');
+    await client.dispose();
+    client = OmpdClient(timeout: const Duration(seconds: 30));
+    await client.connect(saved!);
+    _require(client.snapshot.sessionId == session, 'recreated session changed');
+    final restored = client.snapshot.messages;
+    _require(
+      restored.length == messages.length,
+      'recreated history size changed',
+    );
+    for (var index = 0; index < messages.length; index++) {
+      _require(
+        restored[index].role == messages[index].role &&
+            restored[index].text == messages[index].text,
+        'recreated history changed or duplicated',
+      );
+    }
+    final after = _map(
+      await _call(endpoint, {'method': 'status', 'name': name}),
+    );
+    _require(
+      after['generation'] == status['generation'] &&
+          after['pid'] == status['pid'],
+      'reconnect restarted the worker',
+    );
+    stdout.writeln(
+      'live recreate passed: same worker, same history, no prompt replay',
+    );
+  } catch (error) {
+    stderr.writeln('ompd live probe failed: $error');
+    exitCode = 1;
+  } finally {
+    await client?.dispose();
   }
 }
 

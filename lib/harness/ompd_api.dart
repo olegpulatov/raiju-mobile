@@ -61,7 +61,6 @@ class OmpdInstance {
   }
 }
 
-/// Callers must obtain explicit trusted-network consent before calling this API.
 /// Requests never access workstation files or use one-shot RPC `send`.
 class OmpdApi {
   const OmpdApi({

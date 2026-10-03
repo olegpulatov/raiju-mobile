@@ -98,6 +98,28 @@ void main() {
     },
   );
 
+  test(
+    'ready session id still waits for asynchronous canonical file metadata',
+    () async {
+      var poll = 0;
+      fixture.onControl = (socket, request) async {
+        final result = Map<String, Object?>.from(fixture.instance);
+        if (++poll == 1) {
+          result['session'] = {'id': fixture.sessionId, 'file': null};
+        }
+        await fixture.send(socket, {'result': result});
+      };
+      const api = OmpdApi(pollInterval: Duration(milliseconds: 2));
+      final ready = await api.waitUntilReady(fixture.endpoint, 'phone');
+      expect(ready.sessionFile, fixture.sessionFile);
+      expect(poll, 2);
+      expect(
+        fixture.requests.where((request) => request['method'] == 'start'),
+        isEmpty,
+      );
+    },
+  );
+
   test('readiness has bounded timeout and rejects stopped worker', () async {
     fixture.onControl = (socket, request) async {
       final result = Map<String, Object?>.from(fixture.instance)

@@ -67,6 +67,13 @@ class ChatThread {
 
   HarnessSnapshot get snapshot => _snapshot;
   bool get isDaemon => OmpdConnection.isOmpd(_input);
+  String get _connectionInput {
+    final source = client;
+    return source is OmpdBoundConnection
+        ? (source as OmpdBoundConnection).savedConnection ?? _input
+        : _input;
+  }
+
   String get title {
     final label = _label.trim();
     if (_localLabel && !_genericSessionTitle(label)) return label;
@@ -400,7 +407,7 @@ class CompanionController extends ChangeNotifier {
     thread._acceptChanges = true;
     thread._connecting = true;
     try {
-      await thread.client.connect(thread._input);
+      await thread.client.connect(thread._connectionInput);
       if (!_isCurrent(thread, generation)) return;
       if (thread._acceptHostStart) {
         thread._hostStartedAt ??= thread.client.snapshot.sessionStartedAt;
@@ -814,7 +821,7 @@ class CompanionController extends ChangeNotifier {
         final snapshot = thread._snapshot;
         return StoredChat(
           id: thread.id,
-          link: thread._input,
+          link: thread._connectionInput,
           label: thread._label,
           localLabel: thread._localLabel,
           createdAt: thread._createdAt,

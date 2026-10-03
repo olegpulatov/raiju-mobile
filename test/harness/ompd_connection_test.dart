@@ -14,6 +14,23 @@ void main() {
     expect(OmpdEndpoint.parse('tcp://[::1]:8123').toString(), '[::1]:8123');
   });
 
+  test('editable endpoint can require an explicit port', () {
+    for (final text in ['relay.example', '127.0.0.1', '::1', 'tcp://[::1]']) {
+      expect(
+        () => OmpdEndpoint.parse(text, requirePort: true),
+        throwsA(isA<HarnessException>()),
+      );
+    }
+    expect(
+      OmpdEndpoint.parse('relay.example:8123', requirePort: true).port,
+      8123,
+    );
+    expect(
+      OmpdEndpoint.parse('tcp://[::1]:8123', requirePort: true).port,
+      8123,
+    );
+  });
+
   test('endpoint rejects credentials other transports and injected fields', () {
     for (final text in [
       '',
@@ -38,13 +55,14 @@ void main() {
   });
 
   test(
-    'saved relay connections preserve bound identity and explicit consent',
+    'saved relay connections preserve bound identity and legacy trust metadata',
     () {
       final connection = OmpdConnection(
         endpoint: OmpdEndpoint.parse('[::1]:9000'),
         instance: 'phone',
         sessionId: 'fixture/session?',
         sessionFile: '/synthetic/private session.jsonl',
+        rpcSessionFile: '/home/agent/session link.jsonl',
         trustedNetwork: true,
       );
       final decoded = OmpdConnection.parse(connection.encode());
@@ -52,9 +70,14 @@ void main() {
       expect(decoded.instance, 'phone');
       expect(decoded.sessionId, connection.sessionId);
       expect(decoded.sessionFile, connection.sessionFile);
+      expect(decoded.rpcSessionFile, connection.rpcSessionFile);
       expect(decoded.trustedNetwork, isTrue);
       expect(connection.toString(), isNot(contains(connection.sessionId!)));
       expect(connection.toString(), isNot(contains(connection.sessionFile!)));
+      expect(
+        connection.toString(),
+        isNot(contains(connection.rpcSessionFile!)),
+      );
       expect(OmpdConnection.isOmpd(connection.encode()), isTrue);
       final untrusted = OmpdConnection(
         endpoint: decoded.endpoint,
@@ -62,6 +85,7 @@ void main() {
         trustedNetwork: false,
       );
       expect(OmpdConnection.parse(untrusted.encode()).trustedNetwork, isFalse);
+      expect(OmpdConnection.parse(untrusted.encode()).rpcSessionFile, isNull);
     },
   );
 

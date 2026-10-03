@@ -22,19 +22,20 @@ void main() {
     await fixture.close();
   });
 
-  test('consent is checked before all network effects', () async {
-    final untrusted = OmpdConnection(
-      endpoint: fixture.endpoint,
-      instance: 'phone',
-      sessionId: fixture.sessionId,
-      trustedNetwork: false,
-    ).encode();
-    await expectLater(
-      client.connect(untrusted),
-      throwsA(isA<HarnessException>()),
-    );
-    expect(fixture.requests, isEmpty);
-  });
+  test(
+    'legacy trust flag does not gate an authorized relay connection',
+    () async {
+      final connection = OmpdConnection(
+        endpoint: fixture.endpoint,
+        instance: 'phone',
+        sessionId: fixture.sessionId,
+        sessionFile: fixture.sessionFile,
+        trustedNetwork: false,
+      ).encode();
+      await client.connect(connection);
+      expect(client.snapshot.canSend, isTrue);
+    },
+  );
 
   test(
     'attach bootstrap loads history before live and remains raw v1',
@@ -70,6 +71,7 @@ void main() {
           'get_state',
           'get_messages_page',
           'get_state',
+          'status',
         ],
       );
       expect(
@@ -77,6 +79,154 @@ void main() {
         isFalse,
       );
       await subscription.cancel();
+    },
+  );
+
+  test(
+    'canonical daemon file and raw RPC alias attach send and reconnect',
+    () async {
+      fixture.sessionFile = '/private/tmp/synthetic/session.jsonl';
+      fixture.rpcSessionFile = '/tmp/synthetic/session.jsonl';
+      fixture.messages = [message('user', 'saved history', 10)];
+      final encoded = fixture.encoded;
+      expect(client.savedConnection, isNull);
+      await client.connect(encoded);
+      final saved = client.savedConnection!;
+      final binding = OmpdConnection.parse(saved);
+      expect(binding.sessionFile, fixture.sessionFile);
+      expect(binding.rpcSessionFile, fixture.rpcSessionFile);
+      await client.sendPrompt('one alias prompt');
+      await client.disconnect();
+      await client.connect(encoded);
+      expect(client.snapshot.canSend, isTrue);
+      expect(client.snapshot.messages.single.text, 'saved history');
+      expect(
+        fixture.requests.where((request) => request['type'] == 'prompt').length,
+        1,
+      );
+      expect(
+        fixture.requests.where((request) => request['method'] == 'start'),
+        isEmpty,
+      );
+      await client.dispose();
+      client = OmpdClient(timeout: const Duration(seconds: 1));
+      await client.connect(saved);
+      expect(client.snapshot.messages.single.text, 'saved history');
+    },
+  );
+
+  test(
+    'arbitrary remote path aliases need no local platform knowledge',
+    () async {
+      fixture.sessionFile = '/srv/canonical/sessions/session.jsonl';
+      fixture.rpcSessionFile = '/home/agent/session-link/session.jsonl';
+      await client.connect(fixture.encoded);
+      expect(client.snapshot.canSend, isTrue);
+      await client.disconnect();
+      await client.connect(fixture.encoded);
+      expect(client.snapshot.sessionId, fixture.sessionId);
+    },
+  );
+
+  test('unchanged Linux-style remote file preserves exact identity', () async {
+    fixture.sessionFile = '/home/agent/.local/share/omp/session.jsonl';
+    await client.connect(fixture.encoded);
+    await client.disconnect();
+    await client.connect(fixture.encoded);
+    expect(client.snapshot.canSend, isTrue);
+  });
+
+  test(
+    'raw RPC file switch remains rejected even with same session id',
+    () async {
+      fixture.sessionFile = '/private/tmp/synthetic/session.jsonl';
+      fixture.rpcSessionFile = '/tmp/synthetic/session.jsonl';
+      fixture.messages = [message('user', 'kept history', 10)];
+      await client.connect(fixture.encoded);
+      fixture.rpcSessionFile = '/tmp/synthetic/other.jsonl';
+      await fixture.send(fixture.attachments.single, {
+        'type': 'response',
+        'command': 'get_state',
+        'id': 'ompd:state:1:2',
+        'success': true,
+        'data': fixture.state,
+      });
+      await waitFor(() => client.snapshot.phase == ConnectionPhase.error);
+      expect(client.snapshot.messages.single.text, 'kept history');
+      expect(client.snapshot.canSend, isFalse);
+    },
+  );
+
+  test(
+    'same-id canonical file switch during attach keeps old history',
+    () async {
+      fixture.sessionFile = '/srv/canonical/original.jsonl';
+      fixture.rpcSessionFile = '/home/agent/original-link.jsonl';
+      fixture.messages = [message('user', 'kept original history', 10)];
+      final encoded = fixture.encoded;
+      await client.connect(encoded);
+      await client.disconnect();
+      fixture.onRpc = (socket, request, id) async {
+        if (request['type'] == 'set_event_filter') {
+          fixture.sessionFile = '/srv/canonical/replacement.jsonl';
+          fixture.messages = [message('user', 'replacement history', 20)];
+        }
+        await fixture.rpc(socket, request, id);
+      };
+      await expectLater(
+        client.connect(encoded),
+        throwsA(isA<HarnessException>()),
+      );
+      expect(client.snapshot.phase, ConnectionPhase.error);
+      expect(client.snapshot.messages.single.text, 'kept original history');
+      expect(client.snapshot.canSend, isFalse);
+    },
+  );
+
+  test(
+    'same-id raw file switch reconnect rejects stale daemon metadata',
+    () async {
+      fixture.sessionFile = '/srv/canonical/original.jsonl';
+      fixture.rpcSessionFile = '/home/agent/original-link.jsonl';
+      fixture.messages = [message('user', 'kept original history', 10)];
+      final encoded = fixture.encoded;
+      await client.connect(encoded);
+      await client.disconnect();
+      // OMP changes file, but ompd's internal state poll has not caught up.
+      // Both status calls would still report the original canonical identity.
+      fixture.rpcSessionFile = '/home/agent/replacement-link.jsonl';
+      fixture.messages = [message('user', 'replacement history', 20)];
+      await expectLater(
+        client.connect(encoded),
+        throwsA(isA<HarnessException>()),
+      );
+      expect(client.snapshot.phase, ConnectionPhase.error);
+      expect(client.snapshot.messages.single.text, 'kept original history');
+      expect(client.snapshot.canSend, isFalse);
+      expect(fixture.sessionFile, '/srv/canonical/original.jsonl');
+    },
+  );
+
+  test(
+    'exported raw binding rejects stale-cache file switch after recreation',
+    () async {
+      fixture.sessionFile = '/srv/canonical/original.jsonl';
+      fixture.rpcSessionFile = '/home/agent/original-link.jsonl';
+      await client.connect(fixture.encoded);
+      final saved = client.savedConnection!;
+      await client.dispose();
+      client = OmpdClient(timeout: const Duration(seconds: 1));
+      fixture.rpcSessionFile = '/home/agent/replacement-link.jsonl';
+      fixture.messages = [message('user', 'replacement history', 20)];
+      await expectLater(
+        client.connect(saved),
+        throwsA(isA<HarnessException>()),
+      );
+      expect(client.snapshot.phase, ConnectionPhase.error);
+      expect(client.snapshot.messages, isEmpty);
+      expect(client.snapshot.canSend, isFalse);
+      expect(client.savedConnection, isNull);
+      expect(fixture.sessionFile, '/srv/canonical/original.jsonl');
     },
   );
 

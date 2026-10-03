@@ -9,7 +9,8 @@ import 'voice_directive.dart';
 
 /// Raw RPC v1 only: ompd does not support OMP protocol negotiation/chunking.
 /// Reconnect is explicit and attach-only. A takeover never reclaims control.
-final class OmpdClient implements HarnessClient, OmpdControlStatus {
+final class OmpdClient
+    implements HarnessClient, OmpdControlStatus, OmpdBoundConnection {
   OmpdClient({this.timeout = const Duration(seconds: 10), OmpdApi? api})
     : _api = api ?? OmpdApi(timeout: timeout);
 
@@ -32,6 +33,7 @@ final class OmpdClient implements HarnessClient, OmpdControlStatus {
   OmpdConnection? _connection;
   String? _boundSession;
   String? _boundFile;
+  String? _boundRpcFile;
   Map<String, Object?>? _pendingCompaction;
   Map<String, Object?>? _lastCompaction;
   int _contextSequence = 0;
@@ -50,6 +52,7 @@ final class OmpdClient implements HarnessClient, OmpdControlStatus {
   bool _controlLost = false;
   bool _streaming = false;
   bool _sendingPrompt = false;
+  String? _savedConnection;
   String _title = 'OMP chat';
   String _model = '';
   String _activity = '';
@@ -66,16 +69,14 @@ final class OmpdClient implements HarnessClient, OmpdControlStatus {
   bool get controlLost => _controlLost;
 
   @override
+  String? get savedConnection => _savedConnection;
+
+  @override
   Future<void> connect(String input, {String displayName = 'raiju'}) async {
     if (_disposed) {
       throw const HarnessException('This relay client has been disposed.');
     }
     final connection = OmpdConnection.parse(input);
-    if (!connection.trustedNetwork) {
-      throw const HarnessException(
-        'Confirm this unencrypted relay is on a trusted private network before connecting.',
-      );
-    }
     if (connection.sessionFile == null || connection.sessionFile!.isEmpty) {
       throw const HarnessException(
         'This relay connection has no transcript identity. Pair it again before connecting.',
@@ -97,6 +98,8 @@ final class OmpdClient implements HarnessClient, OmpdControlStatus {
       _eventBytes = 0;
       _boundSession = null;
       _boundFile = null;
+      _boundRpcFile = null;
+      _savedConnection = null;
       _lastCompaction = null;
       _title = 'OMP chat';
       _model = '';
@@ -105,7 +108,10 @@ final class OmpdClient implements HarnessClient, OmpdControlStatus {
         ((_boundSession != null &&
                 connection.sessionId != null &&
                 connection.sessionId != _boundSession) ||
-            (_boundFile != null && connection.sessionFile != _boundFile))) {
+            (_boundFile != null && connection.sessionFile != _boundFile) ||
+            (_boundRpcFile != null &&
+                connection.rpcSessionFile != null &&
+                connection.rpcSessionFile != _boundRpcFile))) {
       const error = HarnessException(
         'This connection refers to a different session. Create a separate chat.',
       );
@@ -115,6 +121,7 @@ final class OmpdClient implements HarnessClient, OmpdControlStatus {
     _connection = connection;
     _boundSession ??= connection.sessionId;
     _boundFile ??= connection.sessionFile;
+    _boundRpcFile ??= connection.rpcSessionFile;
     _pendingCompaction = null;
     _readOnly = true;
     _streaming = false;
@@ -123,27 +130,7 @@ final class OmpdClient implements HarnessClient, OmpdControlStatus {
     _phase = ConnectionPhase.connecting;
     _publish();
     try {
-      final instances = await _api.status(connection.endpoint);
-      _check(generation);
-      final matches = instances
-          .where((item) => item.name == connection.instance)
-          .toList();
-      if (matches.length != 1) {
-        throw const HarnessException(
-          'This relay instance no longer exists. Choose a running instance.',
-        );
-      }
-      final instance = matches.single;
-      if (!instance.ready ||
-          !instance.rpc ||
-          instance.sessionConflict ||
-          instance.sessionId == null ||
-          instance.sessionId!.isEmpty) {
-        throw const HarnessException(
-          'This instance is not ready for session-safe RPC attachment.',
-        );
-      }
-      _validateSession(instance.sessionId, instance.sessionFile);
+      final instance = await _daemonInstance(connection, generation);
       _boundSession ??= instance.sessionId;
       final wire = await OmpdWire.connect(
         connection.endpoint,
@@ -225,6 +212,38 @@ final class OmpdClient implements HarnessClient, OmpdControlStatus {
     }
   }
 
+  Future<OmpdInstance> _daemonInstance(
+    OmpdConnection connection,
+    int generation,
+  ) async {
+    final instances = await _api.status(connection.endpoint);
+    _check(generation);
+    final matches = instances
+        .where((item) => item.name == connection.instance)
+        .toList();
+    if (matches.length != 1) {
+      throw const HarnessException(
+        'This relay instance no longer exists. Choose a running instance.',
+      );
+    }
+    final instance = matches.single;
+    if (!instance.ready ||
+        !instance.rpc ||
+        instance.sessionConflict ||
+        instance.sessionId == null ||
+        instance.sessionId!.isEmpty) {
+      throw const HarnessException(
+        'This instance is not ready for session-safe RPC attachment.',
+      );
+    }
+    _validateSession(
+      instance.sessionId,
+      instance.sessionFile,
+      daemonMetadata: true,
+    );
+    return instance;
+  }
+
   Future<void> _bootstrapContext(int generation, {int attempt = 0}) async {
     final compaction = _pendingCompaction;
     _pendingCompaction = null;
@@ -236,6 +255,9 @@ final class OmpdClient implements HarnessClient, OmpdControlStatus {
     final finalState = await _rpc('get_state');
     _check(generation);
     _applyState(finalState);
+    // Recheck canonical identity after RPC history loads, before publishing it.
+    // The daemon may have observed a transcript switch during attachment.
+    await _daemonInstance(_connection!, generation);
     if (_readOnly) {
       throw const HarnessException(
         'Another client took control before history was ready. Reconnect explicitly.',
@@ -288,6 +310,15 @@ final class OmpdClient implements HarnessClient, OmpdControlStatus {
     _bootstrapping = false;
     _buffer.clear();
     _bufferBytes = 0;
+    final connection = _connection!;
+    _savedConnection = OmpdConnection(
+      endpoint: connection.endpoint,
+      instance: connection.instance,
+      sessionId: _boundSession,
+      sessionFile: _boundFile,
+      rpcSessionFile: _boundRpcFile,
+      trustedNetwork: connection.trustedNetwork,
+    ).encode();
     _phase = ConnectionPhase.live;
     _publish();
   }
@@ -569,17 +600,27 @@ final class OmpdClient implements HarnessClient, OmpdControlStatus {
     }
   }
 
-  void _validateSession(Object? session, Object? file) {
+  void _validateSession(
+    Object? session,
+    Object? file, {
+    bool daemonMetadata = false,
+  }) {
+    // ompd canonicalizes remote file paths; OMP reports its original spelling.
+    // Keep those identities separate: resolving a remote symlink on the phone
+    // is impossible. Status must match the saved canonical file. RPC spelling
+    // stays bound across reconnect too: daemon metadata can lag a file switch.
+    final expectedFile = daemonMetadata ? _boundFile : _boundRpcFile;
     if (session is! String ||
         session.isEmpty ||
         file is! String ||
         file.isEmpty ||
         (_boundSession != null && session != _boundSession) ||
-        (_boundFile != null && file != _boundFile)) {
+        (expectedFile != null && file != expectedFile)) {
       throw const HarnessException(
         'The relay instance now has a different session. Old history was kept; create a separate chat.',
       );
     }
+    if (!daemonMetadata) _boundRpcFile ??= file;
   }
 
   void _applyState(Map<String, Object?> state) {
