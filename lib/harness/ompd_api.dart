@@ -61,6 +61,43 @@ class OmpdInstance {
   }
 }
 
+final _ompdStartControlCharacters = RegExp(r'[\x00-\x1f\x7f]');
+
+/// Validates explicit start fields before any request or start-once state change.
+void validateOmpdStart({
+  required String name,
+  String? profile,
+  String? cwd,
+  String? session,
+}) {
+  if (name.isEmpty) {
+    throw const HarnessException('Enter an instance name.');
+  }
+  validateOmpdName(name);
+  if (profile != null) validateOmpdProfileName(profile);
+  if (profile == null && cwd == null) {
+    throw const HarnessException(
+      'Enter a configured host profile or an absolute Working directory.',
+    );
+  }
+  if (cwd != null &&
+      (!cwd.startsWith('/') ||
+          cwd.length > 4096 ||
+          _ompdStartControlCharacters.hasMatch(cwd))) {
+    throw const HarnessException(
+      'Working directory must be an absolute host path of at most 4096 characters, without control characters.',
+    );
+  }
+  if (session != null &&
+      (session.trim().isEmpty ||
+          session.length > 4096 ||
+          _ompdStartControlCharacters.hasMatch(session))) {
+    throw const HarnessException(
+      'Session file or ID must use 1–4096 characters without control characters.',
+    );
+  }
+}
+
 /// Requests never access workstation files or use one-shot RPC `send`.
 class OmpdApi {
   const OmpdApi({
@@ -90,28 +127,7 @@ class OmpdApi {
     String? cwd,
     String? session,
   }) async {
-    validateOmpdName(name);
-    if (profile != null) validateOmpdName(profile);
-    if (profile == null && (cwd == null || !cwd.startsWith('/'))) {
-      throw const HarnessException(
-        'Choose a profile or enter an absolute remote working directory.',
-      );
-    }
-    for (final value in [cwd, session]) {
-      if (value != null &&
-          (value.trim().isEmpty ||
-              value.length > 4096 ||
-              RegExp(r'[\x00-\x1f\x7f]').hasMatch(value))) {
-        throw const HarnessException(
-          'Invalid remote directory or session reference.',
-        );
-      }
-    }
-    if (cwd != null && !cwd.startsWith('/')) {
-      throw const HarnessException(
-        'Enter an absolute remote working directory.',
-      );
-    }
+    validateOmpdStart(name: name, profile: profile, cwd: cwd, session: session);
     final instance = OmpdInstance.fromJson(
       await _request(endpoint, {
         'method': 'start',

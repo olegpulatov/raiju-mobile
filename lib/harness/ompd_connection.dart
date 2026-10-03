@@ -181,14 +181,27 @@ abstract interface class OmpdBoundConnection {
   String? get savedConnection;
 }
 
-void validateOmpdName(String name) {
+final _ompdNamePattern = RegExp(r'^[a-zA-Z0-9._-]+$');
+
+void validateOmpdName(String name) => _validateOmpdName(name, 'Instance name');
+
+void validateOmpdProfileName(String profile) {
+  if (profile.contains('/')) {
+    throw const HarnessException(
+      'Profile must be a configured host profile name, not a path. Put the path in Working directory and leave Profile empty if you have no configured profile.',
+    );
+  }
+  _validateOmpdName(profile, 'Profile name');
+}
+
+void _validateOmpdName(String name, String field) {
   if (name.isEmpty ||
       name.length > 80 ||
       name == '.' ||
       name == '..' ||
-      !RegExp(r'^[a-zA-Z0-9._-]+$').hasMatch(name)) {
-    throw const HarnessException(
-      'Use 1–80 letters, digits, dots, or hyphens for the relay name.',
+      !_ompdNamePattern.hasMatch(name)) {
+    throw HarnessException(
+      '$field must use 1–80 letters, digits, dots, underscores, or hyphens, and cannot be "." or "..".',
     );
   }
 }

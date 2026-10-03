@@ -329,6 +329,119 @@ void main() {
     },
   );
 
+  testWidgets('profile path is rejected until explicitly moved to directory', (
+    tester,
+  ) async {
+    final api = _Api()
+      ..waitError = const HarnessException('Session did not become ready.');
+    final client = _Client();
+    await _open(tester, api, client, view: OmpdPairingView.start);
+    await _enterEndpoint(tester);
+    await _show(tester, find.byKey(const ValueKey('ompd-name')));
+    await tester.enterText(find.byKey(const ValueKey('ompd-name')), 'voice');
+    await _show(tester, find.byKey(const ValueKey('ompd-profile')));
+    final profileField = _button<TextField>(tester, 'ompd-profile');
+    expect(
+      profileField.decoration!.labelText,
+      'Profile (configured host profile)',
+    );
+    expect(profileField.decoration!.helperText, contains('not a path'));
+    await tester.enterText(
+      find.byKey(const ValueKey('ompd-profile')),
+      '/srv/locus/hub',
+    );
+    await _show(tester, find.byKey(const ValueKey('ompd-cwd')));
+    final directoryField = _button<TextField>(tester, 'ompd-cwd');
+    expect(
+      directoryField.decoration!.labelText,
+      'Working directory (absolute host path)',
+    );
+    expect(
+      directoryField.decoration!.helperText,
+      contains('Required when Profile is empty'),
+    );
+    await _tap(tester, 'ompd-start');
+    await _show(tester, find.byKey(const ValueKey('ompd-error')));
+    final error = _button<Text>(tester, 'ompd-error').data!;
+    expect(error, contains('Profile must be a configured host profile name'));
+    expect(error, contains('Put the path in Working directory'));
+    expect(error, contains('leave Profile empty'));
+    expect(api.startCalls, 0);
+    expect(api.waitCalls, 0);
+    expect(client.inputs, isEmpty);
+    expect(_button<FilledButton>(tester, 'ompd-start').onPressed, isNotNull);
+    await _show(
+      tester,
+      find.byKey(const ValueKey('ompd-profile')),
+      scrollDelta: -300,
+    );
+    expect(
+      _button<TextField>(tester, 'ompd-profile').controller!.text,
+      '/srv/locus/hub',
+    );
+    await tester.enterText(find.byKey(const ValueKey('ompd-profile')), '');
+    await _show(tester, find.byKey(const ValueKey('ompd-cwd')));
+    expect(_button<TextField>(tester, 'ompd-cwd').controller!.text, isEmpty);
+    await tester.enterText(
+      find.byKey(const ValueKey('ompd-cwd')),
+      '/srv/locus/hub',
+    );
+    await _tap(tester, 'ompd-start');
+    expect(api.calls, ['start', 'wait']);
+    expect(api.startCalls, 1);
+    expect(api.startedName, 'voice');
+    expect(api.startedProfile, isNull);
+    expect(api.startedCwd, '/srv/locus/hub');
+    expect(_button<FilledButton>(tester, 'ompd-start').onPressed, isNull);
+    await _tap(tester, 'ompd-view-browse');
+    await _tap(tester, 'ompd-view-start');
+    await _show(tester, find.byKey(const ValueKey('ompd-start')));
+    expect(api.startCalls, 1);
+    expect(_button<FilledButton>(tester, 'ompd-start').onPressed, isNull);
+  });
+
+  testWidgets('invalid instance and profile names identify the edited field', (
+    tester,
+  ) async {
+    final api = _Api();
+    await _open(tester, api, _Client(), view: OmpdPairingView.start);
+    await _enterEndpoint(tester);
+    await _show(tester, find.byKey(const ValueKey('ompd-name')));
+    await tester.enterText(find.byKey(const ValueKey('ompd-name')), 'bad name');
+    await _show(tester, find.byKey(const ValueKey('ompd-profile')));
+    await tester.enterText(
+      find.byKey(const ValueKey('ompd-profile')),
+      'mobile',
+    );
+    await _tap(tester, 'ompd-start');
+    await _show(tester, find.byKey(const ValueKey('ompd-error')));
+    expect(
+      _button<Text>(tester, 'ompd-error').data,
+      startsWith('Instance name must use'),
+    );
+    expect(_button<Text>(tester, 'ompd-error').data, contains('underscores'));
+    await _show(
+      tester,
+      find.byKey(const ValueKey('ompd-name')),
+      scrollDelta: -300,
+    );
+    await tester.enterText(find.byKey(const ValueKey('ompd-name')), 'voice');
+    await _show(tester, find.byKey(const ValueKey('ompd-profile')));
+    await tester.enterText(
+      find.byKey(const ValueKey('ompd-profile')),
+      'bad profile',
+    );
+    await _tap(tester, 'ompd-start');
+    await _show(tester, find.byKey(const ValueKey('ompd-error')));
+    expect(
+      _button<Text>(tester, 'ompd-error').data,
+      startsWith('Profile name must use'),
+    );
+    expect(api.startCalls, 0);
+    expect(api.waitCalls, 0);
+    expect(_button<FilledButton>(tester, 'ompd-start').onPressed, isNotNull);
+  });
+
   testWidgets(
     'resume starts once and failed readiness remains attachable by refresh',
     (tester) async {
@@ -341,7 +454,12 @@ void main() {
       await tester.ensureVisible(find.byKey(const ValueKey('ompd-profile')));
       await tester.enterText(
         find.byKey(const ValueKey('ompd-profile')),
-        'mobile',
+        'mobile_test',
+      );
+      await _show(tester, find.byKey(const ValueKey('ompd-cwd')));
+      await tester.enterText(
+        find.byKey(const ValueKey('ompd-cwd')),
+        '/host/override',
       );
       await tester.ensureVisible(find.byKey(const ValueKey('ompd-session')));
       await tester.enterText(
@@ -352,7 +470,8 @@ void main() {
       expect(api.startCalls, 1);
       expect(api.waitCalls, 1);
       expect(api.startedSession, '/host/session.jsonl');
-      expect(api.startedProfile, 'mobile');
+      expect(api.startedProfile, 'mobile_test');
+      expect(api.startedCwd, '/host/override');
       expect(_button<FilledButton>(tester, 'ompd-start').onPressed, isNull);
       await _show(tester, find.byKey(const ValueKey('ompd-error')));
       expect(find.textContaining('instance may still run'), findsOneWidget);
@@ -387,6 +506,8 @@ void main() {
       await _tap(tester, 'ompd-start');
       expect(api.calls, ['start', 'wait']);
       expect(api.startCalls, 1);
+      expect(api.startedProfile, isNull);
+      expect(api.startedCwd, '/host/project');
       expect(client.inputs, hasLength(1));
       expect(result, isNotNull);
     },
@@ -582,6 +703,8 @@ class _Api extends OmpdApi {
   final endpoints = <String>[];
   String? startedSession;
   String? startedProfile;
+  String? startedName;
+  String? startedCwd;
   HarnessException? waitError;
   Completer<OmpdInstance>? readyGate;
   List<OmpdInstance> instances = const [
@@ -614,6 +737,8 @@ class _Api extends OmpdApi {
     startCalls++;
     startedSession = session;
     startedProfile = profile;
+    startedName = name;
+    startedCwd = cwd;
     return instances.single;
   }
 

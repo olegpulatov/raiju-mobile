@@ -33,20 +33,24 @@ void main() {
       await api.start(
         fixture.endpoint,
         name: 'phone',
-        profile: 'dev',
+        profile: 'dev_profile',
         cwd: '/synthetic/work',
         session: '/synthetic/saved.jsonl',
       );
       expect(fixture.requests.single, {
         'method': 'start',
         'name': 'phone',
-        'profile': 'dev',
+        'profile': 'dev_profile',
         'cwd': '/synthetic/work',
         'session': '/synthetic/saved.jsonl',
       });
       fixture.requests.clear();
       await api.start(fixture.endpoint, name: 'phone', cwd: '/synthetic/work');
-      expect(fixture.requests.single.containsKey('session'), isFalse);
+      expect(fixture.requests.single, {
+        'method': 'start',
+        'name': 'phone',
+        'cwd': '/synthetic/work',
+      });
     },
   );
 
@@ -65,6 +69,69 @@ void main() {
         ),
         throwsA(isA<HarnessException>()),
       );
+      expect(fixture.requests, isEmpty);
+    },
+  );
+
+  test(
+    'profile path fails before networking and explicit correction starts once',
+    () async {
+      const api = OmpdApi();
+      await expectLater(
+        api.start(
+          fixture.endpoint,
+          name: 'phone',
+          profile: '/srv/locus/hub',
+          cwd: '/synthetic/override',
+        ),
+        throwsA(
+          isA<HarnessException>().having(
+            (error) => error.message,
+            'message',
+            allOf(
+              contains('Profile must be a configured host profile name'),
+              contains('Put the path in Working directory'),
+              contains('leave Profile empty'),
+            ),
+          ),
+        ),
+      );
+      expect(fixture.requests, isEmpty);
+      await api.start(fixture.endpoint, name: 'phone', cwd: '/srv/locus/hub');
+      expect(fixture.requests, [
+        {'method': 'start', 'name': 'phone', 'cwd': '/srv/locus/hub'},
+      ]);
+    },
+  );
+
+  test(
+    'invalid start fields return field-specific errors before networking',
+    () async {
+      const api = OmpdApi();
+      for (final (name, profile, cwd, session, field) in [
+        ('bad name', 'dev', null, null, 'Instance name'),
+        ('phone', 'bad profile', null, null, 'Profile name'),
+        ('phone', 'dev', 'relative/path', null, 'Working directory'),
+        ('phone', 'dev', '/work\npath', null, 'Working directory'),
+        ('phone', 'dev', null, 'session\nid', 'Session file or ID'),
+      ]) {
+        await expectLater(
+          api.start(
+            fixture.endpoint,
+            name: name,
+            profile: profile,
+            cwd: cwd,
+            session: session,
+          ),
+          throwsA(
+            isA<HarnessException>().having(
+              (error) => error.message,
+              'message',
+              startsWith(field),
+            ),
+          ),
+        );
+      }
       expect(fixture.requests, isEmpty);
     },
   );

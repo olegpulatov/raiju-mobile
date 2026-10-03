@@ -117,7 +117,7 @@ Use Browse relay to list existing instances, or Add remote session to start/resu
 - Enter the daemon's reachable DNS name or IP and port. Use the workstation's reachable address, not the phone's `localhost`
 - Save the endpoint independently of connecting. The last typed profile is also remembered
 - Refresh to list daemon instances, then attach to a ready RPC instance. Attaching takes write control from its current controller; it does not create another session
-- Start a new named instance using a configured daemon profile or an absolute working directory on the workstation. Optional session file/id resumes an older conversation. There is no saved-session catalog in the current daemon API
+- Start a new named instance using a configured daemon profile or an absolute working directory on the workstation. Profile takes a configured name, not a path. For directory-only start, leave Profile empty and enter the path in Working directory. Optional session file/id resumes an older conversation. There is no saved-session catalog in the current daemon API
 - Starting can succeed even if the phone loses the reply. Refresh the instance list before retrying; the app never automatically repeats a start or prompt
 - Connections, cached conversation and drafts use the existing encrypted chat store. Restoring attaches to the saved instance and checks session identity; it never restarts a stopped worker or silently follows a different session
 - Saved relay chats also retain the worker's raw file spelling separately from the daemon's canonical path. If that spelling changes on reconnect, the app keeps old history and refuses the uncertain attachment; create a separate chat to attach explicitly

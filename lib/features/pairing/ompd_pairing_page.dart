@@ -178,28 +178,12 @@ class _OmpdPairingPageState extends ConsumerState<OmpdPairingPage> {
     final profile = _profile.text.trim();
     final cwd = _cwd.text.trim();
     final session = _session.text.trim();
-    if (name.isEmpty) {
-      throw const HarnessException('Enter an instance name.');
-    }
-    validateOmpdName(name);
-    if (profile.isNotEmpty) validateOmpdName(profile);
-    if (profile.isEmpty && cwd.isEmpty) {
-      throw const HarnessException(
-        'Enter a profile or an absolute working directory on the host.',
-      );
-    }
-    if (cwd.isNotEmpty && !cwd.startsWith('/')) {
-      throw const HarnessException(
-        'Working directory must be an absolute host path.',
-      );
-    }
-    for (final value in [cwd, session]) {
-      if (value.length > 4096 || RegExp(r'[\x00-\x1f\x7f]').hasMatch(value)) {
-        throw const HarnessException(
-          'Invalid host directory or session reference.',
-        );
-      }
-    }
+    validateOmpdStart(
+      name: name,
+      profile: profile.isEmpty ? null : profile,
+      cwd: cwd.isEmpty ? null : cwd,
+      session: session.isEmpty ? null : session,
+    );
     setState(() {
       _startAttempted = true;
       _progress = 'Starting once, then waiting for session identity…';
@@ -233,6 +217,7 @@ class _OmpdPairingPageState extends ConsumerState<OmpdPairingPage> {
     String label,
     TextEditingController controller, {
     String? hint,
+    String? help,
     ValueChanged<String>? onChanged,
   }) => Padding(
     padding: const EdgeInsets.only(bottom: Grid.twelve),
@@ -246,6 +231,8 @@ class _OmpdPairingPageState extends ConsumerState<OmpdPairingPage> {
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
+        helperText: help,
+        helperMaxLines: 4,
         border: const OutlineInputBorder(),
       ),
       onChanged: onChanged,
@@ -366,17 +353,30 @@ class _OmpdPairingPageState extends ConsumerState<OmpdPairingPage> {
                 style: context.textTheme.titleMedium,
               ),
               const SizedBox(height: Grid.twelve),
-              _field('ompd-name', 'Instance name', _name),
+              _field(
+                'ompd-name',
+                'Instance name',
+                _name,
+                help: '1–80 letters, digits, dots, underscores, or hyphens.',
+              ),
               _field(
                 'ompd-profile',
-                'Profile (or enter working directory)',
+                'Profile (configured host profile)',
                 _profile,
+                help:
+                    'Enter a profile name configured on the host, not a path. Leave empty when starting with only a working directory.',
                 onChanged: (_) {
                   setState(() => _saved = false);
                   _rememberEdits();
                 },
               ),
-              _field('ompd-cwd', 'Absolute host working directory', _cwd),
+              _field(
+                'ompd-cwd',
+                'Working directory (absolute host path)',
+                _cwd,
+                help:
+                    'Required when Profile is empty. This path is on the host, not this phone.',
+              ),
               _field('ompd-session', 'Session file or ID (optional)', _session),
               const Text(
                 'Leave session empty for a new conversation. To resume, enter a known session ID or absolute session-file path on the host. Paths refer to the host, not this phone.',

@@ -89,6 +89,56 @@ void main() {
     },
   );
 
+  test(
+    'instance and profile validation permits underscores and names its field',
+    () {
+      for (final name in ['voice', 'mobile_profile-2.dev', 'A0_', '.named']) {
+        expect(() => validateOmpdName(name), returnsNormally);
+        expect(() => validateOmpdProfileName(name), returnsNormally);
+      }
+      final longName = List.filled(81, 'a').join();
+      for (final name in ['', '.', '..', 'bad name', 'bad\nname', longName]) {
+        expect(
+          () => validateOmpdName(name),
+          throwsA(
+            isA<HarnessException>().having(
+              (error) => error.message,
+              'message',
+              allOf(startsWith('Instance name'), contains('underscores')),
+            ),
+          ),
+        );
+        expect(
+          () => validateOmpdProfileName(name),
+          throwsA(
+            isA<HarnessException>().having(
+              (error) => error.message,
+              'message',
+              allOf(startsWith('Profile name'), contains('underscores')),
+            ),
+          ),
+        );
+      }
+    },
+  );
+
+  test('profile paths direct users to separate working directory field', () {
+    expect(
+      () => validateOmpdProfileName('/srv/locus/hub'),
+      throwsA(
+        isA<HarnessException>().having(
+          (error) => error.message,
+          'message',
+          allOf(
+            contains('configured host profile name, not a path'),
+            contains('Put the path in Working directory'),
+            contains('leave Profile empty'),
+          ),
+        ),
+      ),
+    );
+  });
+
   test('connection errors never echo invalid input', () {
     for (final text in [
       'ompd://secret@relay/phone?trusted=1',
