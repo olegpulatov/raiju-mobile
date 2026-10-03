@@ -20,9 +20,9 @@ just spark-ios-smoke # synthetic Spark controls and handoff journey
 
 For physical iPhone, configure repository-local `.envrc` from `.envrc.example` and approve it with `direnv allow`; see [development guide](docs/development.md). In the Raiju workspace, this repository is the `mobile/` submodule; root `just mobile COMMAND` forwards to these same commands, including local direnv settings.
 
-App opens original chat shell directly. Choose Connect, scan OMP collab QR or paste link/token, then chat. Simulator uses paste. OMP host must stay running; reconnect never automatically replays ordinary typed prompts.
+App opens the chat shell directly. Choose Attach to collab, run `/collab` in oh-my-pi, then scan its QR or paste the link/token. Simulator uses paste. OMP host must stay running; reconnect never automatically replays ordinary typed prompts.
 
-Optional: Connect → Daemon relay connects to `ompd` over Tailscale or a restricted home network. Start a new session, attach a running instance, or resume a known session file/id. Existing collab remains available without a daemon. The current daemon API has no authentication or encryption of its own; restrict port access and confirm trusted-network consent. See [daemon setup and checks](docs/development.md#optional-daemon-relay).
+Optional: Browse relay lists running `ompd` instances; Add remote session starts a new session or resumes a known session file/id. Save the editable endpoint independently of connecting. Attach to collab remains available without a daemon. See [daemon setup and configurable checks](docs/development.md#optional-daemon-relay).
 
 Saved connections, drafts, and bounded history cache are encrypted; key stays in OS secure storage. Appearance is local. Disconnect retains chat; Forget removes local saved state. OMP owns full history, so cache is not an independent archive.
 

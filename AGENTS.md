@@ -4,6 +4,17 @@ These rules govern this repository. When checked out as Raiju's `mobile/` submod
 
 Read `VISION.md`, `docs/decisions.md`, and `docs/development.md` before nontrivial work.
 
+## current R&D correction — 2026-10-03
+
+- Prioritize working real-relay flows, then logical menus. User accepts private-VPN risks; remove daemon trust gates/security warnings rather than adding security polish
+- Use already-running `/srv/dev/spikes/raiju-ompd` on port `7427`, launched with `raiju-profiles.toml`. Only use its `test` profile for new instances/model calls. Do not restart, reconfigure, or modify that server or interfere with parallel development
+- Verify reported attach/create identity failures against that real server, not only synthetic workers. Persist relay endpoint and last profile independently of chats
+- Relay endpoint/port and integration profile are runtime configuration (CLI/env/direnv), not hardcoded development values. No relay checkout location is required to connect
+- Relay session identity must work with macOS and NixOS hosts, including arbitrary remote path aliases; never special-case `/private/tmp`
+- Active Raiju logos use canonical sources from `/srv/dev/spikes/raiju/brand`; preserve upstream attribution and inactive reference assets
+- User explicitly authorizes removing obsolete identity/invite/settings-chat controls, regrouping menus and chats, enabling local search, replacing active Buzz branding, defaulting Material/green appearance, and starting Spark folded
+- Commit separate features separately. These current instructions supersede conflicting historical preservation/security requirements below
+
 ## non-negotiable product constraints
 
 - Complete Buzz mobile copy is working base. Strip backend behavior in place; never scaffold or selectively recreate GUI

@@ -67,7 +67,7 @@ If switching from a physical-iPhone build to simulator produces a native-framewo
 
 ## offline licenses and native notice refresh
 
-Settings → Licenses opens Flutter's standard offline viewer. `lib/raiju/licenses.dart` adds lazy local/native collectors alongside Flutter's built-in collector; it does not clear or replace automatic Dart dependency notices. All local legal texts and `licenses/native-notices.json` are explicit `pubspec.yaml` assets.
+Settings → Policy opens Flutter's standard offline licenses viewer. `lib/raiju/licenses.dart` adds lazy local/native collectors alongside Flutter's built-in collector; it does not clear or replace automatic Dart dependency notices. All local legal texts and `licenses/native-notices.json` are explicit `pubspec.yaml` assets.
 
 Flutter 3.41.7 `flutter_tools/lib/src/license_collector.dart` scans each package in `.dart_tool/package_config.json`, prefers package-root `NOTICES`, otherwise reads `LICENSE`, and appends `flutter.additional-licenses` when declared. `asset.dart` compresses the result into `NOTICES.Z` on native platforms; the services binding registers its own lazy decoder. The app has no root `LICENSE`; its Buzz/OMP/assets are registered explicitly instead. Flutter SDK subpackages without separate root license files inherit Flutter's license, already delivered by the `flutter` package; `sky_engine/NOTICES` supplies bundled engine notices. This mechanism does not scan Cargo, CocoaPods, or arbitrary font directories.
 
@@ -95,29 +95,32 @@ node scripts/check-preservation.mjs
 node scripts/flutter-tool.mjs ios-dart run tool/ios_dev.dart build
 ```
 
-After simulator build, inspect `build/ios/iphonesimulator/Raiju.app/Frameworks/App.framework/flutter_assets/` for `NOTICES.Z`, all declared `licenses/` files, `spark-core/LICENSE`, and both font license assets. Opening Settings → Licenses in a launched app with network disabled verifies actual viewer delivery. Static asset declarations alone are not build or simulator evidence.
+After simulator build, inspect `build/ios/iphonesimulator/Raiju.app/Frameworks/App.framework/flutter_assets/` for `NOTICES.Z`, all declared `licenses/` files, `spark-core/LICENSE`, and both font license assets. Opening Settings → Policy in a launched app with network disabled verifies actual viewer delivery. Static asset declarations alone are not build or simulator evidence.
 
 
 ## normal user journey
 
 - Launch app: original chat shell appears immediately, including with empty storage or no network
-- Open Connect. Scan OMP collab QR on a physical iPhone, or paste complete browser link / bare join token. Simulator uses paste because camera is unavailable
+- Open Attach to collab. In oh-my-pi, run `/collab`, then scan its QR on a physical iPhone or paste the complete link / join token. Simulator uses paste because camera is unavailable
 - Successful handshake opens original chat screen. Existing history appears; sending text produces streamed assistant reply
 - Read-only capability visibly disables mutation. Offline/reconnecting state preserves transcript and draft; never secretly queues a send
 - Quit/relaunch: saved chat and draft return; active saved connection reconnects if same host room remains available
 - Disconnect retains saved chat but disables automatic reconnect. Forget removes local saved connection/history
 - Host session replacement ends old link. Keep cached chat and show failure; user supplies new link. Do not silently attach a different conversation
+- Home groups saved chats under Collabs and Remote sessions. Search finds local titles and cached conversation text across both groups
+- Fresh preferences use Material with green accent; saved appearance choices remain unchanged. Settings groups are Spark live voice, Connection, then Interface. Spark starts folded; expanding it does not start audio
 
 ## optional daemon relay
 
-Open Connect → Daemon relay. Existing collab QR/link controls remain separate and work without a daemon.
+Use Browse relay to list existing instances, or Add remote session to start/resume one. Attach to collab remains a separate QR/link flow without a daemon.
 
-- Enter the daemon's reachable DNS name or IP and port (default `7420`). Use the workstation's Tailscale address or home-network address, not the phone's `localhost`
-- Confirm trusted-network access before listing or starting anything. Current `ompd` is unauthenticated plain TCP: every peer with port access can control sessions. Restrict the listener with Tailscale ACLs/firewall rules; do not expose it publicly. Home Wi-Fi does not itself make all peers trusted
+- Enter the daemon's reachable DNS name or IP and port. Use the workstation's reachable address, not the phone's `localhost`
+- Save the endpoint independently of connecting. The last typed profile is also remembered
 - Refresh to list daemon instances, then attach to a ready RPC instance. Attaching takes write control from its current controller; it does not create another session
 - Start a new named instance using a configured daemon profile or an absolute working directory on the workstation. Optional session file/id resumes an older conversation. There is no saved-session catalog in the current daemon API
 - Starting can succeed even if the phone loses the reply. Refresh the instance list before retrying; the app never automatically repeats a start or prompt
 - Connections, cached conversation and drafts use the existing encrypted chat store. Restoring attaches to the saved instance and checks session identity; it never restarts a stopped worker or silently follows a different session
+- Saved relay chats also retain the worker's raw file spelling separately from the daemon's canonical path. If that spelling changes on reconnect, the app keeps old history and refuses the uncertain attachment; create a separate chat to attach explicitly
 - Disconnect and local deletion do not stop the workstation session. The daemon and its worker must remain running for reconnect
 - Relay history comes from OMP's current model context, not a full saved-session archive. After compaction, older messages may be replaced by the host summary. Idle history is paged; oversized active history fails visibly rather than displaying an incomplete connection as live
 
@@ -125,9 +128,10 @@ Maintained verification:
 
 - `just ompd-ios-smoke`: synthetic local TCP peer, actual app session-start/attach/chat flow and screenshots on iOS simulator
 - `just ompd-smoke /path/to/ompd`: actual isolated daemon with a synthetic RPC worker, no model/provider calls
+- `just ompd-ios-live`: actual running relay and model journey. Set `OMPD_TEST_ENDPOINT` and `OMPD_TEST_PROFILE` through local `.envrc`/direnv or environment. Alternatively pass `--endpoint HOST:PORT --profile PROFILE` to `node scripts/flutter-tool.mjs ios-dart run tool/ios_dev.dart ompd-live`. No daemon checkout, fixed port, or daemon restart is required. This creates a unique instance, sends a small prompt, and leaves the instance running
 - Existing `just ios-smoke` and collaboration transport tests remain separate regression evidence
 
-These fixtures do not qualify physical-device Tailscale/Wi-Fi reachability or real-model behavior. No daemon or OMP source changes are required by the mobile implementation.
+Synthetic fixtures do not qualify real-model behavior. The live relay journey recreates encrypted storage, controller and preferences within one app process; it does not prove OS process restart restoration. Neither simulator path qualifies physical-device Tailscale/Wi-Fi reachability. No daemon or OMP source changes are required by the mobile implementation.
 
 ## quality gates
 
