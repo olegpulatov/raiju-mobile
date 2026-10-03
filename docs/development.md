@@ -135,3 +135,7 @@ Before completion report:
 - source/UI changes versus baseline
 - retained inactive backend debt and disabled controls
 - simulator versus live-host versus physical-device limitations
+
+## parallel worktrees
+
+See [worktree setup](worktrees.md) for `wt` creation, locked dependency bootstrap, artifact isolation and safe removal.

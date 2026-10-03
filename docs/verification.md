@@ -272,3 +272,13 @@ Scope: ADR-016 and confirmed local deletion. Shared mobile/desktop contract and 
 - Native refresh is explicit after dependency changes; checked-in notices ship through ordinary asset packaging. No new gate or network fetch runs at startup or during normal builds
 - Bounded acceptance decision: user requested limited testing and no development-blocking over-testing. For this isolated offline settings action, use scoped analysis, actual asset-backed widget navigation, and fresh package inspection instead of broader connect/send/restart simulator journey and screenshot capture from component's default GUI workflow. Transport, persistence, and native visual bridges did not change; chosen evidence does not claim a launched-simulator acceptance
 - Evidence is scoped analysis, widget behavior, and simulator-package contents. App was not launched on simulator or physical device; release signing/store qualification, Android native inventory, privacy behavior, and live-host/provider checks were not run
+
+## worktree bootstrap — 2026-10-03
+
+- macOS arm64, Worktrunk 0.80.0 / Git 2.56.0: home `main`, current project hook approved, existing fish wrapper loaded successfully without full user startup
+- `wt switch --create --base=main --no-cd verify-wt-mobile-20261003-a` ran `just install` / `node scripts/flutter-tool.mjs flutter pub get --enforce-lockfile` successfully
+- `wt hook pre-start project:dependencies --worktree-path=/srv/dev/spikes/raiju-mobile.verify-wt-mobile-20261003-a` passed again; lockfile and all tracked files unchanged
+- `.dart_tool` and `ios/Flutter/ephemeral` regenerated locally; no build, Pods, `spark-core/target` or `.work` created, no private `.envrc` copied, tracked/untracked status clean
+- All ten configured symlink paths rejected individually with exit 1; harmless external fixture target unchanged
+- `wt remove --foreground verify-wt-mobile-20261003-a` passed without force; branch and disposable tree removed
+- No native build, app/widget tests, simulator/device action, launch, signing, credential access, remote write or Linux verification. This qualifies dependency bootstrap and isolation only

@@ -1,0 +1,13 @@
+# Home/base: main. Resolve packages only; no native build, device or credentials.
+[pre-start]
+dependencies = """
+set -eu
+cd {{ worktree_path }}
+for path in .dart_tool build ios ios/Pods ios/.symlinks ios/Flutter ios/Flutter/ephemeral spark-core spark-core/target .work; do
+  if [ -L "$path" ]; then
+    echo "refusing shared artifact/source link: $path; remove only the link before retrying" >&2
+    exit 1
+  fi
+done
+just install
+"""
