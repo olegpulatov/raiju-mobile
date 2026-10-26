@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:raiju_mobile/companion_controller.dart';
@@ -11,6 +12,7 @@ import 'package:raiju_mobile/raiju/companion_provider.dart';
 import 'package:raiju_mobile/shared/theme/theme.dart';
 import 'package:raiju_mobile/spark/spark.dart';
 import 'package:raiju_mobile/storage/chat_store.dart';
+import 'package:raiju_mobile/storage/voice_transcript.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 late SharedPreferences _testPrefs;
@@ -54,6 +56,19 @@ void main() {
       await tester.pump(const Duration(milliseconds: 16));
       fixture.expectStill(tester, reference, y);
     }
+    fixture.messages.insertAll(0, [
+      for (var index = 0; index < 8; index++)
+        ChatMessage(
+          id: 'older-history-$index',
+          role: MessageRole.user,
+          text: 'Older history $index',
+        ),
+    ]);
+    fixture.emit();
+    for (var frame = 0; frame < 10; frame++) {
+      await tester.pump(const Duration(milliseconds: 16));
+      fixture.expectStill(tester, reference, y);
+    }
     expect(
       find.byKey(const ValueKey('channel-jump-to-latest')),
       findsOneWidget,
@@ -67,6 +82,8 @@ void main() {
     tester,
   ) async {
     final fixture = await _Fixture.mount(tester);
+    final initialReference = fixture.reference(tester);
+    final initialY = tester.getTopLeft(initialReference).dy;
     final list = find.byKey(const ValueKey('channel-message-list'));
     final gesture = await tester.startGesture(tester.getCenter(list));
     await gesture.moveBy(const Offset(0, 25));
@@ -77,6 +94,7 @@ void main() {
     await _settle(tester);
     final reference = fixture.reference(tester);
     final y = tester.getTopLeft(reference).dy;
+    expect(tester.getTopLeft(initialReference).dy, closeTo(initialY + 3, 1));
     fixture.messages.last = const ChatMessage(
       id: 'newest',
       role: MessageRole.assistant,
@@ -109,6 +127,16 @@ void main() {
       role: MessageRole.assistant,
       text: 'Streaming line\nExtra line',
       isStreaming: true,
+    );
+    fixture.emit();
+    await tester.pump();
+    expect(tester.getTopLeft(reference).dy, closeTo(y, 1));
+    fixture.messages.add(
+      const ChatMessage(
+        id: 'during-drag',
+        role: MessageRole.assistant,
+        text: 'New reply',
+      ),
     );
     fixture.emit();
     await tester.pump();
@@ -151,6 +179,98 @@ void main() {
     fixture.expectStill(tester, reference, y);
   });
 
+  testWidgets(
+    'detached reading survives composer, keyboard, voice, and send',
+    (tester) async {
+      const nativeAttachments = MethodChannel('buzz/native_attachment_popover');
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        nativeAttachments,
+        (call) async => call.method == 'isSupported' ? false : null,
+      );
+      addTearDown(() {
+        tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          nativeAttachments,
+          null,
+        );
+      });
+      final fixture = await _Fixture.mount(tester);
+      await fixture.detach(tester);
+      final reference = fixture.reference(tester);
+      final y = tester.getTopLeft(reference).dy;
+      Future<void> checkFrames() async {
+        for (var frame = 0; frame < 24; frame++) {
+          await tester.pump(const Duration(milliseconds: 16));
+          fixture.expectStill(tester, reference, y);
+        }
+      }
+
+      await tester.tap(find.text('Message…'));
+      await checkFrames();
+      await tester.enterText(
+        find.byKey(const ValueKey('raiju-composer-input')),
+        'Draft',
+      );
+      await checkFrames();
+      for (final inset in [80.0, 160.0, 300.0]) {
+        tester.view.viewInsets = FakeViewPadding(bottom: inset);
+        await checkFrames();
+      }
+      await tester.enterText(
+        find.byKey(const ValueKey('raiju-composer-input')),
+        'First line\nSecond line\nThird line\nFourth line',
+      );
+      await checkFrames();
+
+      final chatId = fixture.controller.chats.single.id;
+      for (var partial = 1; partial <= 6; partial++) {
+        fixture.controller.upsertVoiceTurn(
+          chatId,
+          VoiceTurn(
+            id: 'recognized-speech',
+            sequence: 0,
+            origin: VoiceTurnOrigin.user,
+            text: List.filled(partial, 'Recognized words').join(' '),
+            precedingHostEntryId: 'newest',
+          ),
+        );
+        await checkFrames();
+      }
+      fixture.controller.upsertVoiceTurn(
+        chatId,
+        const VoiceTurn(
+          id: 'spark-response',
+          sequence: 1,
+          origin: VoiceTurnOrigin.spark,
+          text: 'Spark response',
+          precedingHostEntryId: 'newest',
+        ),
+      );
+      await checkFrames();
+
+      await tester.tap(find.byKey(const ValueKey('raiju-send')));
+      await checkFrames();
+      expect(fixture.controller.chat(chatId)!.draft, isEmpty);
+      expect(fixture.client.prompts, [
+        'First line\nSecond line\nThird line\nFourth line',
+      ]);
+      expect(
+        find.byKey(const ValueKey('channel-jump-to-latest')),
+        findsOneWidget,
+      );
+      for (final inset in [160.0, 0.0]) {
+        tester.view.viewInsets = FakeViewPadding(bottom: inset);
+        await checkFrames();
+      }
+      await tester.tap(find.byTooltip('Add attachment').hitTestable());
+      await checkFrames();
+      expect(find.byKey(const ValueKey('attachment-menu')), findsOneWidget);
+    },
+    variant: const TargetPlatformVariant({
+      TargetPlatform.iOS,
+      TargetPlatform.android,
+    }),
+  );
+
   testWidgets('attached timeline continues following streamed content', (
     tester,
   ) async {
@@ -167,6 +287,39 @@ void main() {
       fixture.expectLatest(tester);
     }
   });
+
+  testWidgets(
+    'attached timeline follows keyboard, composer growth, and typed send',
+    (tester) async {
+      final fixture = await _Fixture.mount(tester);
+      await tester.tap(find.text('Message…'));
+      await _settle(tester);
+      tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+      await _settle(tester);
+      fixture.expectLatest(tester);
+      await tester.enterText(
+        find.byKey(const ValueKey('raiju-composer-input')),
+        'First line\nSecond line\nThird line',
+      );
+      await _settle(tester);
+      fixture.expectLatest(tester);
+      await tester.tap(find.byKey(const ValueKey('raiju-send')));
+      await _settle(tester);
+      expect(fixture.client.prompts, ['First line\nSecond line\nThird line']);
+      fixture.expectLatest(tester);
+      expect(
+        find.byKey(const ValueKey('channel-jump-to-latest')),
+        findsNothing,
+      );
+      tester.view.viewInsets = const FakeViewPadding();
+      await _settle(tester);
+      fixture.expectLatest(tester);
+    },
+    variant: const TargetPlatformVariant({
+      TargetPlatform.iOS,
+      TargetPlatform.android,
+    }),
+  );
 }
 
 Future<void> _settle(WidgetTester tester) async {
@@ -241,6 +394,7 @@ class _Fixture {
     HarnessSnapshot(
       phase: ConnectionPhase.live,
       title: 'Scroll chat',
+      readOnly: false,
       messages: List.of(messages),
     ),
   );
@@ -286,7 +440,7 @@ class _Fixture {
   }
 
   void expectLatest(WidgetTester tester) {
-    final newestId = messages.last.id;
+    final newestId = controller.chats.single.snapshot.messages.last.id;
     final latest = find.byKey(ValueKey('channel-message-group-$newestId'));
     final dock = find.byKey(const ValueKey('channel-composer-dock'));
     expect(
@@ -299,6 +453,7 @@ class _Fixture {
 class _Client implements HarnessClient {
   final _changes = StreamController<HarnessSnapshot>.broadcast(sync: true);
   HarnessSnapshot _snapshot = const HarnessSnapshot();
+  final prompts = <String>[];
   @override
   HarnessSnapshot get snapshot => _snapshot;
   @override
@@ -312,7 +467,26 @@ class _Client implements HarnessClient {
   Future<void> connect(String input, {String displayName = 'raiju'}) async =>
       _changes.add(_snapshot);
   @override
-  Future<void> sendPrompt(String text) async {}
+  Future<void> sendPrompt(String text) async {
+    prompts.add(text);
+    emit(
+      HarnessSnapshot(
+        phase: ConnectionPhase.live,
+        title: _snapshot.title,
+        readOnly: false,
+        messages: [
+          ..._snapshot.messages,
+          ChatMessage(
+            id: 'sent-${prompts.length}',
+            role: MessageRole.user,
+            author: 'raiju',
+            text: text,
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Future<void> abort() async {}
   @override

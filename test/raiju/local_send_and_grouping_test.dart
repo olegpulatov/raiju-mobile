@@ -30,7 +30,7 @@ void main() {
   });
 
   testWidgets(
-    'confirmed local row receives the original send marker and follows the tail',
+    'confirmed local row keeps its send marker without moving detached reader',
     (tester) async {
       tester.view.physicalSize = const Size(400, 600);
       tester.view.devicePixelRatio = 1;
@@ -55,7 +55,7 @@ void main() {
 
       final messageList = find.byKey(const ValueKey('channel-message-list'));
       // The newest row is deliberately taller than the first drag. Move past
-      // it completely so this exercises resuming a genuinely detached tail.
+      // it completely so this exercises a genuinely detached reader.
       await tester.drag(messageList, const Offset(0, 300));
       await tester.pumpAndSettle();
       await tester.drag(messageList, const Offset(0, 300));
@@ -64,6 +64,20 @@ void main() {
         find.byKey(const ValueKey('channel-jump-to-latest')),
         findsOneWidget,
       );
+      final reference = find
+          .byWidgetPredicate((widget) {
+            final key = widget.key;
+            return key is ValueKey<String> &&
+                key.value.startsWith('message-row-answer-');
+          })
+          .evaluate()
+          .map((element) => find.byKey(element.widget.key!))
+          .firstWhere(
+            (finder) =>
+                tester.getTopLeft(finder).dy > 150 &&
+                tester.getBottomLeft(finder).dy < 450,
+          );
+      final referenceY = tester.getTopLeft(reference).dy;
 
       await fixture.container.read(sendMessageProvider)(
         channelId: fixture.id,
@@ -92,6 +106,13 @@ void main() {
         fixture.container.read(localMessageSendAnimationProvider(fixture.id)),
         contains('remote-prompt-42'),
       );
+      expect(tester.getTopLeft(reference).dy, closeTo(referenceY, 1));
+      expect(
+        find.byKey(const ValueKey('channel-jump-to-latest')),
+        findsOneWidget,
+      );
+      await tester.tap(find.byKey(const ValueKey('channel-jump-to-latest')));
+      await tester.pumpAndSettle();
       final transition = tester.widget<LocalMessageSendTransition>(
         find.byKey(const ValueKey('channel-message-send-remote-prompt-42')),
       );

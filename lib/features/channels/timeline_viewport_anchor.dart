@@ -35,9 +35,14 @@ class _TimelineViewportAnchorState extends State<TimelineViewportAnchor> {
   Object? _previousRevision;
   Widget? _renderedChild;
   bool _hasDeferredUpdate = false;
+  double _laidOutHeight = 0;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) => _buildViewport(constraints.maxHeight),
+  );
+
+  Widget _buildViewport(double height) {
     // jumpTo would cancel an active drag or its ballistic continuation. Keep
     // rendering that list until the gesture settles, then apply the newest
     // revision with its reading anchor intact.
@@ -47,7 +52,9 @@ class _TimelineViewportAnchorState extends State<TimelineViewportAnchor> {
       _hasDeferredUpdate = true;
       return _observeScroll(_renderedChild!);
     }
-    final contentChanged = !identical(_previousRevision, widget.revision);
+    final contentChanged =
+        !identical(_previousRevision, widget.revision) ||
+        height != _laidOutHeight;
     _previousRevision = widget.revision;
     if (widget.enabled &&
         contentChanged &&
@@ -81,16 +88,19 @@ class _TimelineViewportAnchorState extends State<TimelineViewportAnchor> {
       for (final item in candidates) {
         final index = widget.itemIds.indexOf(_laidOutIds[item.index]);
         if (index < 0) continue;
-        final alignment = item.itemLeadingEdge.clamp(0.0, 1.0);
+        // Item positions are fractions measured from the bottom. Keep the
+        // absolute distance from the screen's top across keyboard resizing.
+        final leadingEdge = _laidOutHeight > 0 && height > 0
+            ? 1 - (_laidOutHeight / height) * (1 - item.itemLeadingEdge)
+            : item.itemLeadingEdge;
+        final alignment = leadingEdge.clamp(0.0, 1.0);
         _rebasing = true;
         widget.itemScrollController.jumpTo(index: index, alignment: alignment);
         // A single very tall row can cover the entire viewport, with its bottom
         // below the screen. Viewport.anchor only accepts [0, 1]; retain the extra
         // pixel distance in the existing scroll position instead.
-        if (alignment != item.itemLeadingEdge && _position != null) {
-          _position!.jumpTo(
-            (alignment - item.itemLeadingEdge) * _position!.viewportDimension,
-          );
+        if (alignment != leadingEdge && _position != null) {
+          _position!.jumpTo((alignment - leadingEdge) * height);
         }
         _rebasing = false;
         break;
@@ -99,6 +109,7 @@ class _TimelineViewportAnchorState extends State<TimelineViewportAnchor> {
     final nextIds = widget.itemIds;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _laidOutIds = nextIds;
+      if (mounted) _laidOutHeight = height;
     });
     _renderedChild = widget.child;
     return _observeScroll(widget.child);

@@ -677,7 +677,7 @@ class _MessageList extends HookConsumerWidget {
       if (!latestEntryChanged && localSendId == null) {
         return null;
       }
-      if (localSendId != null) {
+      if (localSendId != null && !companionMode) {
         followsLatest.value = true;
         hasUserScrolled.value = false;
       }
