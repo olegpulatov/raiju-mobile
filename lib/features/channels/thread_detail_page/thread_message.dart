@@ -1,3 +1,5 @@
+// Modified for Raiju: select message text before opening secondary actions.
+
 part of '../thread_detail_page.dart';
 
 class _ThreadMessage extends HookConsumerWidget {
@@ -138,6 +140,7 @@ class _ThreadMessage extends HookConsumerWidget {
           child: MessageLongPressInkWell(
             key: ValueKey('thread-message-row-${message.id}'),
             onLongPressDetails: openMessageActions,
+            preferTextSelection: true,
             borderRadius: BorderRadius.circular(Radii.md),
             highlightColor: context.colors.primary.withValues(alpha: 0.1),
             snapshotKey: messageSnapshotKey,
@@ -226,60 +229,62 @@ class _ThreadMessage extends HookConsumerWidget {
                                       ],
                                     ),
                                   ),
-                                MessageContent(
-                                  content: message.content,
-                                  mentionNames: resolvedMentionNames,
-                                  agentMentionPubkeys: agentMentionPubkeys,
-                                  channelNames: channelNames,
-                                  tags: message.tags,
-                                  baseStyle: messageBodyTextStyle.copyWith(
-                                    color: context.colors.onSurface,
-                                  ),
-                                  scaleEmojiOnly: true,
-                                  mediaCarouselTrailingOverflow: Grid.gutter,
-                                  onMediaReply: allMessages == null
-                                      ? null
-                                      : () {
-                                          if (!context.mounted) return;
-                                          Navigator.of(context).push(
-                                            MaterialPageRoute<void>(
-                                              builder: (_) => ThreadDetailPage(
-                                                threadHead: message,
-                                                allMessages: allMessages!,
-                                                channelId: channelId,
-                                                currentPubkey: currentPubkey,
-                                                isMember: isMember,
-                                                isArchived: isArchived,
+                                MessageSelectionArea(
+                                  child: MessageContent(
+                                    content: message.content,
+                                    mentionNames: resolvedMentionNames,
+                                    agentMentionPubkeys: agentMentionPubkeys,
+                                    channelNames: channelNames,
+                                    tags: message.tags,
+                                    baseStyle: messageBodyTextStyle.copyWith(
+                                      color: context.colors.onSurface,
+                                    ),
+                                    scaleEmojiOnly: true,
+                                    mediaCarouselTrailingOverflow: Grid.gutter,
+                                    onMediaReply: allMessages == null
+                                        ? null
+                                        : () {
+                                            if (!context.mounted) return;
+                                            Navigator.of(context).push(
+                                              MaterialPageRoute<void>(
+                                                builder: (_) => ThreadDetailPage(
+                                                  threadHead: message,
+                                                  allMessages: allMessages!,
+                                                  channelId: channelId,
+                                                  currentPubkey: currentPubkey,
+                                                  isMember: isMember,
+                                                  isArchived: isArchived,
+                                                ),
                                               ),
-                                            ),
-                                          );
-                                        },
-                                  onMediaMore: (viewerContext, imageUrl) =>
-                                      showImageActions(
-                                        context: viewerContext,
+                                            );
+                                          },
+                                    onMediaMore: (viewerContext, imageUrl) =>
+                                        showImageActions(
+                                          context: viewerContext,
+                                          ref: ref,
+                                          message: message,
+                                          channelId: channelId,
+                                          imageUrl: imageUrl,
+                                          canManageMessage: canManageMessage,
+                                          onDeleted: () {
+                                            if (viewerContext.mounted) {
+                                              Navigator.of(
+                                                viewerContext,
+                                              ).maybePop();
+                                            }
+                                          },
+                                        ),
+                                    onChannelTap: (targetChannelId) {
+                                      openChannelLink(
+                                        context: context,
                                         ref: ref,
-                                        message: message,
-                                        channelId: channelId,
-                                        imageUrl: imageUrl,
-                                        canManageMessage: canManageMessage,
-                                        onDeleted: () {
-                                          if (viewerContext.mounted) {
-                                            Navigator.of(
-                                              viewerContext,
-                                            ).maybePop();
-                                          }
-                                        },
-                                      ),
-                                  onChannelTap: (targetChannelId) {
-                                    openChannelLink(
-                                      context: context,
-                                      ref: ref,
-                                      channelId: targetChannelId,
-                                      currentChannelId: channelId,
-                                    );
-                                  },
-                                  onMentionTap: (pubkey) =>
-                                      showUserProfileSheet(context, pubkey),
+                                        channelId: targetChannelId,
+                                        currentChannelId: channelId,
+                                      );
+                                    },
+                                    onMentionTap: (pubkey) =>
+                                        showUserProfileSheet(context, pubkey),
+                                  ),
                                 ),
                               ],
                             ),

@@ -1,3 +1,5 @@
+// Modified for Raiju: include highlighted code in platform message selection.
+
 import 'dart:async';
 import 'dart:io';
 import 'dart:math' as math;
@@ -812,6 +814,9 @@ class _MessageCodeBlock extends HookWidget {
                   scrollDirection: Axis.horizontal,
                   child: RichText(
                     softWrap: false,
+                    selectionRegistrar: SelectionContainer.maybeOf(context),
+                    selectionColor:
+                        DefaultSelectionStyle.of(context).selectionColor,
                     text: TextSpan(style: codeBaseStyle, children: codeSpans),
                   ),
                 ),

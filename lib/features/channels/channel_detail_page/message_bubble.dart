@@ -1,5 +1,5 @@
-// Modified for Raiju: companion messages bypass Buzz identity and action
-// providers while retaining the original bubble geometry and renderer.
+// Modified for Raiju: companion-safe providers and selectable message content
+// retain the original bubble geometry and renderer.
 
 part of '../channel_detail_page.dart';
 
@@ -204,11 +204,11 @@ class _MessageBubble extends HookConsumerWidget {
         child: MessageLongPressInkWell(
           key: ValueKey('message-row-${message.id}'),
           onLongPressDetails: openMessageActions,
+          preferTextSelection: true,
           borderRadius: BorderRadius.circular(Radii.md),
           highlightColor: context.colors.primary.withValues(alpha: 0.1),
           snapshotKey: messageSnapshotKey,
-          // Tap opens the thread; long-press still opens the action sheet.
-          // MessageContent handles mention, channel-link, and media taps.
+          // MessageContent keeps mention, channel-link, and media taps.
           onTap: isCompanion || allMessages == null
               ? null
               : () => Navigator.of(context).push(
@@ -348,7 +348,9 @@ class _MessageBubble extends HookConsumerWidget {
                                   padding: EdgeInsets.only(
                                     left: message.isError ? Grid.half : 0,
                                   ),
-                                  child: renderedContent,
+                                  child: MessageSelectionArea(
+                                    child: renderedContent,
+                                  ),
                                 ),
                               ),
                               if (message.isStreaming)

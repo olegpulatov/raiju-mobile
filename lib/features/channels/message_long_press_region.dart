@@ -1,3 +1,6 @@
+// Modified for Raiju: text messages use platform selection, with message actions
+// available from the selection toolbar instead of a competing long press.
+
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
@@ -53,6 +56,10 @@ class MessageLongPressInkWell extends StatelessWidget {
   final BorderRadius? borderRadius;
   final Color? highlightColor;
 
+  /// Leaves long presses to [MessageSelectionArea] inside this row.
+  /// Other rows retain the original long-press interaction.
+  final bool preferTextSelection;
+
   /// Identifies the [RepaintBoundary] to capture for the lifted preview.
   ///
   /// The key's current context must resolve to a boundary covering the message
@@ -67,6 +74,7 @@ class MessageLongPressInkWell extends StatelessWidget {
     this.onLongPressDetails,
     this.borderRadius,
     this.highlightColor,
+    this.preferTextSelection = false,
     this.snapshotKey,
     required this.child,
   }) : assert(onLongPress != null || onLongPressDetails != null);
@@ -79,6 +87,7 @@ class MessageLongPressInkWell extends StatelessWidget {
       onLongPressDetails: onLongPressDetails,
       borderRadius: borderRadius,
       highlightColor: highlightColor,
+      preferTextSelection: preferTextSelection,
       externalSnapshotKey: snapshotKey,
       child: child,
     );
@@ -96,6 +105,7 @@ class _MessageLongPressRegion extends HookWidget {
   final BorderRadius? borderRadius;
   final Color? highlightColor;
   final GlobalKey? externalSnapshotKey;
+  final bool preferTextSelection;
   final Widget child;
 
   const _MessageLongPressRegion({
@@ -105,6 +115,7 @@ class _MessageLongPressRegion extends HookWidget {
     required this.borderRadius,
     required this.highlightColor,
     required this.externalSnapshotKey,
+    required this.preferTextSelection,
     required this.child,
   });
 
@@ -184,15 +195,31 @@ class _MessageLongPressRegion extends HookWidget {
       );
     }
 
-    return Semantics(
-      onLongPress: recognize,
+    final surface = InkWell(
+      onTap: onTap,
+      borderRadius: borderRadius,
+      highlightColor: highlightColor,
+      child: Opacity(
+        opacity: sourceHidden.value ? 0 : 1,
+        child: externalSnapshotKey == null
+            ? RepaintBoundary(key: snapshotKey, child: child)
+            : child,
+      ),
+    );
+
+    final region = Semantics(
+      onLongPress: preferTextSelection ? null : recognize,
+      customSemanticsActions: preferTextSelection
+          ? {const CustomSemanticsAction(label: 'More message actions'): recognize}
+          : null,
       child: RawGestureDetector(
         behavior: HitTestBehavior.translucent,
         gestures: {
           LongPressGestureRecognizer:
               GestureRecognizerFactoryWithHandlers<LongPressGestureRecognizer>(
                 () => LongPressGestureRecognizer(
-                  duration: defaultTargetPlatform == TargetPlatform.iOS
+                  duration: !preferTextSelection &&
+                          defaultTargetPlatform == TargetPlatform.iOS
                       ? _iosMessageLongPressDuration
                       : null,
                 ),
@@ -201,18 +228,62 @@ class _MessageLongPressRegion extends HookWidget {
                 },
               ),
         },
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: borderRadius,
-          highlightColor: highlightColor,
-          child: Opacity(
-            opacity: sourceHidden.value ? 0 : 1,
-            child: externalSnapshotKey == null
-                ? RepaintBoundary(key: snapshotKey, child: child)
-                : child,
-          ),
-        ),
+        child: surface,
       ),
     );
+    // The standard-duration ancestor loses to the inner selection recognizer.
+    // Outside text, a hold still reaches actions (including media-only rows).
+    return preferTextSelection
+        ? _MessageSelectionActions(showActions: recognize, child: region)
+        : region;
   }
+}
+
+/// Selects only message content, not author metadata or reaction labels.
+class MessageSelectionArea extends StatelessWidget {
+  final Widget child;
+
+  const MessageSelectionArea({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final actions =
+        context.dependOnInheritedWidgetOfExactType<_MessageSelectionActions>();
+    return SelectionArea(
+      contextMenuBuilder: (_, state) =>
+          AdaptiveTextSelectionToolbar.buttonItems(
+            anchors: state.contextMenuAnchors,
+            buttonItems: [
+              ...state.contextMenuButtonItems,
+              if (actions != null)
+                ContextMenuButtonItem(
+                  label: 'More',
+                  onPressed: () {
+                    state.clearSelection();
+                    state.hideToolbar();
+                    // Paint without the selection highlight before capturing
+                    // the existing lifted message preview.
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (context.mounted) actions.showActions();
+                    });
+                  },
+                ),
+            ],
+          ),
+      child: child,
+    );
+  }
+}
+
+class _MessageSelectionActions extends InheritedWidget {
+  final VoidCallback showActions;
+
+  const _MessageSelectionActions({
+    required this.showActions,
+    required super.child,
+  });
+
+  @override
+  bool updateShouldNotify(_MessageSelectionActions oldWidget) =>
+      showActions != oldWidget.showActions;
 }

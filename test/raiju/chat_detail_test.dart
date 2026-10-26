@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/rendering.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:raiju_mobile/companion_controller.dart';
 import 'package:raiju_mobile/features/channels/channel.dart';
@@ -12,6 +13,7 @@ import 'package:raiju_mobile/raiju/companion_provider.dart';
 import 'package:raiju_mobile/storage/chat_store.dart';
 import 'package:raiju_mobile/shared/theme/theme.dart';
 import 'package:raiju_mobile/spark/spark.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   test('projects roles, streaming metadata, and one row per message id', () {
@@ -50,6 +52,97 @@ void main() {
     expect(messages[2].pubkey, 'tool');
     expect(messages[2].isError, isTrue);
   });
+  testWidgets(
+    'detail message selects text before opening secondary actions',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final client = _FakeClient(
+        const HarnessSnapshot(
+          phase: ConnectionPhase.live,
+          title: 'Selection chat',
+          messages: [
+            ChatMessage(
+              id: 'select-1',
+              role: MessageRole.assistant,
+              text: 'select this answer',
+            ),
+          ],
+        ),
+      );
+      final controller = CompanionController(
+        clientFactory: () => client,
+        store: _MemoryStore(),
+      );
+      final thread = await controller.join('synthetic-selection-capability');
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            savedPrefsProvider.overrideWithValue(prefs),
+            companionControllerProvider.overrideWith((ref) => controller),
+            sparkVoiceSessionProvider.overrideWithValue(_FakeVoiceSession()),
+          ],
+          child: MaterialApp(
+            theme: AppTheme.light(),
+            home: ChannelDetailPage(
+              channel: Channel(
+                id: thread.id,
+                name: thread.title,
+                channelType: 'dm',
+                visibility: 'private',
+                description: '',
+                createdBy: 'local',
+                createdAt: DateTime.utc(2026),
+                memberCount: 2,
+                isMember: true,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final text = find.byWidgetPredicate(
+        (widget) =>
+            widget is RichText &&
+            widget.text.toPlainText() == 'select this answer',
+      );
+      final paragraph = tester.renderObject<RenderParagraph>(text);
+      final box = paragraph
+          .getBoxesForSelection(
+            const TextSelection(baseOffset: 0, extentOffset: 6),
+          )
+          .first;
+      final word = paragraph.localToGlobal(box.toRect().center);
+      await tester.tapAt(word);
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('message-action-surface')),
+        findsNothing,
+      );
+      await tester.longPressAt(word);
+      await tester.pumpAndSettle();
+      expect(
+        paragraph.selections.single.textInside(paragraph.text.toPlainText()),
+        'select',
+      );
+      expect(
+        find.byKey(const ValueKey('message-action-surface')),
+        findsNothing,
+      );
+      await tester.tap(find.text('More'));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('message-action-surface')),
+        findsOneWidget,
+      );
+      Navigator.of(
+        tester.element(find.byKey(const ValueKey('message-action-surface'))),
+      ).pop();
+      await tester.pumpAndSettle();
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.iOS),
+  );
+
   testWidgets(
     'real detail renders one streamed row and exposes send, stop, read-only, and questions',
     (tester) async {
