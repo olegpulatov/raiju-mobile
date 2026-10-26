@@ -1,5 +1,5 @@
-// Modified for Raiju: companion mode retains timeline scrolling/grouping while
-// skipping legacy relay history and unread bootstraps.
+// Modified for Raiju: companion timeline retains detached reading anchors and
+// skips legacy relay history and unread bootstraps.
 
 part of '../channel_detail_page.dart';
 
@@ -424,7 +424,9 @@ class _MessageList extends HookConsumerWidget {
       return itemPositionsListener.itemPositions.value.any(
         (position) =>
             position.index == 0 &&
-            (position.itemLeadingEdge - boundary).abs() < 0.01,
+            (position.itemLeadingEdge - boundary).abs() *
+                    timelineViewportHeight.value <
+                0.5,
       );
     }
 
@@ -638,6 +640,21 @@ class _MessageList extends HookConsumerWidget {
       return null;
     }, [initialMessageId, initialThreadRootId, entries.length]);
 
+    final newestContent = entries.lastOrNull?.message.content;
+    useEffect(() {
+      if (!followsLatest.value && hasUserScrolled.value) {
+        hasUnseenLatestEntry.value = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (context.mounted) {
+            updateJumpToLatestVisibility(
+              itemPositionsListener.itemPositions.value,
+            );
+          }
+        });
+      }
+      return null;
+    }, [newestContent]);
+
     useEffect(() {
       final previous = previousLatestEntryId.value;
       previousLatestEntryId.value = latestEntryId;
@@ -746,12 +763,16 @@ class _MessageList extends HookConsumerWidget {
               notification.metrics.pixels -
                   notification.metrics.minScrollExtent,
             );
-            updateJumpToLatestVisibility(
-              itemPositionsListener.itemPositions.value,
-              viewportDimension: notification.metrics.viewportDimension,
-            );
-            if (notification is UserScrollNotification &&
-                notification.direction != ScrollDirection.idle) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!context.mounted) return;
+              updateJumpToLatestVisibility(
+                itemPositionsListener.itemPositions.value,
+              );
+            });
+            if ((notification is ScrollStartNotification &&
+                    notification.dragDetails != null) ||
+                (notification is UserScrollNotification &&
+                    notification.direction != ScrollDirection.idle)) {
               hasUserScrolled.value = true;
               followsLatest.value = false;
               if (showUnreadNavigation) {
@@ -769,6 +790,17 @@ class _MessageList extends HookConsumerWidget {
             return false;
           },
           child: KeyboardDismissOnDrag(
+            child: TimelineViewportAnchor(
+              enabled: companionMode &&
+                  !followsLatest.value &&
+                  !isAutoScrolling.value,
+              itemIds: [
+                for (final group in displayEntries.reversed)
+                  group.first.message.id,
+              ],
+              revision: entries,
+              itemScrollController: itemScrollController,
+              itemPositionsListener: itemPositionsListener,
             child: ScrollablePositionedList.builder(
               key: const ValueKey('channel-message-list'),
               itemScrollController: itemScrollController,
@@ -894,6 +926,7 @@ class _MessageList extends HookConsumerWidget {
                   ),
                 );
               },
+            ),
             ),
           ),
         ),
