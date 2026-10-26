@@ -1,6 +1,7 @@
 // MODIFIED FOR RAIJU: obsolete identity/invite controls are removed; retain
-// profile editing, appearance navigation, offline push placeholder and metadata.
+// profile editing, appearance/avatar preferences, push placeholder and metadata.
 import 'package:raiju_mobile/features/settings/settings_page.dart';
+import 'package:raiju_mobile/raiju/chat_avatar_preference.dart';
 import 'package:raiju_mobile/shared/community/community_membership_provider.dart';
 import 'package:raiju_mobile/shared/community/community.dart';
 import 'package:raiju_mobile/shared/community/community_provider.dart';
@@ -114,7 +115,13 @@ void main() {
       find.byKey(const ValueKey('push-notifications-unavailable')),
     );
     expect(find.text('Unavailable yet'), findsOneWidget);
-    expect(find.byType(Switch), findsNothing);
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('push-notifications-unavailable')),
+        matching: find.byType(Switch),
+      ),
+      findsNothing,
+    );
     debugDefaultTargetPlatformOverride = null;
   });
 
@@ -254,6 +261,25 @@ void main() {
     expect(find.text('Interface'), findsOneWidget);
     expect(find.text('Invite to community'), findsNothing);
     expect(find.byKey(const ValueKey('settings-appearance')), findsOneWidget);
+    final avatarRow = find.byKey(const ValueKey('settings-chat-avatars'));
+    await tester.ensureVisible(avatarRow);
+    await tester.pumpAndSettle();
+    final avatarSwitch = find.descendant(
+      of: avatarRow,
+      matching: find.byType(Switch),
+    );
+    expect(tester.widget<Switch>(avatarSwitch).value, isFalse);
+    await tester.tap(avatarSwitch);
+    await tester.pumpAndSettle();
+    expect(tester.widget<Switch>(avatarSwitch).value, isTrue);
+    expect(prefs.getBool(ChatAvatarsNotifier.preferenceKey), isTrue);
+
+    await tester.tap(avatarRow);
+    await tester.pumpAndSettle();
+    expect(tester.widget<Switch>(avatarSwitch).value, isFalse);
+    expect(prefs.getBool(ChatAvatarsNotifier.preferenceKey), isFalse);
+    await tester.ensureVisible(themeRow);
+    await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const ValueKey('community-theme-row')));
     await tester.pumpAndSettle();

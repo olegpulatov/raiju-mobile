@@ -1,3 +1,4 @@
+// Modified for Raiju: chat avatar visibility follows the local preference.
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -6,6 +7,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
+import '../../raiju/chat_avatar_preference.dart';
 import '../../shared/mentions/agent_identity_provider.dart';
 import '../../shared/relay/relay.dart';
 import '../../shared/theme/theme.dart';

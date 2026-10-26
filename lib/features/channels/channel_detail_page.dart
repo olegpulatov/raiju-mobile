@@ -1,5 +1,5 @@
-// Modified for Raiju: the active detail route is driven solely by the local
-// OMP companion controller; retained Buzz controls remain visual-only.
+// Modified for Raiju: local OMP controller and chat avatar preference drive
+// detail behavior; retained Buzz controls remain visual-only.
 
 import 'dart:async';
 import 'dart:math' show cos, max, min, pi;
@@ -15,6 +15,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import '../../harness/harness.dart';
+import '../../raiju/chat_avatar_preference.dart';
 import '../../raiju/companion_provider.dart';
 import '../../raiju/timeline_projection.dart';
 import '../../spark/spark.dart';

@@ -1,3 +1,4 @@
+// Modified for Raiju: align message join surface with avatar visibility.
 part of '../channel_detail_page.dart';
 
 const _huddleLifetime = Duration(hours: 1);
@@ -296,8 +297,10 @@ class _HuddleJoinSurface extends ConsumerWidget {
           };
 
     return Padding(
-      padding: const EdgeInsets.only(
-        left: messageAvatarSize + messageAvatarContentGap,
+      padding: EdgeInsets.only(
+        left: ref.watch(showChatAvatarsProvider)
+            ? messageAvatarSize + messageAvatarContentGap
+            : 0,
         top: Grid.xxs,
       ),
       child: Container(

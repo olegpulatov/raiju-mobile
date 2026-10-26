@@ -1,3 +1,4 @@
+// Modified for Raiju: test optional avatar columns using the direct thread route.
 import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
@@ -16,6 +17,7 @@ import 'package:nostr/nostr.dart' as nostr;
 import 'package:pointycastle/digests/sha256.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:raiju_mobile/features/channels/channel.dart';
+import 'package:raiju_mobile/raiju/chat_avatar_preference.dart';
 import 'package:raiju_mobile/features/channels/channel_detail_page.dart';
 import 'package:raiju_mobile/features/channels/channel_management_provider.dart';
 import 'package:raiju_mobile/features/channels/channel_messages_provider.dart';
@@ -474,6 +476,56 @@ void main() {
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
     _testPrefs = await SharedPreferences.getInstance();
+  });
+
+  testWidgets('thread avatar visibility removes and restores the whole column', (
+    tester,
+  ) async {
+    final root = _textMsg(
+      id: 'avatar-root',
+      pubkey: 'alice',
+      content: 'Avatar test text',
+    );
+    final messages = formatTimeline([root]);
+    await tester.pumpWidget(
+      _buildTestable(
+        messages: [root],
+        users: const {
+          'alice': UserProfile(pubkey: 'alice', displayName: 'Alice'),
+        },
+        threadReplies: const {'avatar-root': []},
+        home: ThreadDetailPage(
+          threadHead: messages.single,
+          allMessages: messages,
+          channelId: _channelId,
+          currentPubkey: 'self',
+          isMember: true,
+          isArchived: false,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final row = find.byKey(
+      const ValueKey('thread-message-row-avatar-root'),
+    );
+    final text = find.text('Avatar test text');
+    expect(
+      find.descendant(of: row, matching: find.byType(AvatarImage)),
+      findsNothing,
+    );
+    expect(find.text('Alice'), findsOneWidget);
+    expect(tester.getTopLeft(text).dx, tester.getTopLeft(row).dx);
+    final container = ProviderScope.containerOf(tester.element(row));
+    await container.read(showChatAvatarsProvider.notifier).setVisible(true);
+    await tester.pumpAndSettle();
+    expect(
+      find.descendant(of: row, matching: find.byType(AvatarImage)),
+      findsOneWidget,
+    );
+    expect(
+      tester.getTopLeft(text).dx - tester.getTopLeft(row).dx,
+      messageAvatarSize + messageAvatarContentGap,
+    );
   });
 
   for (final thread in [false, true]) {

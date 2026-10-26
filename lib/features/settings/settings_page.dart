@@ -1,6 +1,5 @@
-// MODIFIED FOR RAIJU: this keeps the original frosted settings shell and
-// appearance pickers while replacing Buzz backend actions with OMP controls
-// and adding offline third-party licenses to the existing settings list.
+// Modified for Raiju: preserve settings shell/pickers; add local chat appearance,
+// OMP controls and offline third-party licenses instead of Buzz backend actions.
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -11,6 +10,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../harness/collab_link.dart';
+import '../../raiju/chat_avatar_preference.dart';
 import '../../raiju/collab_relay_preference.dart';
 import '../../spark/spark.dart';
 import '../pairing/ompd_pairing_page.dart';

@@ -15,7 +15,14 @@ import 'package:raiju_mobile/shared/theme/theme.dart';
 import 'package:raiju_mobile/spark/spark.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+late SharedPreferences _testPrefs;
+
 void main() {
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({});
+    _testPrefs = await SharedPreferences.getInstance();
+  });
+
   test('projects roles, streaming metadata, and one row per message id', () {
     final messages = projectTimelineMessages([
       ChatMessage(
@@ -202,6 +209,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            savedPrefsProvider.overrideWithValue(_testPrefs),
             companionControllerProvider.overrideWith((ref) => controller),
             sparkVoiceSessionProvider.overrideWithValue(_FakeVoiceSession()),
           ],
@@ -378,6 +386,7 @@ void main() {
     final sparkStore = _SparkStore();
     final container = ProviderContainer(
       overrides: [
+        savedPrefsProvider.overrideWithValue(_testPrefs),
         companionControllerProvider.overrideWith((ref) => controller),
         sparkSettingsStoreProvider.overrideWithValue(sparkStore),
         sparkVoiceSessionProvider.overrideWithValue(_FakeVoiceSession()),
@@ -458,6 +467,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            savedPrefsProvider.overrideWithValue(_testPrefs),
             companionControllerProvider.overrideWith((ref) => controller),
             sparkSettingsStoreProvider.overrideWithValue(_SparkStore()),
             sparkVoiceSessionProvider.overrideWithValue(_FakeVoiceSession()),
@@ -554,6 +564,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            savedPrefsProvider.overrideWithValue(_testPrefs),
             companionControllerProvider.overrideWith((ref) => controller),
             sparkSettingsStoreProvider.overrideWithValue(_SparkStore()),
             sparkVoiceSessionProvider.overrideWithValue(_FakeVoiceSession()),

@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   final binding = TestWidgetsFlutterBinding.ensureInitialized();
@@ -261,8 +262,11 @@ class _Fixture {
       writeDebounce: Duration.zero,
     );
     final thread = await controller.join('synthetic-send-capability');
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
     final container = ProviderContainer(
       overrides: [
+        savedPrefsProvider.overrideWithValue(prefs),
         companionControllerProvider.overrideWith((ref) => controller),
       ],
     );

@@ -1,10 +1,13 @@
+// Modified for Raiju: hide typing avatars with the chat avatar preference.
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../raiju/chat_avatar_preference.dart';
 import '../../shared/theme/theme.dart';
 import '../../shared/utils/string_utils.dart';
 import '../../shared/profile/user_cache_provider.dart';
+import '../../shared/profile/user_profile.dart';
 import 'channel_typing_provider.dart';
 import 'small_avatar.dart';
 
@@ -16,6 +19,7 @@ class ChannelTypingIndicator extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final showAvatars = ref.watch(showChatAvatarsProvider);
     final normalizedPubkeys = {
       for (final entry in entries) entry.pubkey.toLowerCase(),
     };
@@ -23,9 +27,11 @@ class ChannelTypingIndicator extends ConsumerWidget {
       for (final pubkey in normalizedPubkeys)
         pubkey: ref.watch(userCacheProvider.select((cache) => cache[pubkey])),
     };
-    final userCache = {
-      for (final entry in profiles.entries) entry.key: ?entry.value,
-    };
+    final userCache = showAvatars
+        ? {
+            for (final entry in profiles.entries) entry.key: ?entry.value,
+          }
+        : const <String, UserProfile>{};
     final names = entries.map((entry) {
       final profile =
           profiles[entry.pubkey.toLowerCase()] ??
@@ -37,7 +43,9 @@ class ChannelTypingIndicator extends ConsumerWidget {
       2 => '${names[0]} and ${names[1]} are typing…',
       _ => '${names[0]} and ${names.length - 1} others are typing…',
     };
-    final visibleEntries = entries.take(3).toList();
+    final visibleEntries = showAvatars
+        ? entries.take(3).toList()
+        : const <TypingEntry>[];
     final avatarCount = visibleEntries.length;
 
     return Padding(
@@ -63,24 +71,25 @@ class ChannelTypingIndicator extends ConsumerWidget {
         ),
         child: Row(
           children: [
-            SizedBox(
-              width: 24.0 + (avatarCount - 1) * 14.0,
-              height: 24,
-              child: Stack(
-                children: [
-                  for (var i = 0; i < avatarCount; i++)
-                    Positioned(
-                      left: i * 14.0,
-                      child: SmallAvatar(
-                        pubkey: visibleEntries[i].pubkey,
-                        userCache: userCache,
-                        size: 24,
+            if (showAvatars)
+              SizedBox(
+                width: 24.0 + (avatarCount - 1) * 14.0,
+                height: 24,
+                child: Stack(
+                  children: [
+                    for (var i = 0; i < avatarCount; i++)
+                      Positioned(
+                        left: i * 14.0,
+                        child: SmallAvatar(
+                          pubkey: visibleEntries[i].pubkey,
+                          userCache: userCache,
+                          size: 24,
+                        ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(width: Grid.xxs),
+            if (showAvatars) const SizedBox(width: Grid.xxs),
             Flexible(
               child: _TypingTextShimmer(
                 text,

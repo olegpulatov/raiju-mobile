@@ -1,5 +1,6 @@
 // Modified for Raiju: companion-safe providers and selectable message content
-// retain the original bubble geometry and renderer.
+// retain the original bubble geometry and renderer; the avatar column is
+// optional via a local preference.
 
 part of '../channel_detail_page.dart';
 
@@ -31,6 +32,7 @@ class _MessageBubble extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final messageSnapshotKey = useMemoized(GlobalKey.new, const []);
+    final showAvatars = ref.watch(showChatAvatarsProvider);
 
     final isCompanion = message.presentationRole != null;
     // Watch only this user's profile to avoid rebuilding on unrelated cache changes.
@@ -236,7 +238,7 @@ class _MessageBubble extends HookConsumerWidget {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (showAuthor)
+                      if (showAvatars && showAuthor)
                         GestureDetector(
                           onTap: isCompanion
                               ? null
@@ -252,9 +254,10 @@ class _MessageBubble extends HookConsumerWidget {
                             isAgent: isAgent,
                           ),
                         )
-                      else
+                      else if (showAvatars)
                         const SizedBox(width: messageAvatarSize),
-                      const SizedBox(width: messageAvatarContentGap),
+                      if (showAvatars)
+                        const SizedBox(width: messageAvatarContentGap),
                       Expanded(
                         child: Padding(
                           padding: EdgeInsets.only(
@@ -372,8 +375,10 @@ class _MessageBubble extends HookConsumerWidget {
                 ),
                 if (message.reactions.isNotEmpty)
                   Padding(
-                    padding: const EdgeInsets.only(
-                      left: messageAvatarSize + messageAvatarContentGap,
+                    padding: EdgeInsets.only(
+                      left: showAvatars
+                          ? messageAvatarSize + messageAvatarContentGap
+                          : 0,
                     ),
                     child: ReactionRow(
                       messageId: message.id,

@@ -1,3 +1,4 @@
+// Modified for Raiju: thread previews follow the local avatar preference.
 part of '../thread_detail_page.dart';
 
 /// Tappable summary row shown below a reply that itself has replies.
@@ -23,7 +24,10 @@ class _NestedThreadSummaryRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final userCache = ref.watch(userCacheProvider);
+    final showAvatars = ref.watch(showChatAvatarsProvider);
+    final userCache = showAvatars
+        ? ref.watch(userCacheProvider)
+        : const <String, UserProfile>{};
 
     return GestureDetector(
       onTap: () {
@@ -42,8 +46,8 @@ class _NestedThreadSummaryRow extends ConsumerWidget {
       },
       child: Padding(
         key: ValueKey('nested-thread-summary-${replyMessage.id}'),
-        padding: const EdgeInsets.only(
-          left: messageAvatarSize + messageAvatarContentGap,
+        padding: EdgeInsets.only(
+          left: showAvatars ? messageAvatarSize + messageAvatarContentGap : 0,
           top: Grid.half,
           bottom: Grid.xs,
         ),
@@ -51,26 +55,27 @@ class _NestedThreadSummaryRow extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             // Stacked participant avatars.
-            SizedBox(
-              width:
-                  32.0 +
-                  (summary.participantPubkeys.length - 1).clamp(0, 2) * 20.0,
-              height: 32,
-              child: Stack(
-                children: [
-                  for (var i = 0; i < summary.participantPubkeys.length; i++)
-                    Positioned(
-                      left: i * 20.0,
-                      child: SmallAvatar(
-                        pubkey: summary.participantPubkeys[i],
-                        userCache: userCache,
-                        size: 32,
+            if (showAvatars)
+              SizedBox(
+                width:
+                    32.0 +
+                    (summary.participantPubkeys.length - 1).clamp(0, 2) * 20.0,
+                height: 32,
+                child: Stack(
+                  children: [
+                    for (var i = 0; i < summary.participantPubkeys.length; i++)
+                      Positioned(
+                        left: i * 20.0,
+                        child: SmallAvatar(
+                          pubkey: summary.participantPubkeys[i],
+                          userCache: userCache,
+                          size: 32,
+                        ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(width: Grid.xxs),
+            if (showAvatars) const SizedBox(width: Grid.xxs),
             Flexible(
               child: Text.rich(
                 TextSpan(

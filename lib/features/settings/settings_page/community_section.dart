@@ -1,4 +1,4 @@
-// MODIFIED FOR RAIJU: appearance remains local in the Interface group;
+// Modified for Raiju: keep local appearance and avatar preferences in Interface;
 // obsolete community invitation controls are removed.
 part of '../settings_page.dart';
 
@@ -8,6 +8,7 @@ class _InterfaceSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final preference = ref.watch(communityThemeProvider);
+    final showAvatars = ref.watch(showChatAvatarsProvider);
     final accentIndex =
         accentIndexForWireValue(preference.accent) ?? defaultAccentIndex;
 
@@ -47,6 +48,20 @@ class _InterfaceSection extends ConsumerWidget {
           trailing: const _RowChevron(),
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute<void>(builder: (_) => const AccentPickerPage()),
+          ),
+        ),
+        AppListRow(
+          key: const ValueKey('settings-chat-avatars'),
+          icon: LucideIcons.userRound,
+          title: 'Show avatars in chats',
+          trailing: Switch.adaptive(
+            value: showAvatars,
+            onChanged: (value) => unawaited(
+              ref.read(showChatAvatarsProvider.notifier).setVisible(value),
+            ),
+          ),
+          onTap: () => unawaited(
+            ref.read(showChatAvatarsProvider.notifier).setVisible(!showAvatars),
           ),
         ),
         const _NotificationsSection(),

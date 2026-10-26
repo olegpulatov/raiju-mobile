@@ -286,11 +286,12 @@ void main() {
 }
 
 class _Fixture {
-  _Fixture(this.controller, this.client, this.id);
+  _Fixture(this.controller, this.client, this.id, this.prefs);
 
   final CompanionController controller;
   final _Client client;
   final String id;
+  final SharedPreferences prefs;
 
   static Future<_Fixture> live({
     bool readOnly = false,
@@ -304,7 +305,9 @@ class _Fixture {
     );
     await controller.initialize();
     final thread = await controller.join('synthetic-test-capability');
-    return _Fixture(controller, client, thread.id);
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    return _Fixture(controller, client, thread.id, prefs);
   }
 
   Widget app() {
@@ -332,6 +335,7 @@ class _Fixture {
 
   Widget detailApp(SparkController spark) => ProviderScope(
     overrides: [
+      savedPrefsProvider.overrideWithValue(prefs),
       companionControllerProvider.overrideWith((ref) => controller),
       sparkControllerProvider.overrideWith((ref) => spark),
     ],

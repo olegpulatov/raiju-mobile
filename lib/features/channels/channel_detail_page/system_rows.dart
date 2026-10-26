@@ -1,3 +1,4 @@
+// Modified for Raiju: align system rows and thread previews with avatar visibility.
 part of '../channel_detail_page.dart';
 
 class _SystemMessageRow extends HookConsumerWidget {
@@ -24,6 +25,7 @@ class _SystemMessageRow extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final spotlightKey = useMemoized(() => GlobalKey());
+    final showAvatars = ref.watch(showChatAvatarsProvider);
     final systemEvent = message.systemEvent;
     if (systemEvent == null) return const SizedBox.shrink();
 
@@ -161,8 +163,10 @@ class _SystemMessageRow extends HookConsumerWidget {
                       )
                     : Row(
                         children: [
-                          _systemEventAvatar(context, systemEvent, userCache),
-                          const SizedBox(width: Grid.xxs),
+                          if (showAvatars) ...[
+                            _systemEventAvatar(context, systemEvent, userCache),
+                            const SizedBox(width: Grid.xxs),
+                          ],
                           Expanded(
                             child: Text(
                               systemEvent.describe(resolveLabel),
@@ -193,11 +197,12 @@ class _SystemMessageRow extends HookConsumerWidget {
               if (reactions.isNotEmpty)
                 Padding(
                   padding: EdgeInsets.only(
-                    left:
-                        (usesMessageStyleLayout ? messageAvatarSize : 36) +
-                        (usesMessageStyleLayout
-                            ? messageAvatarContentGap
-                            : Grid.xxs),
+                    left: !showAvatars
+                        ? 0
+                        : (usesMessageStyleLayout ? messageAvatarSize : 36) +
+                              (usesMessageStyleLayout
+                                  ? messageAvatarContentGap
+                                  : Grid.xxs),
                   ),
                   child: ReactionRow(
                     messageId: message.id,
@@ -381,7 +386,7 @@ TextStyle? _systemActionTextStyle(BuildContext context) {
   );
 }
 
-class _MessageStyleSystemMessageContent extends StatelessWidget {
+class _MessageStyleSystemMessageContent extends ConsumerWidget {
   final String displayPubkey;
   final int createdAt;
   final String Function(String? pubkey) resolveLabel;
@@ -397,22 +402,24 @@ class _MessageStyleSystemMessageContent extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final showAvatars = ref.watch(showChatAvatarsProvider);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () => showUserProfileSheet(context, displayPubkey),
-          child: _UserAvatar(
-            profile: userCache[displayPubkey.toLowerCase()],
-            pubkey: displayPubkey,
-            isAgent:
-                userCache[displayPubkey.toLowerCase()]?.ownerPubkey != null,
-            size: messageAvatarSize,
+        if (showAvatars)
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => showUserProfileSheet(context, displayPubkey),
+            child: _UserAvatar(
+              profile: userCache[displayPubkey.toLowerCase()],
+              pubkey: displayPubkey,
+              isAgent:
+                  userCache[displayPubkey.toLowerCase()]?.ownerPubkey != null,
+              size: messageAvatarSize,
+            ),
           ),
-        ),
-        const SizedBox(width: messageAvatarContentGap),
+        if (showAvatars) const SizedBox(width: messageAvatarContentGap),
         Expanded(
           child: Padding(
             padding: const EdgeInsets.only(top: Grid.half),
@@ -587,7 +594,10 @@ class _ThreadSummaryRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final userCache = ref.watch(userCacheProvider);
+    final showAvatars = ref.watch(showChatAvatarsProvider);
+    final userCache = showAvatars
+        ? ref.watch(userCacheProvider)
+        : const <String, UserProfile>{};
 
     return GestureDetector(
       onTap: () {
@@ -606,8 +616,8 @@ class _ThreadSummaryRow extends ConsumerWidget {
       },
       child: Padding(
         key: ValueKey('thread-summary-${message.id}'),
-        padding: const EdgeInsets.only(
-          left: messageAvatarSize + messageAvatarContentGap,
+        padding: EdgeInsets.only(
+          left: showAvatars ? messageAvatarSize + messageAvatarContentGap : 0,
           top: Grid.half,
           bottom: Grid.xs,
         ),
@@ -615,24 +625,25 @@ class _ThreadSummaryRow extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             // Stacked participant avatars.
-            SizedBox(
-              width: 32.0 + (summary.participantPubkeys.length - 1) * 20.0,
-              height: 32,
-              child: Stack(
-                children: [
-                  for (var i = 0; i < summary.participantPubkeys.length; i++)
-                    Positioned(
-                      left: i * 20.0,
-                      child: SmallAvatar(
-                        pubkey: summary.participantPubkeys[i],
-                        userCache: userCache,
-                        size: 32,
+            if (showAvatars)
+              SizedBox(
+                width: 32.0 + (summary.participantPubkeys.length - 1) * 20.0,
+                height: 32,
+                child: Stack(
+                  children: [
+                    for (var i = 0; i < summary.participantPubkeys.length; i++)
+                      Positioned(
+                        left: i * 20.0,
+                        child: SmallAvatar(
+                          pubkey: summary.participantPubkeys[i],
+                          userCache: userCache,
+                          size: 32,
+                        ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(width: Grid.xxs),
+            if (showAvatars) const SizedBox(width: Grid.xxs),
             Flexible(
               child: Text.rich(
                 TextSpan(

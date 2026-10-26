@@ -1,4 +1,5 @@
-// Modified for Raiju: select message text before opening secondary actions.
+// Modified for Raiju: select message text before opening secondary actions;
+// remove avatar column when local preference hides avatars.
 
 part of '../thread_detail_page.dart';
 
@@ -37,6 +38,7 @@ class _ThreadMessage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final messageSnapshotKey = useMemoized(GlobalKey.new, const []);
+    final showAvatars = ref.watch(showChatAvatarsProvider);
     final pk = message.pubkey.toLowerCase();
     final profile =
         ref.watch(userCacheProvider.select((cache) => cache[pk])) ??
@@ -157,7 +159,7 @@ class _ThreadMessage extends HookConsumerWidget {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (showAuthor)
+                        if (showAvatars && showAuthor)
                           GestureDetector(
                             onTap: () =>
                                 showUserProfileSheet(context, message.pubkey),
@@ -167,9 +169,10 @@ class _ThreadMessage extends HookConsumerWidget {
                               isAgent: isAgent,
                             ),
                           )
-                        else
+                        else if (showAvatars)
                           const SizedBox(width: messageAvatarSize),
-                        const SizedBox(width: messageAvatarContentGap),
+                        if (showAvatars)
+                          const SizedBox(width: messageAvatarContentGap),
                         Expanded(
                           child: Padding(
                             padding: EdgeInsets.only(
@@ -295,8 +298,10 @@ class _ThreadMessage extends HookConsumerWidget {
                   ),
                   if (isThreadHead || message.reactions.isNotEmpty)
                     Padding(
-                      padding: const EdgeInsets.only(
-                        left: messageAvatarSize + messageAvatarContentGap,
+                      padding: EdgeInsets.only(
+                        left: showAvatars
+                            ? messageAvatarSize + messageAvatarContentGap
+                            : 0,
                       ),
                       child: ReactionRow(
                         messageId: message.id,
