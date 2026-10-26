@@ -61,6 +61,30 @@ void main() {
       expect(find.byKey(const ValueKey('spark-strip')), findsNothing);
       expect(session.started, isFalse);
       await binding.takeScreenshot('spark-folded-launch');
+      final folded = find.byKey(const ValueKey('spark-minimized-button'));
+      final originalPosition = tester.getRect(folded);
+      await tester.drag(folded, Offset(-originalPosition.center.dx + 65, 100));
+      await _pumpFrames(tester);
+      final leftPosition = tester.getRect(folded);
+      final media = MediaQuery.of(tester.element(folded));
+      expect(
+        leftPosition.left - media.padding.left,
+        inInclusiveRange(0, 16),
+        reason: 'Folded Spark must snap to the safe left edge.',
+      );
+      expect(leftPosition.top, greaterThan(originalPosition.top + 50));
+      expect(find.byKey(const ValueKey('spark-strip')), findsNothing);
+      expect(session.started, isFalse);
+      expect(session.stopped, isFalse);
+      await tester.tap(find.byTooltip('Expand Spark controls'));
+      await _pumpFrames(tester);
+      expect(find.byKey(const ValueKey('spark-strip')), findsOneWidget);
+      expect(session.started, isFalse);
+      await tester.tap(find.byKey(const ValueKey('spark-minimize')));
+      await _pumpFrames(tester);
+      expect(tester.getRect(folded).left, closeTo(leftPosition.left, 1));
+      expect(tester.getRect(folded).top, closeTo(leftPosition.top, 1));
+      await binding.takeScreenshot('spark-folded-left');
       await tester.tap(find.text(boundChat.title).first);
       await _pumpFrames(tester);
       await tester.tap(find.byTooltip('Expand Spark controls'));
@@ -333,6 +357,16 @@ void main() {
       expect(
         find.byKey(const ValueKey('spark-minimized-button')),
         findsOneWidget,
+      );
+      expect(
+        tester.getRect(folded).left,
+        closeTo(leftPosition.left, 1),
+        reason: 'Recreated preferences must retain the selected side.',
+      );
+      expect(
+        tester.getRect(folded).top,
+        closeTo(leftPosition.top, 1),
+        reason: 'Recreated preferences must retain relative height.',
       );
       expect(restartedSession.started, isFalse);
       await tester.tap(find.text(boundChat.title).first);

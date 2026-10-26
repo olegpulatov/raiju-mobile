@@ -3,13 +3,18 @@ import 'dart:io';
 
 import 'package:raiju_mobile/app.dart';
 import 'package:raiju_mobile/companion_controller.dart';
+import 'package:raiju_mobile/features/channels/jump_to_latest_button.dart';
+import 'package:raiju_mobile/features/profile/profile_avatar.dart';
+import 'package:raiju_mobile/features/settings/settings_page.dart';
 import 'package:raiju_mobile/harness/harness.dart';
 import 'package:raiju_mobile/raiju/companion_provider.dart';
 import 'package:raiju_mobile/shared/theme/community_theme_provider.dart';
 import 'package:raiju_mobile/shared/theme/theme_provider.dart';
+import 'package:raiju_mobile/shared/widgets/avatar_image.dart';
 import 'package:raiju_mobile/storage/encrypted_file_chat_store.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:integration_test/integration_test.dart';
@@ -41,7 +46,6 @@ void main() {
     final controller = CompanionController(
       clientFactory: () => client,
       store: store,
-      writeDebounce: Duration.zero,
     );
     var controllerDisposed = false;
     addTearDown(() async {
@@ -105,12 +109,28 @@ void main() {
     );
     expect(client.sent, [prompt]);
 
+    FocusManager.instance.primaryFocus?.unfocus();
+    await _pumpFrames(tester);
+    await _checkChatAvatars(tester, binding, controller.chats.single.id);
+    await _checkMessageSelection(tester, binding);
+    await _checkDetachedReading(tester, client);
+
     const savedDraft = 'draft survives restart';
-    await tester.enterText(
-      find.byKey(const ValueKey('raiju-composer-input')),
+    // Send successive editing updates faster than the 400 ms idle debounce.
+    // The unchanged encrypted-store recreation below must retain the final text.
+    final composer = find.byKey(const ValueKey('raiju-composer-input'));
+    for (var length = 1; length <= savedDraft.length; length++) {
+      await tester.enterText(composer, savedDraft.substring(0, length));
+      await tester.pump(const Duration(milliseconds: 5));
+    }
+    await tester.pump(const Duration(milliseconds: 450));
+    expect(controller.chats.single.draft, savedDraft);
+    expect(
+      (await store.load()).single.draft,
       savedDraft,
+      reason: 'Idle debounce must reach encrypted storage before any flush.',
     );
-    await tester.pump();
+    expect(client.sent, [prompt], reason: 'Typing a draft must not send it.');
     client.emit(client.snapshot.copyWith(readOnly: true));
     await tester.pump();
     expect(
@@ -146,7 +166,6 @@ void main() {
           keyName: keyName,
         ),
       ),
-      writeDebounce: Duration.zero,
     );
     var restoredDisposed = false;
     addTearDown(() async {
@@ -210,6 +229,212 @@ void main() {
     restoredDisposed = true;
     restored.dispose();
   });
+}
+
+Future<void> _pumpFrames(WidgetTester tester) async {
+  for (var frame = 0; frame < 6; frame++) {
+    await tester.pump(const Duration(milliseconds: 100));
+  }
+}
+
+Future<void> _checkChatAvatars(
+  WidgetTester tester,
+  IntegrationTestWidgetsFlutterBinding binding,
+  String chatId,
+) async {
+  final row = find.byKey(const ValueKey('message-row-assistant-1'));
+  final avatar = find.descendant(of: row, matching: find.byType(AvatarImage));
+  expect(avatar, findsNothing);
+  for (final visible in [true, false]) {
+    await Navigator.of(tester.element(row)).maybePop();
+    final chat = find.byKey(ValueKey('chat-list-item-$chatId'));
+    await _pumpUntil(tester, chat);
+    await _tapWhenHittable(tester, find.byType(ProfileAvatar).first);
+    await _pumpUntil(tester, find.byType(SettingsPage));
+    final setting = find.byKey(const ValueKey('settings-chat-avatars'));
+    await _pumpFrames(tester);
+    await tester.scrollUntilVisible(
+      setting,
+      200,
+      scrollable: find
+          .descendant(
+            of: find.byType(SettingsPage),
+            matching: find.byType(Scrollable),
+          )
+          .last,
+    );
+    await _pumpFrames(tester);
+    expect(find.text('Interface'), findsOneWidget);
+    expect(find.text('Show avatars in chats'), findsOneWidget);
+    final toggle = find.descendant(of: setting, matching: find.byType(Switch));
+    expect(tester.widget<Switch>(toggle).value, !visible);
+    await _tapWhenHittable(tester, toggle);
+    await _pumpFrames(tester);
+    expect(tester.widget<Switch>(toggle).value, visible);
+    Navigator.of(tester.element(setting)).pop();
+    await _tapWhenHittable(tester, chat);
+    await _pumpUntil(tester, row);
+    await _pumpUntilRouteTransitionCompleted(tester, row);
+    expect(avatar, visible ? findsOneWidget : findsNothing);
+    if (visible) await binding.takeScreenshot('raiju-chat-avatars-on');
+  }
+}
+
+Future<void> _checkMessageSelection(
+  WidgetTester tester,
+  IntegrationTestWidgetsFlutterBinding binding,
+) async {
+  final text = find.byWidgetPredicate(
+    (widget) =>
+        widget is RichText && widget.text.toPlainText() == 'fixture pong',
+  );
+  final paragraph = tester.renderObject<RenderParagraph>(text);
+  final word = paragraph
+      .getBoxesForSelection(const TextSelection(baseOffset: 0, extentOffset: 7))
+      .first;
+  await tester.longPressAt(paragraph.localToGlobal(word.toRect().center));
+  await _pumpFrames(tester);
+  expect(
+    paragraph.selections.single.textInside(paragraph.text.toPlainText()),
+    'fixture',
+  );
+  expect(find.text('Copy'), findsOneWidget);
+  expect(find.text('More'), findsOneWidget);
+  final actions = find.byKey(const ValueKey('message-actions-backdrop-filter'));
+  expect(actions, findsNothing);
+  await binding.takeScreenshot('raiju-message-selection');
+  await _tapWhenHittable(tester, find.text('More'));
+  await _pumpUntil(tester, actions);
+  // Simulator retains the real UIKit surface, unlike plugin-free widget tests.
+  expect(
+    find.byKey(const ValueKey('ios-native-message-action-surface')),
+    findsOneWidget,
+  );
+  expect(find.byKey(const ValueKey('quick-reaction-more')), findsOneWidget);
+  await _pumpFrames(tester);
+  await binding.takeScreenshot('raiju-message-actions');
+  expect(paragraph.selections, isEmpty);
+  Navigator.of(tester.element(actions)).pop();
+  await _pumpFrames(tester);
+  expect(actions, findsNothing);
+}
+
+Future<void> _checkDetachedReading(
+  WidgetTester tester,
+  _FixtureClient client,
+) async {
+  final original = client.snapshot;
+  final messages = [
+    for (var index = 0; index < 40; index++)
+      ChatMessage(
+        id: 'history-$index',
+        role: index.isEven ? MessageRole.user : MessageRole.assistant,
+        text: 'Synthetic history row $index\nSecond line',
+      ),
+    const ChatMessage(
+      id: 'streaming-tail',
+      role: MessageRole.assistant,
+      text: 'Streaming line',
+      isStreaming: true,
+    ),
+  ];
+  void emit({bool streaming = true}) => client.emit(
+    original.copyWith(messages: List.of(messages), isStreaming: streaming),
+  );
+  emit();
+  await _pumpFrames(tester);
+  final list = find.byKey(const ValueKey('channel-message-list'));
+  // A reversed chat list moves toward older history with a downward finger drag.
+  await tester.drag(list, const Offset(0, 320));
+  await _pumpFrames(tester);
+  final listRect = tester.getRect(list);
+  final rows = find.byWidgetPredicate(
+    (widget) =>
+        widget.key is ValueKey<String> &&
+        (widget.key as ValueKey<String>).value.startsWith(
+          'message-row-history-',
+        ),
+  );
+  final reference = rows
+      .evaluate()
+      .map((element) {
+        return find.byKey(element.widget.key!);
+      })
+      .firstWhere((row) {
+        final rect = tester.getRect(row);
+        return rect.top > listRect.top + 80 && rect.bottom < listRect.center.dy;
+      });
+  final y = tester.getTopLeft(reference).dy;
+  Future<void> expectAnchored(String reason) async {
+    for (var frame = 0; frame < 12; frame++) {
+      await tester.pump(const Duration(milliseconds: 25));
+      expect(tester.getTopLeft(reference).dy, closeTo(y, 1), reason: reason);
+    }
+  }
+
+  for (var update = 1; update <= 6; update++) {
+    messages.last = ChatMessage(
+      id: 'streaming-tail',
+      role: MessageRole.assistant,
+      text: List.filled(
+        update * 3,
+        'Synthetic streaming line $update',
+      ).join('\n'),
+      isStreaming: true,
+    );
+    emit();
+    await expectAnchored('Streaming growth must not move detached history.');
+  }
+  messages.add(
+    const ChatMessage(
+      id: 'appended-tail',
+      role: MessageRole.assistant,
+      text: 'Synthetic new response',
+    ),
+  );
+  emit(streaming: false);
+  await expectAnchored('A new message must not move detached history.');
+  final jump = find.byKey(const ValueKey('channel-jump-to-latest'));
+  expect(jump, findsOneWidget);
+  await _tapWhenHittable(tester, find.text('Message…'));
+  await expectAnchored('Opening composer must retain the same global y.');
+  final composer = find.byKey(const ValueKey('raiju-composer-input'));
+  await _pumpUntil(tester, composer);
+  await tester.tap(composer);
+  await tester.enterText(composer, 'Detached draft\nSecond line\nThird line');
+  await expectAnchored('Keyboard and typing must retain the same global y.');
+  expect(tester.widget<TextField>(composer).focusNode!.hasFocus, isTrue);
+  expect(jump, findsOneWidget);
+  // Flutter's tester cannot synthesize touches inside UIKit platform views.
+  // Invoke the mounted native button's Dart callback, like native back above:
+  // this checks the navigation seam, not UIKit touch delivery/hit testing.
+  tester.widget<JumpToLatestButton>(jump).onPressed();
+  await _pumpFrames(tester);
+  final latestRow = find.byKey(const ValueKey('message-row-appended-tail'));
+  expect(latestRow, findsOneWidget);
+  final latest = find
+      .ancestor(
+        of: latestRow,
+        matching: find.byWidgetPredicate(
+          (widget) =>
+              widget.key is ValueKey<String> &&
+              (widget.key as ValueKey<String>).value.startsWith(
+                'channel-message-group-',
+              ),
+        ),
+      )
+      .first;
+  final dock = find.byKey(const ValueKey('channel-composer-dock'));
+  expect(
+    tester.getBottomLeft(latest).dy,
+    closeTo(tester.getTopLeft(dock).dy, 1),
+    reason: 'Jump to latest must return to the bottom boundary.',
+  );
+  expect(jump, findsNothing);
+  // Keep the existing restore and appearance checks on their original fixture.
+  await tester.enterText(composer, '');
+  client.emit(original);
+  await _pumpFrames(tester);
 }
 
 Future<void> _captureAppearanceScreenshots(
@@ -435,18 +660,22 @@ class _FixtureClient implements HarnessClient {
 }
 
 extension on HarnessSnapshot {
-  HarnessSnapshot copyWith({ConnectionPhase? phase, bool? readOnly}) =>
-      HarnessSnapshot(
-        phase: phase ?? this.phase,
-        title: title,
-        sessionId: sessionId,
-        endpoint: endpoint,
-        model: model,
-        messages: messages,
-        readOnly: readOnly ?? this.readOnly,
-        isStreaming: isStreaming,
-        activity: activity,
-        error: error,
-        questions: questions,
-      );
+  HarnessSnapshot copyWith({
+    ConnectionPhase? phase,
+    bool? readOnly,
+    List<ChatMessage>? messages,
+    bool? isStreaming,
+  }) => HarnessSnapshot(
+    phase: phase ?? this.phase,
+    title: title,
+    sessionId: sessionId,
+    endpoint: endpoint,
+    model: model,
+    messages: messages ?? this.messages,
+    readOnly: readOnly ?? this.readOnly,
+    isStreaming: isStreaming ?? this.isStreaming,
+    activity: activity,
+    error: error,
+    questions: questions,
+  );
 }
