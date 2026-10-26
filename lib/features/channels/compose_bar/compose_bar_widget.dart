@@ -1,7 +1,7 @@
 part of '../compose_bar.dart';
 
-// MODIFIED FOR RAIJU: preserves Buzz composer geometry and interaction while
-// guarding all active backend effects behind the OMP companion mode.
+// Modified for Raiju: preserve Buzz composer geometry, fence backend effects,
+// and flush local companion drafts after send.
 
 class ComposeBar extends HookConsumerWidget {
   final String channelId;
@@ -547,6 +547,8 @@ class ComposeBar extends HookConsumerWidget {
           return;
         }
         isSending.value = true;
+        final companion = ref.read(companionControllerProvider);
+        unawaited(companion.flush().catchError((Object _) {}));
         try {
           await onSend(text, const <String>[], mediaTags: const []);
           if (context.mounted && controller.text.trim() == text) {
@@ -558,6 +560,7 @@ class ComposeBar extends HookConsumerWidget {
           );
         } finally {
           if (context.mounted) isSending.value = false;
+          await companion.flush().catchError((Object _) {});
         }
         return;
       }

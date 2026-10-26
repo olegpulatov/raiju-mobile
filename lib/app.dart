@@ -1,4 +1,4 @@
-// Modified for Raiju: original app shell opens locally without Buzz services.
+// Modified for Raiju: local shell without Buzz services; flush before suspension.
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -278,6 +278,7 @@ class App extends HookConsumerWidget {
       final lifecycle = AppLifecycleListener(
         onInactive: saveBeforeSuspension,
         onPause: saveBeforeSuspension,
+        onDetach: saveBeforeSuspension,
       );
       return lifecycle.dispose;
     }, [controller, themeNotifier]);

@@ -1,3 +1,5 @@
+// Modified for Raiju: companion drafts stay local, debounce encrypted writes,
+// and flush when the composer leaves its chat.
 part of '../compose_bar.dart';
 
 Future<void> _sendTextOnlyDraft({
@@ -87,11 +89,20 @@ void _useComposeDraftLifecycle({
 }) {
   final lastDraftIdentity = useRef<String?>(null);
   useEffect(() {
+    if (!companionMode) return null;
+    final companion = ref.read(companionControllerProvider);
+    return () => unawaited(companion.flush().catchError((Object _) {}));
+  }, [channelId, companionMode]);
+  useEffect(() {
     if (companionMode) {
-      if (controller.text != companionDraft) {
+      final companion = ref.read(companionControllerProvider);
+      // The provider deliberately does not notify on local edits. Read the
+      // latest draft if another hook dependency changes while typing.
+      final draft = companion.chat(channelId)?.draft ?? companionDraft;
+      if (controller.text != draft) {
         controller.value = TextEditingValue(
-          text: companionDraft,
-          selection: TextSelection.collapsed(offset: companionDraft.length),
+          text: draft,
+          selection: TextSelection.collapsed(offset: draft.length),
         );
       }
       var lastPersistedText = controller.text;
@@ -100,7 +111,7 @@ void _useComposeDraftLifecycle({
         if (text == lastPersistedText) return;
         lastPersistedText = text;
         draftRevision.value += 1;
-        ref.read(companionControllerProvider).updateDraft(channelId, text);
+        companion.updateDraft(channelId, text);
       }
 
       controller.addListener(persistCompanionDraft);

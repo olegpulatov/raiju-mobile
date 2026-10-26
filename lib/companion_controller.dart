@@ -129,6 +129,7 @@ class CompanionController extends ChangeNotifier {
   int _nextId = 0;
   int _revision = 0;
   bool _dirty = false;
+  bool _draftDirty = false;
   bool _disposed = false;
   bool _storageReady = false;
   bool _isLoading = true;
@@ -483,9 +484,15 @@ class CompanionController extends ChangeNotifier {
       throw const PromptBusyException();
     }
     thread._promptInFlight = true;
+    if (fromComposer) unawaited(flush().catchError((Object _) {}));
     try {
       return await _sendPrepared(thread, text, fromComposer: fromComposer);
     } finally {
+      if (fromComposer) {
+        // A completed network send must not become a retryable send failure
+        // when local storage fails. flush exposes that error separately.
+        await flush().catchError((Object _) {});
+      }
       thread._promptInFlight = false;
     }
   }
@@ -539,6 +546,7 @@ class CompanionController extends ChangeNotifier {
         chat(thread.id) == thread &&
         thread._draftRevision == draftRevision) {
       updateDraft(thread.id, '');
+      _notify();
     }
     return payload;
   }
@@ -588,13 +596,15 @@ class CompanionController extends ChangeNotifier {
     _notify();
   }
 
+  /// Keep editor changes local; only idle/explicit flush enters persistence.
+  /// In particular, do not invalidate chat/timeline/Spark listeners per key.
   void updateDraft(String id, String text) {
     final thread = _requireChat(id);
     if (thread._draft == text) return;
     thread._draft = text;
     thread._draftRevision++;
-    _markDirty();
-    _notify();
+    _draftDirty = true;
+    _scheduleWrite();
   }
 
   /// Stable per-chat upsert; never trims undelegated dialogue to fit the
@@ -671,6 +681,7 @@ class CompanionController extends ChangeNotifier {
   /// Commits pending draft/transcript changes. Call before app suspension.
   Future<void> flush() async {
     await initialize();
+    _commitDrafts();
     _writeTimer?.cancel();
     _writeTimer = null;
     await _persistNow();
@@ -766,9 +777,20 @@ class CompanionController extends ChangeNotifier {
     _dirty = true;
     _revision++;
     if (!debounce) return;
+    _scheduleWrite();
+  }
+
+  void _commitDrafts() {
+    if (!_draftDirty) return;
+    _draftDirty = false;
+    _markDirty(debounce: false);
+  }
+
+  void _scheduleWrite() {
     _writeTimer?.cancel();
     _writeTimer = Timer(_writeDebounce, () {
       _writeTimer = null;
+      _commitDrafts();
       unawaited(_persistNow().catchError((_) {}));
     });
   }
@@ -854,6 +876,24 @@ class CompanionController extends ChangeNotifier {
   @override
   void dispose() {
     if (_disposed) return;
+    if (_storageReady && (_dirty || _draftDirty)) {
+      // ChangeNotifier disposal cannot await. Capture before clearing chats,
+      // then serialize the final state behind any already-started save.
+      final state = _storedState();
+      final active = _persisting;
+      unawaited(() async {
+        try {
+          await active;
+        } catch (_) {
+          // A prior failure must not suppress the latest local draft.
+        }
+        try {
+          await _store.save(state);
+        } catch (_) {
+          // No listeners remain. Await flush before disposal to observe errors.
+        }
+      }());
+    }
     _disposed = true;
     _writeTimer?.cancel();
     for (final thread in _chats) {
