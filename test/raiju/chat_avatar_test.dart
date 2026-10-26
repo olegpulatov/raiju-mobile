@@ -23,7 +23,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   testWidgets(
-    'companion chat keeps the original avatar badge and long-press rows',
+    'remote session row keeps the original avatar badge and long-press rows',
     (tester) async {
       final controller = CompanionController(
         clientFactory: () => _FakeClient(_snapshot),
@@ -31,7 +31,9 @@ void main() {
       );
       addTearDown(controller.dispose);
       await controller.initialize();
-      final thread = await controller.join('synthetic-avatar-capability');
+      // Since collabs and remote sessions were grouped, only remote (ompd)
+      // sessions use the DM avatar row; collab rows use the channel icon.
+      final thread = await controller.join('ompd:synthetic-avatar-capability');
 
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
