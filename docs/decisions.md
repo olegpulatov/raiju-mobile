@@ -259,3 +259,15 @@ Status: accepted, user request on 2026-10-03; extends the direct-collab-only con
 - Persist the bound RPC file spelling with the encrypted connection and retain it across reconnect. Cached daemon metadata is not freshness proof. A changed spelling on an already-bound chat fails closed; fresh/legacy attachment initially binds the worker spelling because the current API has no authoritative refresh barrier
 - Keep daemon and OMP sources unchanged. API feedback: add version/capability discovery, authenticated access, saved-session catalog, atomic state/history snapshots, stable error codes, and durable pending-question retrieval. These are gaps, not capabilities invented by mobile
 - Rejected: replacing collaboration with the daemon, treating daemon TCP as a collab relay URL, automatically starting a worker during restore, or claiming a saved-session picker can be built from running-instance status
+
+## adr-021 — chat reading and input ergonomics
+
+Status: accepted, user request on 2026-10-26; adapts original Buzz message gestures, avatar column, scroll following, and folded Spark placement
+
+- Reading and selecting outrank reactions. Long press on message text starts platform text selection; the selection toolbar adds More, which opens the unchanged message actions popover. A hold outside text still opens actions, so media-only rows keep access. Plain taps never open actions
+- Reader scroll position belongs to the user. Once detached from the latest boundary, streaming growth, new rows, history refresh, keyboard/composer changes, voice turns, Spark replies, and own sends keep the visible message at the same screen pixel. Only the jump-to-latest button or scrolling back to the bottom resumes following. Updates arriving during an active drag or fling wait until the gesture ends instead of cancelling it
+- Composer keystrokes stay local. Drafts persist after 400 ms idle and flush on send, leaving the chat, app inactive/pause/detach, and controller disposal. Text reaches the host only on send
+- Chat avatars are an Interface preference, hidden by default. Hidden avatars free their column and gap; author/originator labels remain. Chat-list avatars are unchanged
+- Folded Spark controls can be dragged and snap to the nearest safe side edge, avoiding composer and keyboard. Side and relative height persist in app preferences. Dragging never expands, mutes, starts, or stops audio
+- Rejected: removing reactions, keeping the 200 ms action hold, jumping to latest on own send, per-keystroke encrypted writes, removing avatars without a preference
+- Reopen if the user wants cross-message selection, send-time jump to latest, or a different gesture for message actions

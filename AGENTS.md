@@ -12,7 +12,7 @@ Read `VISION.md`, `docs/decisions.md`, and `docs/development.md` before nontrivi
 - Relay endpoint/port and integration profile are runtime configuration (CLI/env/direnv), not hardcoded development values. No relay checkout location is required to connect
 - Relay identity must work with macOS and NixOS hosts, including arbitrary remote path aliases; do not add platform-specific path rewriting
 - Active Raiju logos use canonical sources from the Raiju workspace's `brand/`; preserve upstream attribution and inactive reference assets
-- Approved GUI adaptations include removal of obsolete identity/invite/settings-chat controls, grouped menus/chats, local search, Raiju branding, Material/green fresh defaults, and folded Spark startup
+- Approved GUI adaptations include removal of obsolete identity/invite/settings-chat controls, grouped menus/chats, local search, Raiju branding, Material/green fresh defaults, folded Spark startup, message text selection before reactions (actions via selection toolbar More), optional chat avatars hidden by default, draggable folded Spark controls, and detached-reader scroll anchoring
 - Commit separate features separately. These requirements take precedence over conflicting original preservation rules below
 
 ## non-negotiable product constraints

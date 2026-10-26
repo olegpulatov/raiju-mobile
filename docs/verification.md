@@ -9,11 +9,11 @@ Run from the mobile repository root. Use `just install` for locked dependencies 
 ## local checks
 
 - `just check`: preservation, formatting, analysis, active app/storage/transport/UI tests, and Spark contracts
-- `just ios-smoke`: original chat shell, connect/send/reply/offline flow, and saved-state restoration on simulator with a synthetic host
+- `just ios-smoke`: original chat shell, connect/send/reply/offline flow, and saved-state restoration on simulator with a synthetic host. Also covers ADR-021: avatar toggle, text selection with More, detached-reader anchoring during streaming and typing, and debounced draft storage. Jump-to-latest is checked through its Dart callback, not native UIKit touch
 - `just ompd-ios-smoke`: app start/attach/chat/restore flow with a synthetic local TCP peer
 - `just ompd-smoke /path/to/ompd`: isolated real daemon with a synthetic RPC worker; no model calls
 - `just spark-test`: portable Rust, Dart domain, widget, and tooling contracts
-- `just spark-ios-smoke`: folded/expanded controls, dialogue/delegation, navigation, lifecycle policy, restoration, and stop with synthetic voice
+- `just spark-ios-smoke`: folded/expanded controls, folded-control drag and edge snap with retained placement, dialogue/delegation, navigation, lifecycle policy, restoration, and stop with synthetic voice
 
 Inspect synthetic light/dark screenshots and source diffs for UI changes; preservation counts and passing tests do not establish visual equivalence. License packaging checks are in [development](development.md#offline-licenses-and-native-notice-refresh).
 

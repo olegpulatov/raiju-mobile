@@ -109,6 +109,7 @@ After simulator build, inspect `build/ios/iphonesimulator/Raiju.app/Frameworks/A
 - Host session replacement ends old link. Keep cached chat and show failure; user supplies new link. Do not silently attach a different conversation
 - Home groups saved chats under Collabs and Remote sessions. Search finds local titles and cached conversation text across both groups
 - Fresh preferences use Material with green accent; saved appearance choices remain unchanged. Settings groups are Spark live voice, Connection, then Interface. Spark starts folded; expanding it does not start audio
+- Chat reading: long press selects message text; selection toolbar More opens reactions/actions. Scrolled-up reader stays in place while replies stream, while typing, during voice, and after own send; jump-to-latest returns to bottom. Avatars are hidden by default (Settings → Interface). Folded Spark controls drag to either side and keep that place after restart
 
 ## optional daemon relay
 
