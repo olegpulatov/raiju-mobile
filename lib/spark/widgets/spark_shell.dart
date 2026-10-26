@@ -1,3 +1,4 @@
+// Modified for Raiju: allow folded voice controls to move and remember their edge.
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
@@ -5,9 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../raiju/companion_provider.dart';
+import '../../features/channels/composer_dock_size_reporter.dart';
 import '../../shared/theme/theme.dart';
 import '../../shared/widgets/modal_presentation.dart';
 import '../spark.dart';
+import 'spark_floating_control.dart';
 import 'spark_level_visualizer.dart';
 import 'spark_transcript_sheet.dart';
 
@@ -68,6 +71,26 @@ class _SparkShellState extends ConsumerState<SparkShell>
   List<SparkTranscriptEntry> _previousTranscript = const [];
   SparkTranscriptEntry? _visibleUserPartial;
   String? _partialChatId;
+  BuildContext? _composerContext;
+  double? _measuredComposerTop;
+
+  double? _composerTop() {
+    final dock = _composerContext;
+    if (dock == null ||
+        !dock.mounted ||
+        !(ModalRoute.of(dock)?.isCurrent ?? true)) {
+      return null;
+    }
+    return _measuredComposerTop;
+  }
+
+  void _positionSaveError() {
+    ScaffoldMessenger.maybeOf(
+      widget.navigatorKey?.currentContext ?? context,
+    )?.showSnackBar(
+      const SnackBar(content: Text('Spark position could not be saved.')),
+    );
+  }
 
   @override
   void initState() {
@@ -124,6 +147,30 @@ class _SparkShellState extends ConsumerState<SparkShell>
     );
   }
 
+  bool _onComposerGeometry(ComposerDockGeometryNotification notification) {
+    final dockContext = notification.dockContext;
+    if (!(ModalRoute.of(dockContext)?.isCurrent ?? true)) {
+      if (identical(_composerContext, dockContext)) {
+        setState(() {
+          _composerContext = null;
+          _measuredComposerTop = null;
+        });
+      }
+      return false;
+    }
+    final dock = dockContext.findRenderObject();
+    final shell = context.findRenderObject();
+    if (mounted && dock is RenderBox && shell is RenderBox) {
+      setState(() {
+        _composerContext = dockContext;
+        _measuredComposerTop = shell
+            .globalToLocal(dock.localToGlobal(Offset.zero))
+            .dy;
+      });
+    }
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     final controller = ref.watch(sparkControllerProvider);
@@ -134,11 +181,15 @@ class _SparkShellState extends ConsumerState<SparkShell>
     final partialStyle = context.textTheme.labelSmall?.copyWith(
       color: context.colors.onSurfaceVariant,
     );
+    final appChild = NotificationListener<ComposerDockGeometryNotification>(
+      onNotification: _onComposerGeometry,
+      child: widget.child,
+    );
     if (_minimized) {
       return Stack(
         fit: StackFit.expand,
         children: [
-          widget.child,
+          appChild,
           Offstage(
             offstage: true,
             child: TickerMode(
@@ -154,13 +205,13 @@ class _SparkShellState extends ConsumerState<SparkShell>
               ),
             ),
           ),
-          PositionedDirectional(
-            top: MediaQuery.sizeOf(context).height * .32,
-            end: Grid.xs,
-            child: IgnorePointer(
-              ignoring: _modalActive,
-              child: ExcludeSemantics(
-                excluding: _modalActive,
+          IgnorePointer(
+            ignoring: _modalActive,
+            child: ExcludeSemantics(
+              excluding: _modalActive,
+              child: SparkFloatingControl(
+                composerTop: _composerTop(),
+                onSaveError: _positionSaveError,
                 child: _MinimizedSparkControl(
                   snapshot: snapshot,
                   onExpand: () => setState(() => _minimized = false),
@@ -377,7 +428,7 @@ class _SparkShellState extends ConsumerState<SparkShell>
             child: MediaQuery.removePadding(
               context: context,
               removeTop: true,
-              child: widget.child,
+              child: appChild,
             ),
           ),
         ),

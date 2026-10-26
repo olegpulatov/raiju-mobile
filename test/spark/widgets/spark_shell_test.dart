@@ -4,13 +4,24 @@ import 'package:raiju_mobile/harness/harness.dart';
 import 'package:raiju_mobile/storage/voice_transcript.dart';
 import 'package:raiju_mobile/shared/theme/theme.dart';
 import 'package:raiju_mobile/spark/spark.dart';
+import 'package:raiju_mobile/spark/overlay_position.dart';
+import 'package:raiju_mobile/features/channels/composer_dock_size_reporter.dart';
 import 'package:raiju_mobile/spark/widgets/spark_shell.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+late SharedPreferences _testPrefs;
 
 void main() {
+  late SharedPreferences prefs;
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({});
+    prefs = _testPrefs = await SharedPreferences.getInstance();
+  });
+
   testWidgets('Spark starts folded without audio and chat stays interactive', (
     tester,
   ) async {
@@ -59,6 +70,221 @@ void main() {
     expect(chatTaps, 3);
     expect(session.startCalls, 0);
     expect(session.stopCalls, 0);
+  });
+  testWidgets(
+    'folded circle follows drag, snaps to edge, and still expands on tap',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(400, 700));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final session = _FakeSession();
+      await tester.pumpWidget(
+        _fixture(
+          child: const Text('Main chat'),
+          session: session,
+          prefs: prefs,
+        ),
+      );
+      await tester.pump();
+      final circle = find.byKey(const ValueKey('spark-minimized-button'));
+      final before = tester.getRect(circle);
+      expect(before.top, closeTo(700 * .32, 1));
+      final gesture = await tester.startGesture(before.center);
+      await gesture.moveBy(const Offset(-210, 100));
+      await tester.pump();
+      await gesture.moveBy(const Offset(-40, 50));
+      await tester.pump();
+      final moved = tester.getRect(circle);
+      expect(moved.left, lessThan(before.left - 100));
+      expect(moved.top, greaterThan(before.top + 50));
+      expect(find.byKey(const ValueKey('spark-strip')), findsNothing);
+      await gesture.up();
+      await tester.pump();
+      final releasing = tester.getRect(circle);
+      await tester.pump(const Duration(milliseconds: 110));
+      expect(tester.getRect(circle).left, lessThan(releasing.left));
+      await tester.pumpAndSettle();
+      expect(tester.getRect(circle).left, inInclusiveRange(0, 16));
+      expect(tester.getRect(circle).top, closeTo(moved.top, 1));
+      expect(session.startCalls, 0);
+      expect(session.stopCalls, 0);
+      await _expandSpark(tester);
+      expect(find.byKey(const ValueKey('spark-strip')), findsOneWidget);
+      expect(session.startCalls, 0);
+      await tester.tap(find.byKey(const ValueKey('spark-minimize')));
+      await tester.pumpAndSettle();
+      expect(tester.getRect(circle).left, inInclusiveRange(0, 16));
+      await tester.drag(circle, const Offset(270, -30));
+      await tester.pumpAndSettle();
+      expect(tester.getRect(circle).right, inInclusiveRange(384, 400));
+      expect(session.startCalls, 0);
+      expect(session.stopCalls, 0);
+    },
+  );
+
+  testWidgets('drag over live mute and stop never changes audio', (
+    tester,
+  ) async {
+    final session = _FakeSession();
+    final controller = _activeController(session);
+    addTearDown(controller.dispose);
+    await tester.pumpWidget(
+      _fixture(
+        child: const Text('Main chat'),
+        controller: controller,
+        prefs: prefs,
+      ),
+    );
+    await controller.start(chatId: 'bound-chat');
+    session.emit(const {'type': 'connected'});
+    await _pumpSessionUpdate(tester);
+    final muteCalls = session.muteCalls;
+    for (final key in ['spark-mic-toggle', 'spark-stop']) {
+      await tester.drag(find.byKey(ValueKey(key)), const Offset(-180, 60));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('spark-strip')), findsNothing);
+      expect(controller.snapshot.micEnabled, isTrue);
+      expect(session.muted, isFalse);
+      expect(session.muteCalls, muteCalls);
+      expect(session.stopCalls, 0);
+      expect(session.startCalls, 1);
+    }
+    await tester.tap(find.byKey(const ValueKey('spark-mic-toggle')));
+    await _pumpSessionUpdate(tester);
+    expect(controller.snapshot.micEnabled, isFalse);
+  });
+
+  testWidgets(
+    'saved placement restores across shell and preference recreation',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(400, 700));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(
+        _fixture(child: const Text('Main chat'), prefs: prefs),
+      );
+      await tester.pump();
+      final circle = find.byKey(const ValueKey('spark-minimized-button'));
+      await tester.drag(circle, const Offset(-300, 200));
+      await tester.pumpAndSettle();
+      final saved = tester.getRect(circle);
+      expect(prefs.getStringList(sparkOverlayPositionKey)?.first, 'left');
+      await tester.pumpWidget(const SizedBox.shrink());
+      await prefs.reload();
+      await tester.pumpWidget(
+        _fixture(child: const Text('Main chat'), prefs: prefs),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.getRect(circle), saved);
+      await tester.binding.setSurfaceSize(const Size(700, 400));
+      await tester.pumpAndSettle();
+      final rotated = tester.getRect(circle);
+      expect(rotated.left, inInclusiveRange(0, 16));
+      expect(rotated.top, greaterThan(0));
+      expect(rotated.bottom, lessThan(400));
+      final fraction = double.parse(
+        prefs.getStringList(sparkOverlayPositionKey)![1],
+      );
+      expect(
+        (rotated.top - Grid.xs) / (400 - 2 * Grid.xs - rotated.height),
+        closeTo(fraction, .001),
+      );
+    },
+  );
+
+  testWidgets(
+    'placement clamps inside small safe viewport and above keyboard',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(220, 240));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await prefs.setStringList(sparkOverlayPositionKey, ['right', '3']);
+      await tester.pumpWidget(
+        _fixture(
+          child: const Text('Main chat'),
+          prefs: prefs,
+          media: const MediaQueryData(
+            size: Size(220, 240),
+            padding: EdgeInsets.fromLTRB(12, 24, 18, 12),
+            viewInsets: EdgeInsets.only(bottom: 100),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final circle = find.byKey(const ValueKey('spark-minimized-button'));
+      final restored = tester.getRect(circle);
+      expect(restored.right, lessThanOrEqualTo(220 - 18));
+      expect(restored.top, greaterThanOrEqualTo(24));
+      expect(restored.bottom, lessThan(140));
+      await tester.drag(circle, const Offset(-400, -400));
+      await tester.pumpAndSettle();
+      final moved = tester.getRect(circle);
+      expect(moved.left, greaterThanOrEqualTo(12));
+      expect(moved.top, greaterThanOrEqualTo(24));
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('circle stays above measured composer, including dock growth', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(400, 700));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await prefs.setStringList(sparkOverlayPositionKey, ['right', '1']);
+    final height = ValueNotifier<double>(100);
+    addTearDown(height.dispose);
+    await tester.pumpWidget(
+      _fixture(
+        prefs: prefs,
+        child: SizedBox.expand(
+          child: Stack(
+            children: [
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: ValueListenableBuilder<double>(
+                  valueListenable: height,
+                  builder: (context, value, _) => ComposerDockSizeReporter(
+                    onHeightChanged: (_) {},
+                    child: SizedBox(
+                      key: const ValueKey('measured-composer'),
+                      height: value,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final circle = find.byKey(const ValueKey('spark-minimized-button'));
+    final dock = find.byKey(const ValueKey('measured-composer'));
+    expect(tester.getRect(circle).bottom, lessThan(tester.getRect(dock).top));
+    height.value = 220;
+    await tester.pumpAndSettle();
+    expect(tester.getRect(circle).bottom, lessThan(tester.getRect(dock).top));
+    expect(prefs.getStringList(sparkOverlayPositionKey), ['right', '1']);
+    final navigator = tester.state<NavigatorState>(
+      find.byType(Navigator).first,
+    );
+    unawaited(
+      navigator.push(
+        MaterialPageRoute<void>(
+          builder: (_) => const Scaffold(body: Text('Another page')),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.getRect(circle).bottom, greaterThan(650));
+    navigator.pop();
+    await tester.pumpAndSettle();
+    expect(tester.getRect(circle).bottom, lessThan(tester.getRect(dock).top));
+    await _expandSpark(tester);
+    height.value = 280;
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('spark-minimize')));
+    await tester.pumpAndSettle();
+    expect(tester.getRect(circle).bottom, lessThan(tester.getRect(dock).top));
   });
 
   testWidgets('Spark sheet keeps typed input without manual handoff controls', (
@@ -597,10 +823,13 @@ Widget _fixture({
   required Widget child,
   _FakeSession? session,
   SparkController? controller,
+  SharedPreferences? prefs,
+  MediaQueryData? media,
 }) {
   final navigatorKey = GlobalKey<NavigatorState>();
   return ProviderScope(
     overrides: [
+      savedPrefsProvider.overrideWithValue(prefs ?? _testPrefs),
       sparkVoiceSessionProvider.overrideWithValue(session ?? _FakeSession()),
       if (controller != null)
         sparkControllerProvider.overrideWith((ref) => controller),
@@ -611,16 +840,21 @@ Widget _fixture({
     child: MaterialApp(
       navigatorKey: navigatorKey,
       theme: AppTheme.light(),
-      builder: (context, route) => Overlay(
-        initialEntries: [
-          OverlayEntry(
-            builder: (_) => SparkShell(
-              navigatorKey: navigatorKey,
-              child: route ?? const SizedBox.shrink(),
+      builder: (context, route) {
+        final overlay = Overlay(
+          initialEntries: [
+            OverlayEntry(
+              builder: (_) => SparkShell(
+                navigatorKey: navigatorKey,
+                child: route ?? const SizedBox.shrink(),
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        );
+        return media == null
+            ? overlay
+            : MediaQuery(data: media, child: overlay);
+      },
       home: Scaffold(body: Center(child: child)),
     ),
   );
@@ -630,6 +864,7 @@ class _FakeSession implements VoiceSession {
   final controller = StreamController<Map<String, Object?>>.broadcast();
   final sent = <String>[];
   int startCalls = 0;
+  int muteCalls = 0;
   bool muted = false;
   Completer<void>? pendingStart;
   void emit(Map<String, Object?> event) => controller.add(event);
@@ -645,7 +880,11 @@ class _FakeSession implements VoiceSession {
     String channel = 'speakable',
   }) async => sent.add(text);
   @override
-  Future<void> setMuted(bool value) async => muted = value;
+  Future<void> setMuted(bool value) async {
+    muteCalls++;
+    muted = value;
+  }
+
   @override
   Future<void> start({
     required String accessToken,

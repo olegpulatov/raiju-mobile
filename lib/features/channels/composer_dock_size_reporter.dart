@@ -1,5 +1,13 @@
+// Modified for Raiju: expose laid-out composer geometry to floating controls.
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+
+/// Lets app overlays measure the current route's composer without owning it.
+class ComposerDockGeometryNotification extends Notification {
+  const ComposerDockGeometryNotification(this.dockContext);
+
+  final BuildContext dockContext;
+}
 
 /// Reports the laid-out height of a floating composer dock.
 ///
@@ -19,11 +27,16 @@ class ComposerDockSizeReporter extends HookWidget {
   Widget build(BuildContext context) {
     final sizeKey = useMemoized(GlobalKey.new);
     final lastHeight = useRef<double?>(null);
+    final route = ModalRoute.of(context);
 
     void reportHeight() {
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!context.mounted) return;
         final renderObject = sizeKey.currentContext?.findRenderObject();
         if (renderObject is! RenderBox || !renderObject.hasSize) return;
+        ComposerDockGeometryNotification(
+          sizeKey.currentContext!,
+        ).dispatch(context);
         final height = renderObject.size.height;
         final previous = lastHeight.value;
         if (previous != null && (previous - height).abs() < 0.5) return;
@@ -35,7 +48,15 @@ class ComposerDockSizeReporter extends HookWidget {
     useEffect(() {
       reportHeight();
       return null;
-    }, const []);
+    }, [MediaQuery.of(context), route?.isCurrent]);
+
+    useEffect(() {
+      void onStatus(AnimationStatus status) {
+        if (status == AnimationStatus.completed) reportHeight();
+      }
+      route?.animation?.addStatusListener(onStatus);
+      return () => route?.animation?.removeStatusListener(onStatus);
+    }, [route?.animation]);
 
     return NotificationListener<SizeChangedLayoutNotification>(
       onNotification: (_) {
