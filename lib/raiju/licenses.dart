@@ -26,9 +26,9 @@ void registerRaijuLicenses() {
         await rootBundle.loadString(entry.key),
       );
     }
-    final notices = jsonDecode(
-      await rootBundle.loadString('licenses/native-notices.json'),
-    ) as Map<String, dynamic>;
+    final notices =
+        jsonDecode(await rootBundle.loadString('licenses/native-notices.json'))
+            as Map<String, dynamic>;
     for (final entry in notices['entries'] as List<dynamic>) {
       final notice = entry as Map<String, dynamic>;
       yield LicenseEntryWithLineBreaks(
