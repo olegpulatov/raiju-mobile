@@ -33,6 +33,10 @@ test: _deps
     {{ flutter }} test --no-pub test/features/settings/connection_section_test.dart test/features/settings/settings_page_test.dart test/features/settings/settings_page_loading_test.dart test/features/settings/theme_picker_page_test.dart test/features/profile/settings_profile_header_test.dart test/features/search/search_page_test.dart test/shared/widgets/raiju_logo_test.dart test/shared/widgets/bee_refresh_indicator_test.dart test/shared/widgets/buzz_loading_indicator_test.dart test/shared/theme/accent_colors_test.dart test/shared/theme/community_theme_preference_test.dart test/shared/theme/theme_pairs_test.dart test/shared/theme/buzz_theme_test.dart
     node scripts/spark-test.mjs all
 
+# Run every test (~30 min); fail only on failures missing from test/legacy-known-failures.txt.
+test-legacy: _deps
+    node scripts/legacy-test-baseline.mjs
+
 # Check preservation, formatting, analysis, and active tests without source changes.
 check: _deps check-preservation
     {{ dart }} format --output=none --set-exit-if-changed lib/harness lib/storage lib/raiju lib/spark lib/features/settings/settings_page.dart lib/features/settings/settings_page/spark_section.dart lib/features/pairing/ompd_pairing_page.dart lib/companion_controller.dart test/harness test/storage test/raiju test/spark test/features/settings/settings_page_test.dart test/features/settings/settings_page_loading_test.dart test/features/pairing/ompd_pairing_page_test.dart test/helpers/ompd_fixture.dart test/companion_controller_test.dart test/widget_test.dart tool integration_test test_driver

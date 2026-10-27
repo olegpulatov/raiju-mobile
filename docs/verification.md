@@ -9,6 +9,7 @@ Run from the mobile repository root. Use `just install` for locked dependencies 
 ## local checks
 
 - `just check`: preservation, formatting, analysis, active app/storage/transport/UI tests, and Spark contracts
+- `just test-legacy`: every test file under `test/` (~30 min). About 695 inherited Buzz tests fail because their fixtures feed relay/push/huddle/community backends that Raiju no longer runs; chat screens now read only `CompanionController`. They are listed in `test/legacy-known-failures.txt`; the recipe fails only on failures missing from that list. Run it when a change touches retained upstream code outside the `just test` set. When a listed case guards behavior the app still uses, port it to companion fixtures in `test/raiju/` instead of reviving the Buzz fixture; rerun with `--update` after fixing or deleting listed tests
 - `just ios-smoke`: original chat shell, connect/send/reply/offline flow, and saved-state restoration on simulator with a synthetic host. Also covers ADR-021: avatar toggle, text selection with More, detached-reader anchoring during streaming and typing, and debounced draft storage. Jump-to-latest is checked through its Dart callback, not native UIKit touch
 - `just ompd-ios-smoke`: app start/attach/chat/restore flow with a synthetic local TCP peer
 - `just ompd-smoke /path/to/ompd`: isolated real daemon with a synthetic RPC worker; no model calls
@@ -16,6 +17,8 @@ Run from the mobile repository root. Use `just install` for locked dependencies 
 - `just spark-ios-smoke`: folded/expanded controls, folded-control drag and edge snap with retained placement, dialogue/delegation, navigation, lifecycle policy, restoration, and stop with synthetic voice
 
 Inspect synthetic light/dark screenshots and source diffs for UI changes; preservation counts and passing tests do not establish visual equivalence. License packaging checks are in [development](development.md#offline-licenses-and-native-notice-refresh).
+
+On the iOS simulator most quick-reaction emoji render as `?` boxes (only the heart shows); the owner confirmed they render correctly on a physical iPhone. Treat this as a simulator font gap, not an app bug.
 
 ## live collaboration
 

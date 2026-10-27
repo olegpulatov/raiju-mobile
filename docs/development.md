@@ -144,7 +144,7 @@ Synthetic fixtures do not qualify real-model behavior. The live relay journey re
 - persistence: real store/controller recreation, encryption, atomic writes, draft/preference restoration, corruption/key failure without deletion, durable disconnect/forget
 - iOS: build and run original app with retained native bridges; launch/connect/talk/relaunch scenario. Simulator results do not qualify physical camera/cellular/background behavior
 
-Original backend tests and unused Buzz helpers remain preserved as upstream reference, but may assert removed behavior or depend on absent Buzz monorepo tooling (for example `scripts/check-file-sizes.mjs`). Only this component's `justfile` defines maintained Raiju commands. Original README, changelog, and huddle notes live under `upstream/buzz-*.md`; they are historical material, not active run instructions. Do not bulk-delete tests, silently skip failures, or claim the complete original server contract passes.
+Original backend tests and unused Buzz helpers remain preserved as upstream reference, but may assert removed behavior or depend on absent Buzz monorepo tooling (for example `scripts/check-file-sizes.mjs`). Their known failures are recorded in `test/legacy-known-failures.txt`; `just test-legacy` runs the whole suite and fails only on new failures (see [verification](verification.md#local-checks)). Only this component's `justfile` defines maintained Raiju commands. Original README, changelog, and huddle notes live under `upstream/buzz-*.md`; they are historical material, not active run instructions. Do not bulk-delete tests, silently skip failures, or claim the complete original server contract passes.
 
 ## evidence and review
 

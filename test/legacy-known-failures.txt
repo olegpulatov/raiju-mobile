@@ -1,0 +1,699 @@
+# Known failing tests in inherited Buzz suites: "<file>: <test name>".
+# Their fixtures feed Buzz relay/push/huddle backends that Raiju no longer
+# runs. Checked by `just test-legacy`; new failures outside this list fail it.
+# Regenerate after fixing or deleting tests: node scripts/legacy-test-baseline.mjs --update
+test/features/activity/compose_drafts_provider_test.dart: in-place identity change rebuilds onto the new store
+test/features/age_gate/age_gate_app_test.dart: blocks authenticated app content
+test/features/age_gate/age_gate_app_test.dart: clears the app badge until age access is allowed
+test/features/age_gate/age_gate_app_test.dart: offers a retry after the native age check fails
+test/features/age_gate/age_gate_app_test.dart: purges restricted notifications before community storage recovers
+test/features/age_gate/age_gate_app_test.dart: reloads failed community storage on resume before cleanup
+test/features/age_gate/age_gate_app_test.dart: retries a successful purge for interactions donated by stale extensions
+test/features/channels/channel_detail_page_test.dart: App bar aligns the Channel Details iOS back control with channels
+test/features/channels/channel_detail_page_test.dart: App bar keeps a narrow long channel title aligned on android
+test/features/channels/channel_detail_page_test.dart: App bar keeps a narrow long channel title aligned on iOS
+test/features/channels/channel_detail_page_test.dart: App bar keeps the native iOS glass header aligned at large text sizes
+test/features/channels/channel_detail_page_test.dart: App bar shows a tappable channel name and collective member count
+test/features/channels/channel_detail_page_test.dart: Channel links a live deletion does not restore the routed thread head
+test/features/channels/channel_detail_page_test.dart: Channel links a newly sent reply keeps Latest visible until the lazy tail settles
+test/features/channels/channel_detail_page_test.dart: Channel links a reaction landing while the thread is open shows up there
+test/features/channels/channel_detail_page_test.dart: Channel links cached writable 0-reply thread defers dock correction until measured
+test/features/channels/channel_detail_page_test.dart: Channel links cached writable 1-reply thread defers dock correction until measured
+test/features/channels/channel_detail_page_test.dart: Channel links deep-link stays put through passive resize until composer focus follows tail
+test/features/channels/channel_detail_page_test.dart: Channel links missing channel link shows an error
+test/features/channels/channel_detail_page_test.dart: Channel links tapping a channel link opens that channel
+test/features/channels/channel_detail_page_test.dart: Channel links thread Latest reaches the tail after inbox hydration
+test/features/channels/channel_detail_page_test.dart: Channel links thread Latest settles across expanding lazy scroll extents
+test/features/channels/channel_detail_page_test.dart: Channel links thread composer focus returns to the tail on android
+test/features/channels/channel_detail_page_test.dart: Channel links thread composer focus returns to the tail on iOS
+test/features/channels/channel_detail_page_test.dart: Channel links thread hides initial tail placement until it is settled
+test/features/channels/channel_detail_page_test.dart: Channel links thread keeps its tail above a growing composer dock
+test/features/channels/channel_detail_page_test.dart: Channel links thread replies earn the + only once they carry a reaction
+test/features/channels/channel_detail_page_test.dart: Channel links thread shows Latest after browsing history and returns to tail
+test/features/channels/channel_detail_page_test.dart: Channel links thread shows Latest after composer tail correction exhausts and focus leaves
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage Add members keeps its close control below the safe top
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage Add members submits selected directory users
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage Edit updates name and description without legacy fields
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage Latest reveals the channel tail while the Android keyboard stays open
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage Leave lives on the detail page instead of Manage
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage a same-second local send follows its inserted row when the tail ID stays unchanged
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage action tiles expose button and enabled semantics
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage action tiles grow together for large text on a narrow page
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage bot-role author avatars stay squircles in channel and thread
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage can jump back to latest after a non-drag user scroll
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage caps unread target history loading
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage channel details combines people and agents in one member list
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage clears the composer inset when membership is revoked
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage constrains reply summaries at accessibility text sizes
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage debounces same-slot reconnect skeletons before revealing
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage defers read-state mark until after build
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage does not realign a user-detached timeline on keyboard resize
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage falls back when the oldest unread row is deleted
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage force-refreshes cached profiles before enabling Huddle
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage gives an initial deep link precedence over unread navigation
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage groups consecutive messages from same author
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage hides Add members when the authoritative roster fails
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage hides Add members while the authoritative roster is loading
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage hides Huddle for an agent found by direct DM lookup
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage hides Huddle when a participant becomes an agent live
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage hides composer for archived channels
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage hides the Huddle action for a channel bot DM
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage hides the Huddle action in a one-to-one agent DM
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage jumps to the oldest unread with compact inverse controls
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage keeps Huddle hidden if the live identity subscription closes
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage keeps Huddle hidden until bot-role replay reaches EOSE
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage keeps Huddle hidden when live owner profile beats refresh
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage keeps Huddle hidden while a verified owner profile loads
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage keeps Huddle hidden while identity replay retries
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage keeps a deep-linked message in view when its page arrives after a small scroll near the latest message
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage keeps a short followed tail flush through composer resize
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage keeps animated message avatars static and transparent
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage keeps bot-role-only Huddle hidden after disconnect
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage keeps directory-only agent Huddle hidden after disconnect
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage keeps follow mode off while a tall newest message stays visible
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage keeps forum content visible with reconnect shimmer feedback
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage keeps image galleries body-aligned and flush with the trailing edge
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage keeps manage sheet dismissible with a long canvas
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage keeps only rejected members selected after a partial failure
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage keeps replacement channel replay priority after old route disposal
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage keeps the Huddle action hidden when identity loading fails
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage keeps the Huddle action hidden when member preload fails
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage keeps the Huddle action hidden while agent identity loads
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage keeps the Latest gap stable above the Android composer and keyboard
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage keeps the Members action for group DMs
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage keeps the followed tail anchored through composer and keyboard resize
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage keys DM header fallback avatars to the non-self counterpart
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage keys unnamed DM header avatars to the hex participant key
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage loads history through the oldest unread boundary
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage long press opens the anchored reaction popover
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage long press survives a message rebuild during the hold
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage long press works over nested rich message content
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage pages past a loaded forced unread for an older target
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage pins the current day below the app bar after its divider scrolls away
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage preloads DM participant profiles without a member snapshot
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage preserves an initial message deep-link position
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage previews five members before an icon-free See all row
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage queries DM participants directly for agent identity
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage reaction popover grows right from a fixed left edge
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage reaction popover leaves existing reactions in the blur
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage reaction-only and full actions share the stronger backdrop
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage rechecks verified owner profiles after reconnect
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage renders text messages with author and content
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage renders video attachments from imeta tags in the timeline
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage restores the previous channel replay priority after a nested pop
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage seeds an already-visible Android keyboard into the channel tail layout
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage shows author again after 5min gap
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage shows compact npub fallback when no profile
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage shows forum posts view for forum channels
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage shows the first-load connection skeleton immediately
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage small channel keeps member administration reachable
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage star and mute actions update their visible state immediately
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage targets the oldest message-level forced unread
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage updates detail page state after joining a channel
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage uses larger participant avatars in reply summaries
+test/features/channels/channel_detail_page_test.dart: ChannelDetailPage uses the shared 32px masked presence avatar in DM headers
+test/features/channels/channel_detail_page_test.dart: Compose bar expands from the channel hint into the composer controls
+test/features/channels/channel_detail_page_test.dart: Compose bar shows hint text
+test/features/channels/channel_detail_page_test.dart: Deep-link navigation does not replace a newer route after delayed hydration
+test/features/channels/channel_detail_page_test.dart: Deep-link navigation opens a nested reply in its direct-parent thread
+test/features/channels/channel_detail_page_test.dart: Deep-link navigation replaces a temporary channel route for an initial thread
+test/features/channels/channel_detail_page_test.dart: Deletions deleted messages are not shown
+test/features/channels/channel_detail_page_test.dart: Deletions deletion of multiple messages
+test/features/channels/channel_detail_page_test.dart: Edits edited message shows updated content and (edited) label
+test/features/channels/channel_detail_page_test.dart: Edits latest edit wins when multiple edits exist
+test/features/channels/channel_detail_page_test.dart: Error and loading states shows error message on failure
+test/features/channels/channel_detail_page_test.dart: Mixed message timeline interleaves text and system messages correctly
+test/features/channels/channel_detail_page_test.dart: System messages a reacted message offers the + picker in the timeline
+test/features/channels/channel_detail_page_test.dart: System messages aligns grouped reactions with the system message content
+test/features/channels/channel_detail_page_test.dart: System messages background relay pause awaits failed-session lifecycle cleanup
+test/features/channels/channel_detail_page_test.dart: System messages bursts remote Huddle reactions and ignores the local relay echo
+test/features/channels/channel_detail_page_test.dart: System messages caps a dense Huddle roster at ten avatars with an overflow count
+test/features/channels/channel_detail_page_test.dart: System messages centers a solo participant and moves them when another person joins
+test/features/channels/channel_detail_page_test.dart: System messages community transition awaits failed-session lifecycle cleanup
+test/features/channels/channel_detail_page_test.dart: System messages community transition cancels and awaits an in-flight Huddle start
+test/features/channels/channel_detail_page_test.dart: System messages community transition leaves a newer call after background cleanup
+test/features/channels/channel_detail_page_test.dart: System messages constrains generic system timestamps at accessibility text sizes
+test/features/channels/channel_detail_page_test.dart: System messages creator end publish superseded by rejoin cannot archive new admission
+test/features/channels/channel_detail_page_test.dart: System messages disables Join after the matching huddle end event
+test/features/channels/channel_detail_page_test.dart: System messages disables a different Huddle card during an active call
+test/features/channels/channel_detail_page_test.dart: System messages does not leave a stale Huddle card in a retry loop
+test/features/channels/channel_detail_page_test.dart: System messages does not restart the profile subscription on speaker-level updates
+test/features/channels/channel_detail_page_test.dart: System messages does not revive response dots when typing follows audio
+test/features/channels/channel_detail_page_test.dart: System messages does not show admitted human membership without an audio peer
+test/features/channels/channel_detail_page_test.dart: System messages duplicate hangup still completes the admitted lifecycle after local teardown
+test/features/channels/channel_detail_page_test.dart: System messages ended the huddle aligns its author and body with a regular message
+test/features/channels/channel_detail_page_test.dart: System messages failed admission cannot publish Huddle leave lifecycle
+test/features/channels/channel_detail_page_test.dart: System messages groups member additions with tappable overflow names
+test/features/channels/channel_detail_page_test.dart: System messages keeps membership and huddle rows evenly spaced with authored messages
+test/features/channels/channel_detail_page_test.dart: System messages last-human leave superseded by same-Huddle rejoin cannot archive it
+test/features/channels/channel_detail_page_test.dart: System messages last-human leave superseded during count by another Huddle archives the old room
+test/features/channels/channel_detail_page_test.dart: System messages last-human leave superseded during end publish by another Huddle archives the old room
+test/features/channels/channel_detail_page_test.dart: System messages marks an expired Huddle card as ended
+test/features/channels/channel_detail_page_test.dart: System messages offers Join for a recent desktop-started huddle
+test/features/channels/channel_detail_page_test.dart: System messages offers a Settings recovery path instead of a blind retry after a microphone denial
+test/features/channels/channel_detail_page_test.dart: System messages offers a new Huddle when a stale invitation is no longer joinable
+test/features/channels/channel_detail_page_test.dart: System messages opens a profile sheet from a generic system avatar
+test/features/channels/channel_detail_page_test.dart: System messages opens a profile sheet from a huddle system avatar
+test/features/channels/channel_detail_page_test.dart: System messages opens a profile sheet from a membership system avatar
+test/features/channels/channel_detail_page_test.dart: System messages opens the sparse full-screen call with avatar and audio controls
+test/features/channels/channel_detail_page_test.dart: System messages profile sheet heading falls back to the compact npub for blank cached names
+test/features/channels/channel_detail_page_test.dart: System messages profile sheet shows the poster before autoplay and restores it on tap
+test/features/channels/channel_detail_page_test.dart: System messages rejected non-creator end preserves the later leave lifecycle
+test/features/channels/channel_detail_page_test.dart: System messages renders a huddle event like a regular message row
+test/features/channels/channel_detail_page_test.dart: System messages renders channel_created system event
+test/features/channels/channel_detail_page_test.dart: System messages renders member_joined (added by other) system event
+test/features/channels/channel_detail_page_test.dart: System messages renders member_joined (self-join) system event
+test/features/channels/channel_detail_page_test.dart: System messages renders member_left system event
+test/features/channels/channel_detail_page_test.dart: System messages renders member_removed system event
+test/features/channels/channel_detail_page_test.dart: System messages renders purpose_changed system event
+test/features/channels/channel_detail_page_test.dart: System messages renders topic_changed system event
+test/features/channels/channel_detail_page_test.dart: System messages revives response dots for a new turn after audio completes
+test/features/channels/channel_detail_page_test.dart: System messages shows admitted agents from membership before their audio peer joins
+test/features/channels/channel_detail_page_test.dart: System messages shows preparing indicator for a Huddle-only bot without a parent role
+test/features/channels/channel_detail_page_test.dart: System messages shows response dots only until the agent starts speaking
+test/features/channels/channel_detail_page_test.dart: System messages shows the flapping bee instead of an avatar while joining
+test/features/channels/channel_detail_page_test.dart: System messages skips unknown system event types
+test/features/channels/channel_detail_page_test.dart: System messages started a huddle aligns its author and body with a regular message
+test/features/channels/channel_detail_page_test.dart: System messages system message breaks author grouping
+test/features/channels/channel_detail_page_test.dart: System messages top action discovers a Huddle outside the timeline window
+test/features/channels/channel_detail_page_test.dart: System messages top-right call end auto-ends for the last human
+test/features/channels/channel_detail_page_test.dart: System messages top-right call end leaves audio and the backing channel
+test/features/channels/channel_detail_page_test.dart: Typing indicator keeps typing text static when motion is reduced
+test/features/channels/channel_detail_page_test.dart: Typing indicator shows N others for 3+ typers
+test/features/channels/channel_detail_page_test.dart: Typing indicator shows single typer
+test/features/channels/channel_detail_page_test.dart: Typing indicator shows two typers
+test/features/channels/channel_detail_page_test.dart: signed qualified caller thread=false reverse=false
+test/features/channels/channel_detail_page_test.dart: signed qualified caller thread=false reverse=true
+test/features/channels/channel_detail_page_test.dart: signed qualified caller thread=true reverse=false
+test/features/channels/channel_detail_page_test.dart: signed qualified caller thread=true reverse=true
+test/features/channels/channel_management_provider_test.dart: Huddle channel lifecycle publishes ephemeral Huddle reactions on the backing channel
+test/features/channels/channel_management_provider_test.dart: Huddle channel lifecycle starts from accepted signed events without refreshing all channels
+test/features/channels/channel_management_provider_test.dart: directory providers relay-config invalidation browse directory refetches when the relay config changes
+test/features/channels/channel_management_provider_test.dart: directory providers relay-config invalidation search results refetch when the relay config changes
+test/features/channels/channels_page_test.dart: aligns the top, section, row, and skeleton label columns
+test/features/channels/channels_page_test.dart: balances an expanded section around its following divider
+test/features/channels/channels_page_test.dart: bolds and clears unread channel labels
+test/features/channels/channels_page_test.dart: bolds channels with unread thread activity without a badge
+test/features/channels/channels_page_test.dart: browse action explains when no channels are discoverable
+test/features/channels/channels_page_test.dart: browse action exposes retry when refresh supersedes loading
+test/features/channels/channels_page_test.dart: browse action lists only channels eligible to join
+test/features/channels/channels_page_test.dart: browse action retries an initial directory request problem
+test/features/channels/channels_page_test.dart: browse action scrolls and joins an offscreen channel
+test/features/channels/channels_page_test.dart: builds Home header frost progressively while scrolling
+test/features/channels/channels_page_test.dart: centers the smaller profile avatar beside the community
+test/features/channels/channels_page_test.dart: community switcher disables icon motion when requested
+test/features/channels/channels_page_test.dart: community switcher header grows with accessible text
+test/features/channels/channels_page_test.dart: community switcher separates selection from edit removal
+test/features/channels/channels_page_test.dart: create channel sheet lists type and visibility radio options
+test/features/channels/channels_page_test.dart: gives feedback for the profile and community controls
+test/features/channels/channels_page_test.dart: keys DM tile fallback avatars to the non-self counterpart
+test/features/channels/channels_page_test.dart: new message sheet lists and selects relay members
+test/features/channels/channels_page_test.dart: opening the community switcher refreshes visible icons
+test/features/channels/channels_page_test.dart: quick actions spring into spaced muted cards
+test/features/channels/channels_page_test.dart: reveals channel content from same-slot reconnect skeletons
+test/features/channels/channels_page_test.dart: scrolls Home to the top when its tab is selected again
+test/features/channels/channels_page_test.dart: section menu matches desktop labels, icons, and inset
+test/features/channels/channels_page_test.dart: seeds first loaded channels as read
+test/features/channels/channels_page_test.dart: shows grouped channel list when data loads
+test/features/channels/channels_page_test.dart: shows local preview people when the relay is offline
+test/features/channels/channels_page_test.dart: truncates long custom section names beside the menu
+test/features/channels/channels_page_test.dart: waits for read-state readiness before initial seeding
+test/features/channels/channels_page_test.dart: wraps many recipients without overflowing above the keyboard
+test/features/channels/channels_provider_test.dart: Huddle-linked one-hour private streams stay out of channel lists
+test/features/channels/channels_provider_test.dart: Huddle-linked private streams stay hidden when relay overrides the TTL
+test/features/channels/channels_provider_test.dart: a catch-up that records nothing does not repaint the list
+test/features/channels/channels_provider_test.dart: a disconnected community switch retires a parked catch-up
+test/features/channels/channels_provider_test.dart: a newer ordinary refresh owns the installed membership list
+test/features/channels/channels_provider_test.dart: a newer refresh owns the list over an older reconnect backstop
+test/features/channels/channels_provider_test.dart: a newer refresh retires a parked backstop catch-up
+test/features/channels/channels_provider_test.dart: a stale request's Huddle leg writes no member snapshot
+test/features/channels/channels_provider_test.dart: an ordinary membership refresh retires an older catch-up
+test/features/channels/channels_provider_test.dart: archive transition invalidates cached channelDetailsProvider
+test/features/channels/channels_provider_test.dart: archived kind:39000 metadata sets Channel.isArchived (covers TTL auto-archive)
+test/features/channels/channels_provider_test.dart: changed membership admits a new filter, not a rejected old one
+test/features/channels/channels_provider_test.dart: changing a live chunk replaces only that chunk
+test/features/channels/channels_provider_test.dart: chunks live subscriptions at the relay explicit-channel cap
+test/features/channels/channels_provider_test.dart: community switch after directory success discards a late failure
+test/features/channels/channels_provider_test.dart: community switch after directory success discards the late refresh
+test/features/channels/channels_provider_test.dart: community switch discards a parked catch-up failure
+test/features/channels/channels_provider_test.dart: community switch discards a parked catch-up from an ordinary refresh
+test/features/channels/channels_provider_test.dart: community switch discards a parked unread catch-up
+test/features/channels/channels_provider_test.dart: community switch discards a stale directory failure from the old relay
+test/features/channels/channels_provider_test.dart: community switch discards a stale directory success from the old relay
+test/features/channels/channels_provider_test.dart: community switch drops unread state recorded before it
+test/features/channels/channels_provider_test.dart: community switch retires a detached old-scope live subscription
+test/features/channels/channels_provider_test.dart: deduplicates joined channels from directory discovery
+test/features/channels/channels_provider_test.dart: directory failure retains discovery while membership refreshes
+test/features/channels/channels_provider_test.dart: directory page-cap failure is distinct from an empty directory
+test/features/channels/channels_provider_test.dart: directory retry failure retains the current channel list
+test/features/channels/channels_provider_test.dart: directory-aware refresh discovers open starter channels
+test/features/channels/channels_provider_test.dart: discovers open channels for a user with zero channel memberships
+test/features/channels/channels_provider_test.dart: disposal fences pending terminal closure after readiness
+test/features/channels/channels_provider_test.dart: disposal fences pending terminal closure before readiness
+test/features/channels/channels_provider_test.dart: disposal retires retained and in-flight replacement chunks
+test/features/channels/channels_provider_test.dart: empty channel refresh removes every retained live chunk
+test/features/channels/channels_provider_test.dart: ephemeral (TTL) channels appear in the list
+test/features/channels/channels_provider_test.dart: failed replacement keeps desired coverage and ignores departed channels
+test/features/channels/channels_provider_test.dart: forged Huddle links do not hide unrelated one-hour private streams
+test/features/channels/channels_provider_test.dart: front-sorting membership insertion retains coverage while replacement waits
+test/features/channels/channels_provider_test.dart: hidden DMs are filtered from the channel list
+test/features/channels/channels_provider_test.dart: identity switch after directory success discards a late failure
+test/features/channels/channels_provider_test.dart: identity switch after directory success discards the late refresh
+test/features/channels/channels_provider_test.dart: identity switch discards a parked catch-up failure
+test/features/channels/channels_provider_test.dart: identity switch discards a parked catch-up from an ordinary refresh
+test/features/channels/channels_provider_test.dart: identity switch discards a parked unread catch-up
+test/features/channels/channels_provider_test.dart: identity switch discards a stale directory failure from the old identity
+test/features/channels/channels_provider_test.dart: identity switch discards a stale directory success from the old identity
+test/features/channels/channels_provider_test.dart: initial fetch issues membership + metadata queries
+test/features/channels/channels_provider_test.dart: keeps cached channels and live subscriptions during reconnect
+test/features/channels/channels_provider_test.dart: live channel events update channel lastMessageAt
+test/features/channels/channels_provider_test.dart: loads all channel timestamps through one batched relay query
+test/features/channels/channels_provider_test.dart: membership refresh does not refetch a loaded directory
+test/features/channels/channels_provider_test.dart: ordinary refresh settles a superseded directory load for retry
+test/features/channels/channels_provider_test.dart: paginates channel discovery with a composite cursor
+test/features/channels/channels_provider_test.dart: paginates memberships when the relay caps responses below limit
+test/features/channels/channels_provider_test.dart: partial replacement churn keeps complete coverage with bounded fallbacks
+test/features/channels/channels_provider_test.dart: persistent terminal rejection after readiness cannot amplify refreshes or retries
+test/features/channels/channels_provider_test.dart: persistent terminal rejection before readiness cannot amplify refreshes or retries
+test/features/channels/channels_provider_test.dart: preserves a successfully loaded empty list while disconnected
+test/features/channels/channels_provider_test.dart: reconnect backstop does not refetch the channel directory
+test/features/channels/channels_provider_test.dart: recovers an initial fetch failure after reconnecting
+test/features/channels/channels_provider_test.dart: refreshes cached channels after a disconnected community switch
+test/features/channels/channels_provider_test.dart: refreshing an unchanged channel set issues zero new live REQs
+test/features/channels/channels_provider_test.dart: retains channel-list member snapshots for immediate reuse
+test/features/channels/channels_provider_test.dart: retired replacement cleans up even when the next generation disconnects
+test/features/channels/channels_provider_test.dart: seeds members from the channel-list snapshot during reconnect
+test/features/channels/channels_provider_test.dart: stops channel discovery when the relay repeats a full page
+test/features/channels/channels_provider_test.dart: stops membership pagination when the relay repeats a page
+test/features/channels/channels_provider_test.dart: subscribes once for joined non-archived channels without blocking snapshot
+test/features/channels/channels_provider_test.dart: terminal closure preserves fallback until reconnect retries coverage
+test/features/channels/channels_provider_test.dart: terminal quarantine does not cross community scope
+test/features/channels/channels_provider_test.dart: terminal quarantine does not cross identity scope
+test/features/channels/channels_provider_test.dart: terminal rejection retries only after a new connection
+test/features/channels/compose_bar_test.dart: ComposeBar a failed send does not overwrite a new draft
+test/features/channels/compose_bar_test.dart: ComposeBar a failed send restores an untouched cleared draft
+test/features/channels/compose_bar_test.dart: ComposeBar adds a sanitized GIF attachment
+test/features/channels/compose_bar_test.dart: ComposeBar adds a sanitized animated PNG attachment
+test/features/channels/compose_bar_test.dart: ComposeBar adds a selected non-member agent as a bot before sending
+test/features/channels/compose_bar_test.dart: ComposeBar adds the agent in a private channel when the sender is a plain member
+test/features/channels/compose_bar_test.dart: ComposeBar clears text before the optimistic send completes
+test/features/channels/compose_bar_test.dart: ComposeBar community switch cancels pending voice-note startup
+test/features/channels/compose_bar_test.dart: ComposeBar composer controls use selection haptics
+test/features/channels/compose_bar_test.dart: ComposeBar composer suggestions use the shared popover treatment
+test/features/channels/compose_bar_test.dart: ComposeBar covering the route cancels its active voice-note recorder
+test/features/channels/compose_bar_test.dart: ComposeBar defers camera startup until the surface morph finishes
+test/features/channels/compose_bar_test.dart: ComposeBar defers system-selected photo uploads until send
+test/features/channels/compose_bar_test.dart: ComposeBar detached starts cancellation without a rendered frame
+test/features/channels/compose_bar_test.dart: ComposeBar disables Stop while voice-note startup is pending
+test/features/channels/compose_bar_test.dart: ComposeBar discarding an inline voice note restores the composer
+test/features/channels/compose_bar_test.dart: ComposeBar dismisses mention suggestions in the selection frame
+test/features/channels/compose_bar_test.dart: ComposeBar disposing a non-owner keeps native popover callbacks active
+test/features/channels/compose_bar_test.dart: ComposeBar does not add Paste Image to non-iOS context menus
+test/features/channels/compose_bar_test.dart: ComposeBar does not add a mentioned non-member when media upload is cancelled
+test/features/channels/compose_bar_test.dart: ComposeBar does not mutate a DM when mentioning a non-member agent
+test/features/channels/compose_bar_test.dart: ComposeBar expands Android composer when the IME is already visible
+test/features/channels/compose_bar_test.dart: ComposeBar hidden remains a transient lifecycle state
+test/features/channels/compose_bar_test.dart: ComposeBar iOS Paste Image reports an unavailable clipboard image
+test/features/channels/compose_bar_test.dart: ComposeBar iOS adaptive Paste Image reads the clipboard into shared path
+test/features/channels/compose_bar_test.dart: ComposeBar iOS hides Paste Image when clipboard has no image
+test/features/channels/compose_bar_test.dart: ComposeBar iOS native context menu preserves defaults and pastes image
+test/features/channels/compose_bar_test.dart: ComposeBar iOS selection handles resize a draft with the system menu
+test/features/channels/compose_bar_test.dart: ComposeBar inserts a community emoji at the cursor from the action row
+test/features/channels/compose_bar_test.dart: ComposeBar keeps the remove button pinned to the attachment corner
+test/features/channels/compose_bar_test.dart: ComposeBar leaving a focused composer dismisses the native keyboard
+test/features/channels/compose_bar_test.dart: ComposeBar mounted composer does not carry draft text across an in-place identity switch
+test/features/channels/compose_bar_test.dart: ComposeBar native All Photos picker failures show an error
+test/features/channels/compose_bar_test.dart: ComposeBar native Voice note waits for the keyboard while the popover dismisses
+test/features/channels/compose_bar_test.dart: ComposeBar notifies focus intent before attaching the focused field
+test/features/channels/compose_bar_test.dart: ComposeBar numbers recent photo selection and returns to the menu
+test/features/channels/compose_bar_test.dart: ComposeBar opening the native attachment popover keeps composer focus
+test/features/channels/compose_bar_test.dart: ComposeBar pasted image follows the attachment preview and send path
+test/features/channels/compose_bar_test.dart: ComposeBar paused cancels startup without waiting for its permission result
+test/features/channels/compose_bar_test.dart: ComposeBar paused starts cancellation without a rendered frame
+test/features/channels/compose_bar_test.dart: ComposeBar permission startup survives transient inactive and resumed states
+test/features/channels/compose_bar_test.dart: ComposeBar photo picker errors keep the action visible at large text
+test/features/channels/compose_bar_test.dart: ComposeBar preserves edits made while a mentioned agent is being added
+test/features/channels/compose_bar_test.dart: ComposeBar preserves underscore d-tags and Markdown delimiters
+test/features/channels/compose_bar_test.dart: ComposeBar records, previews, uploads, and sends a voice note
+test/features/channels/compose_bar_test.dart: ComposeBar removing a voice note restores keyboard focus
+test/features/channels/compose_bar_test.dart: ComposeBar renders all five permalink types as composer chips
+test/features/channels/compose_bar_test.dart: ComposeBar renders chips only for selected agents outside code and composition
+test/features/channels/compose_bar_test.dart: ComposeBar renders markdown formatting without visible delimiters
+test/features/channels/compose_bar_test.dart: ComposeBar restores the collapsed editor before requesting focus
+test/features/channels/compose_bar_test.dart: ComposeBar return inserts a newline and sending stays on the button
+test/features/channels/compose_bar_test.dart: ComposeBar returns to the compact capsule when the keyboard drops
+test/features/channels/compose_bar_test.dart: ComposeBar reuses rich text layout for selection-only movement
+test/features/channels/compose_bar_test.dart: ComposeBar shows an error when pasted image bytes are unavailable
+test/features/channels/compose_bar_test.dart: ComposeBar shows an upload error when gallery upload fails
+test/features/channels/compose_bar_test.dart: ComposeBar shows cached member mentions before the refresh completes
+test/features/channels/compose_bar_test.dart: ComposeBar shows friendly copy for a 415 upload response
+test/features/channels/compose_bar_test.dart: ComposeBar shows friendly copy for a 422 upload response
+test/features/channels/compose_bar_test.dart: ComposeBar shows post-send upload progress above the composer and cancels
+test/features/channels/compose_bar_test.dart: ComposeBar skips composer height motion when animations are disabled
+test/features/channels/compose_bar_test.dart: ComposeBar smoothly resizes the text field when a new line is added
+test/features/channels/compose_bar_test.dart: ComposeBar stale channel actions cannot invite after a community switch
+test/features/channels/compose_bar_test.dart: ComposeBar starting a voice note prevents a failed upload from restoring its draft
+test/features/channels/compose_bar_test.dart: ComposeBar starts Android composer motion with the first IME metrics
+test/features/channels/compose_bar_test.dart: ComposeBar starts compact and grows to the full-width composer
+test/features/channels/compose_bar_test.dart: ComposeBar surfaces an error and keeps the draft when a community switch cancels a text-only send
+test/features/channels/compose_bar_test.dart: ComposeBar taps Video in chooser sheet and uploads video
+test/features/channels/compose_bar_test.dart: ComposeBar unsupported iOS attachment popover unfocuses before fallback menu
+test/features/channels/compose_bar_test.dart: ComposeBar uploads an image and sends markdown plus imeta tags
+test/features/channels/compose_bar_test.dart: ComposeBar uploads multiple system-selected photos in picker order
+test/features/channels/compose_bar_test.dart: ComposeBar uses a parent-owned focus node when provided
+test/features/channels/compose_bar_test.dart: ComposeBar uses the primary color for formatting actions
+test/features/channels/compose_bar_test.dart: ComposeBar voice note rejects an existing attachment like desktop
+test/features/channels/compose_bar_test.dart: ComposeBar voice note stays the only attachment like desktop
+test/features/channels/compose_bar_test.dart: ComposeBar waits for current member data before adding an agent
+test/features/channels/compose_bar_test.dart: ambiguous typed names fail visibly without clearing the draft
+test/features/channels/compose_bar_test.dart: persisted selection restore to signed send: legacy
+test/features/channels/compose_bar_test.dart: persisted selection restore to signed send: malformed
+test/features/channels/compose_bar_test.dart: persisted selection restore to signed send: map edited
+test/features/channels/compose_bar_test.dart: persisted selection restore to signed send: map plain
+test/features/channels/compose_bar_test.dart: persisted selection restore to signed send: map reselected
+test/features/channels/compose_bar_test.dart: persisted selection restore to signed send: map reset
+test/features/channels/compose_bar_test.dart: persisted selection restore to signed send: non-member denied agent
+test/features/channels/compose_bar_test.dart: persisted selection restore to signed send: non-member human
+test/features/channels/compose_bar_test.dart: persisted selection restore to signed send: removed
+test/features/channels/compose_bar_test.dart: persisted selection restore to signed send: rename
+test/features/channels/compose_bar_test.dart: persisted selection restore to signed send: tainted
+test/features/channels/compose_bar_test.dart: same-name picker selections retain exact recipients through removal
+test/features/channels/compose_bar_test.dart: unbound qualified text cannot notify a shorter member alias
+test/features/channels/deep_link_dispatcher_test.dart: prepares an invite once while listeners re-enter
+test/features/channels/deep_link_dispatcher_test.dart: renders setup-specific recovery failures after membership
+test/features/channels/deep_link_dispatcher_test.dart: retains invite and surfaces prepare failure
+test/features/channels/deep_link_dispatcher_test.dart: shows saved starter recovery progress, then opens welcome-everyone
+test/features/channels/deep_link_dispatcher_test.dart: switches to the notification community before dispatch
+test/features/channels/emoji_picker_test.dart: iOS native emoji picker passes shared theme and custom emoji into the native sheet
+test/features/channels/message_content_test.dart: MessageContent opens local file links through an authenticated download
+test/features/channels/read_state/read_state_provider_test.dart: automatic channel-open read preserves forced message entries
+test/features/channels/read_state/read_state_provider_test.dart: automatic channel-open read still clears a channel-level force for the same channel
+test/features/channels/read_state/read_state_provider_test.dart: explicit channel-level Mark read clears forced message entries in that channel only
+test/features/channels/read_state/read_state_provider_test.dart: message unread → read → unread round-trips through the real notifier
+test/features/channels/send_message_provider_test.dart: adds the signed message locally before relay acknowledgement
+test/features/channels/send_message_provider_test.dart: cancels delivery after the active community changes
+test/features/channels/send_message_provider_test.dart: falls back to metadata DM recipients when membership fails
+test/features/channels/send_message_provider_test.dart: falls back to metadata DM recipients when membership is empty
+test/features/channels/send_message_provider_test.dart: final signed event addresses a human DM recipient
+test/features/channels/send_message_provider_test.dart: final signed event addresses the current DM agent member
+test/features/channels/send_message_provider_test.dart: rolls back the signed local message when publish fails
+test/features/channels/voice_note_recording_test.dart: Android cancel interrupts pending preload, preserves loading capability, and retries
+test/features/channels/voice_note_recording_test.dart: Android defers remote auth until playback starts
+test/features/channels/voice_note_recording_test.dart: Android remote failure retains the source for retry
+test/features/channels/voice_note_recording_test.dart: authenticated iOS playback waits for play and aborts on disposal
+test/features/channels/voice_note_recording_test.dart: failed local source load retains remote source for authenticated retry
+test/features/channels/voice_note_recording_test.dart: oversized remote download aborts and leaves no temporary file
+test/features/channels/voice_note_recording_test.dart: pause aborts a rapid-toggle download without temporary residue
+test/features/channels/voice_note_recording_test.dart: second remote toggle cancels download and third retries with fresh auth
+test/features/channels/voice_note_recording_test.dart: second toggle during coordinator activation cancels before GET and retries
+test/features/channels/voice_note_recording_test.dart: second toggle during local source load suppresses play and retries
+test/features/channels/voice_note_recording_test.dart: source replacement aborts the owned download without stale playback
+test/features/channels/voice_note_recording_test.dart: stalled response times out and remains retryable
+test/features/channels/voice_note_recording_test.dart: transient remote failure retries with fresh auth and plays
+test/features/forum/forum_widgets_test.dart: cancels a captured forum delivery after the community changes
+test/features/invites/invite_create_provider_test.dart: includes a selected maximum-use limit
+test/features/invites/invite_create_provider_test.dart: mints an unlimited invite with exact NIP-98 request shape
+test/features/invites/invite_join_provider_test.dart: builds a fresh recovery with the second community identity
+test/features/invites/invite_join_provider_test.dart: claim posts with freshly-generated key and stores joined community
+test/features/invites/invite_join_provider_test.dart: failed claim can be retried and preserves policy receipt
+test/features/invites/invite_join_provider_test.dart: invite_exhausted requires a fresh invite and cannot retry
+test/features/invites/invite_join_provider_test.dart: join_policy_required requires a fresh link and cannot retry
+test/features/invites/invite_join_provider_test.dart: same-relay invite switches existing https://relay.example.com before keygen or claim
+test/features/invites/invite_join_provider_test.dart: same-relay invite switches existing wss://relay.example.com before keygen or claim
+test/features/invites/invite_join_provider_test.dart: starter setup recovery survives dismissal and container recreation
+test/features/pairing/pairing_page_test.dart: PairingPage connect button is below text field, not beside it
+test/features/pairing/pairing_page_test.dart: PairingPage connect button is full width
+test/features/pairing/pairing_page_test.dart: PairingPage keeps SAS actions above the keyboard on small screens
+test/features/pairing/pairing_page_test.dart: PairingPage keeps the add-community header outside SAS
+test/features/pairing/pairing_page_test.dart: PairingPage matches the onboarding visual system and SAS action layout
+test/features/pairing/pairing_page_test.dart: PairingPage new identity import offers protection checked by default
+test/features/pairing/pairing_page_test.dart: PairingPage pairing actions are disabled when connecting
+test/features/pairing/pairing_page_test.dart: PairingPage recovery SAS puts permanent desktop access in the subtitle
+test/features/pairing/pairing_page_test.dart: PairingPage recovery entry accepts mode=recover codes
+test/features/pairing/pairing_page_test.dart: PairingPage recovery entry rejects ordinary nostrpair codes
+test/features/pairing/pairing_page_test.dart: PairingPage renders branding and progressive pairing actions
+test/features/pairing/pairing_page_test.dart: PairingPage reveals pairing code field and connect action
+test/features/pairing/pairing_page_test.dart: PairingPage uses Cancel as the only visible SAS exit
+test/features/pairing/pairing_page_test.dart: PairingPage uses accessible SAS error contrast in both themes
+test/features/pairing/pairing_page_test.dart: PairingPage uses compact desktop-style onboarding actions
+test/features/pairing/pairing_page_test.dart: PairingPage uses the native Face ID label on iOS
+test/features/pairing/pairing_page_test.dart: PairingPage uses the native Touch ID label on iOS
+test/features/pairing/pairing_page_test.dart: PairingPage uses the onboarding surface for dark-theme SAS verification
+test/features/pairing/pairing_provider_test.dart: PairingNotifier accepts buzz scheme prefix
+test/features/pairing/pairing_provider_test.dart: PairingNotifier base64 with valid JSON but missing fields errors
+test/features/pairing/pairing_provider_test.dart: PairingNotifier desktop identity recovery cancelled authorization prevents pairing from starting
+test/features/pairing/pairing_provider_test.dart: PairingNotifier desktop identity recovery clock rollback invalidates the export authorization
+test/features/pairing/pairing_provider_test.dart: PairingNotifier desktop identity recovery community switch aborts expired export grant
+test/features/pairing/pairing_provider_test.dart: PairingNotifier desktop identity recovery community switch aborts fresh export grant
+test/features/pairing/pairing_provider_test.dart: PairingNotifier desktop identity recovery concurrent preflight requests start one authentication
+test/features/pairing/pairing_provider_test.dart: PairingNotifier desktop identity recovery desktop storage failure surfaces an error
+test/features/pairing/pairing_provider_test.dart: PairingNotifier desktop identity recovery expired biometric-only authorization preserves its mode
+test/features/pairing/pairing_provider_test.dart: PairingNotifier desktop identity recovery expired passcode-fallback authorization preserves its mode
+test/features/pairing/pairing_provider_test.dart: PairingNotifier desktop identity recovery failed transfer reauthorization publishes no identity payload
+test/features/pairing/pairing_provider_test.dart: PairingNotifier desktop identity recovery malformed payload invalidates authorization before another session
+test/features/pairing/pairing_provider_test.dart: PairingNotifier desktop identity recovery matching SAS sends nsec and successful completion finishes
+test/features/pairing/pairing_provider_test.dart: PairingNotifier desktop identity recovery recovery authorization honors biometric protection
+test/features/pairing/pairing_provider_test.dart: PairingNotifier desktop identity recovery reset invalidates pending preflight authorization
+test/features/pairing/pairing_provider_test.dart: PairingNotifier desktop identity recovery skipped preflight authorization sends no identity
+test/features/pairing/pairing_provider_test.dart: PairingNotifier desktop identity recovery stale authorization cannot advance a replacement pairing session
+test/features/pairing/pairing_provider_test.dart: PairingNotifier desktop identity recovery unchecked protection allows device passcode fallback
+test/features/pairing/pairing_provider_test.dart: PairingNotifier desktop identity recovery websocket relay origin remains bound after canonicalization
+test/features/pairing/pairing_provider_test.dart: PairingNotifier disconnect during connect does not null-dereference the socket
+test/features/pairing/pairing_provider_test.dart: PairingNotifier identity import protection checked protection persists on a successful import
+test/features/pairing/pairing_provider_test.dart: PairingNotifier identity import protection reset invalidates pending authentication persistence
+test/features/pairing/pairing_provider_test.dart: PairingNotifier identity import protection reset invalidates pending credential validation
+test/features/pairing/pairing_provider_test.dart: PairingNotifier identity import protection stale biometric approval cannot advance a reset import
+test/features/pairing/pairing_provider_test.dart: PairingNotifier identity import protection unchecked protection persists on a successful import
+test/features/pairing/pairing_provider_test.dart: PairingNotifier identity import protection unenrolled biometrics prevent a protected import
+test/features/pairing/pairing_provider_test.dart: PairingNotifier invalid base64 sets format error
+test/features/pairing/pairing_provider_test.dart: PairingNotifier payload missing nsec errors before contacting relay
+test/features/pairing/pairing_provider_test.dart: PairingNotifier rejects JSON array payload
+test/features/pairing/pairing_provider_test.dart: PairingNotifier rejects non-http/https schemes
+test/features/pairing/pairing_provider_test.dart: PairingNotifier rejects private IP relay URLs (SSRF)
+test/features/profile/profile_edit_retry_test.dart: avatar draft cannot save after a prior community switch
+test/features/profile/profile_edit_retry_test.dart: avatar editor closes when a switched upload throws
+test/features/profile/profile_edit_retry_test.dart: avatar editor closes when community changes during save
+test/features/profile/profile_edit_retry_test.dart: in-page text editor rejects its first save after a switch
+test/features/profile/profile_edit_retry_test.dart: native text editor rejects its first save after a switch
+test/features/profile/profile_provider_test.dart: a competing profile head does not become optimistic local state
+test/features/profile/profile_provider_test.dart: a confirmed empty history can publish a new profile
+test/features/profile/profile_provider_test.dart: clearing a display name restores the pubkey label fallback
+test/features/profile/profile_provider_test.dart: confirmed profile save survives an older in-flight batch
+test/features/profile/profile_provider_test.dart: malformed profile metadata can be repaired by an edit
+test/features/profile/profile_provider_test.dart: overlapping profile updates serialize their full merge cycles
+test/features/profile/profile_provider_test.dart: profile updates abort when the active community changes
+test/features/profile/profile_provider_test.dart: profile updates fail closed after hydration errors
+test/features/profile/profile_provider_test.dart: profile updates merge the current relay head before publishing
+test/features/profile/profile_provider_test.dart: profile updates preserve existing kind:0 metadata
+test/features/profile/profile_provider_test.dart: queued profile updates report a community change before rehydration
+test/features/profile/profile_provider_test.dart: same-second profile replacements use monotonic timestamps
+test/features/profile/profile_provider_test.dart: stale hydration cannot overwrite the active community head
+test/features/search/recent_searches_provider_test.dart: an invite-joined community keeps its recent searches after origin canonicalization
+test/features/search/recent_searches_provider_test.dart: isolates persisted history by community and account
+test/features/search/recent_searches_provider_test.dart: normalizes, deduplicates, caps, and persists submitted queries
+test/shared/auth/auth_provider_test.dart: authenticate exports the complete stored community snapshot
+test/shared/auth/auth_provider_test.dart: falls through to the next valid saved community
+test/shared/auth/auth_provider_test.dart: removes an invalid saved community instead of authenticating
+test/shared/auth/auth_provider_test.dart: serializes overlapping switch and sign-out mutations
+test/shared/auth/auth_provider_test.dart: sign out removes the active community from the shared snapshot
+test/shared/auth/auth_provider_test.dart: snapshot export failure does not gate direct authentication
+test/shared/auth/auth_provider_test.dart: snapshot export failure does not gate startup authentication
+test/shared/auth/auth_provider_test.dart: waits for transition teardown before removing credentials
+test/shared/auth/auth_provider_test.dart: waits for transition teardown before replacing credentials
+test/shared/community/community_icon_provider_test.dart: fetches the NIP-11 icon over the relay HTTP URL
+test/shared/community/community_icon_provider_test.dart: refreshes a transient failure when explicitly invalidated
+test/shared/community/community_provider_test.dart: CommunityListNotifier addCommunity adds to list
+test/shared/community/community_provider_test.dart: CommunityListNotifier age check suspension clears a stale snapshot and allowed restores it
+test/shared/community/community_provider_test.dart: CommunityListNotifier age gate strict clear is not deduplicated against an ordinary clear
+test/shared/community/community_provider_test.dart: CommunityListNotifier age gate strict clear keeps retrying after restriction becomes final
+test/shared/community/community_provider_test.dart: CommunityListNotifier age restriction clears push state and retries pending leases
+test/shared/community/community_provider_test.dart: CommunityListNotifier age restriction fences a stale authenticated snapshot export
+test/shared/community/community_provider_test.dart: CommunityListNotifier age restriction persists all disabled communities in one write
+test/shared/community/community_provider_test.dart: CommunityListNotifier exports migrated communities on startup
+test/shared/community/community_provider_test.dart: CommunityListNotifier failed opt-out tombstone retries after restart at a newer generation
+test/shared/community/community_provider_test.dart: CommunityListNotifier journal persistence failure keeps community credentials
+test/shared/community/community_provider_test.dart: CommunityListNotifier lease retry reserves beyond a locally unaccepted generation
+test/shared/community/community_provider_test.dart: CommunityListNotifier lease success cannot accept stale desired subscriptions
+test/shared/community/community_provider_test.dart: CommunityListNotifier loads empty list initially
+test/shared/community/community_provider_test.dart: CommunityListNotifier older lease success cannot regress accepted generation
+test/shared/community/community_provider_test.dart: CommunityListNotifier opt-out persists first and publishes a higher tombstone
+test/shared/community/community_provider_test.dart: CommunityListNotifier opt-out tombstones an in-flight first publication
+test/shared/community/community_provider_test.dart: CommunityListNotifier push notifications default off and opt-in survives restart
+test/shared/community/community_provider_test.dart: CommunityListNotifier remote tombstone attempt cannot block local removal
+test/shared/community/community_provider_test.dart: CommunityListNotifier removal clears an ordinary empty snapshot after strict restoration
+test/shared/community/community_provider_test.dart: CommunityListNotifier removal during resume cannot leave restored credentials
+test/shared/community/community_provider_test.dart: CommunityListNotifier removeCommunity removes from list
+test/shared/community/community_provider_test.dart: CommunityListNotifier renameCommunity updates name
+test/shared/community/community_provider_test.dart: CommunityListNotifier resume reloads storage after an in-flight snapshot mutation
+test/shared/community/community_provider_test.dart: CommunityListNotifier skips an unchanged snapshot after provider invalidation
+test/shared/community/community_provider_test.dart: CommunityListNotifier switchCommunity updates active ID
+test/shared/community/community_provider_test.dart: CommunityListNotifier transition callback failure does not block the active ID update
+test/shared/community/community_provider_test.dart: CommunityListNotifier waits for transition teardown before removing active community
+test/shared/community/community_provider_test.dart: CommunityListNotifier waits for transition teardown before updating active ID
+test/shared/community/community_provider_test.dart: activeCommunityProvider falls back to first community if active ID is invalid
+test/shared/community/community_provider_test.dart: activeCommunityProvider returns community matching active ID
+test/shared/community/community_storage_test.dart: CommunityStorage active community ID persists
+test/shared/community/community_storage_test.dart: CommunityStorage clearActiveId removes active ID
+test/shared/community/community_storage_test.dart: CommunityStorage migration does not re-migrate after first load
+test/shared/community/community_storage_test.dart: CommunityStorage migration migrates legacy keys to community on first load
+test/shared/community/community_storage_test.dart: CommunityStorage migration migrates saved workspaces to communities
+test/shared/community/community_storage_test.dart: CommunityStorage migration migration generates name from localhost URL
+test/shared/community/community_storage_test.dart: CommunityStorage remove deletes a community
+test/shared/community/community_storage_test.dart: CommunityStorage round-trips a pending push tombstone journal
+test/shared/community/community_storage_test.dart: CommunityStorage round-trips desired push subscription state
+test/shared/community/community_storage_test.dart: CommunityStorage save and loadAll round-trips a community
+test/shared/community/community_storage_test.dart: CommunityStorage save updates existing community with same id
+test/shared/huddle/huddle_session_test.dart: bounds playback per peer, drops oldest, and drains fairly
+test/shared/huddle/huddle_session_test.dart: joins unmuted and bridges remote and local Opus frames
+test/shared/huddle/huddle_session_test.dart: keeps media alive through a bounded transport reconnect
+test/shared/huddle/huddle_session_test.dart: native failure releases media and transport before publishing failure
+test/shared/huddle/huddle_session_test.dart: peer replacement clears queued and native playback first
+test/shared/huddle/huddle_session_test.dart: permission denial is an explicit failed state
+test/shared/huddle/huddle_session_test.dart: retains admission evidence after an established transport fails
+test/shared/huddle/huddle_session_test.dart: surfaces native audio interruptions without leaving
+test/shared/huddle/huddle_transport_test.dart: authenticates with object JSON and admits a v2 room
+test/shared/huddle/huddle_transport_test.dart: authoritative left purges queued media before same-index rejoin
+test/shared/huddle/huddle_transport_test.dart: bounds transport audio ingress
+test/shared/huddle/huddle_transport_test.dart: exposes relay rejection code and failed lifecycle state
+test/shared/huddle/huddle_transport_test.dart: index replacement is emitted before new media is admitted
+test/shared/huddle/huddle_transport_test.dart: intentional disconnect reaches disconnected without an error
+test/shared/huddle/huddle_transport_test.dart: newer roster arriving before admission remains authoritative
+test/shared/huddle/huddle_transport_test.dart: parses inbound relay media and encodes outbound client media
+test/shared/huddle/huddle_transport_test.dart: re-admission accepts a lower revision after relay restart
+test/shared/huddle/huddle_transport_test.dart: re-admission reports departed and reused peer indexes before new media
+test/shared/huddle/huddle_transport_test.dart: re-admission resets same slot even when its epoch is reused
+test/shared/huddle/huddle_transport_test.dart: re-admission resets same-pubkey slot when its epoch changes
+test/shared/huddle/huddle_transport_test.dart: revision gap reconnects without applying the gap
+test/shared/huddle/huddle_transport_test.dart: revisioned admission does not inject an absent local user
+test/shared/huddle/huddle_transport_test.dart: revisioned joined delta reports index reuse
+test/shared/huddle/huddle_transport_test.dart: revisioned joined delta reports same-pubkey epoch reuse
+test/shared/huddle/huddle_transport_test.dart: revisioned roster is authoritative and deltas are sequential
+test/shared/huddle/huddle_transport_test.dart: surfaces malformed media as recoverable issue
+test/shared/huddle/huddle_transport_test.dart: v2 media routes through the current peer-index occupant after reuse
+test/shared/huddle/huddle_wire_test.dart: HuddleAuthV2 uses the base relay URL and fixed v2 auth envelope
+test/shared/mentions/agent_identity_provider_test.dart: does not retain a live role subscription through working bots
+test/shared/profile/user_cache_batch_limit_test.dart: pending profiles drain in bounded queries after delayed export
+test/shared/profile/user_cache_batch_limit_test.dart: preload waits for final bounded query: community change
+test/shared/profile/user_cache_batch_limit_test.dart: preload waits for final bounded query: failure
+test/shared/profile/user_cache_batch_limit_test.dart: preload waits for final bounded query: success
+test/shared/profile/user_cache_batch_limit_test.dart: refresh waits for final bounded query: community change
+test/shared/profile/user_cache_batch_limit_test.dart: refresh waits for final bounded query: failure
+test/shared/profile/user_cache_batch_limit_test.dart: refresh waits for final bounded query: success
+test/shared/profile/user_cache_provider_test.dart: community change rejects an old network response before parsing
+test/shared/profile/user_cache_provider_test.dart: later refresh completion cannot roll back a newer refresh
+test/shared/profile/user_cache_provider_test.dart: newer refresh can remove obsolete owner attribution
+test/shared/profile/user_cache_provider_test.dart: non-profile history cannot poison profile order
+test/shared/profile/user_cache_provider_test.dart: older refresh cannot overwrite a newer live profile
+test/shared/profile/user_cache_provider_test.dart: preload merges after parsing against newer live state
+test/shared/profile/user_cache_provider_test.dart: preload rejects a retired parsing completion
+test/shared/profile/user_cache_provider_test.dart: refresh and preload share one verification worker and coalesce pending lookups
+test/shared/profile/user_cache_provider_test.dart: refresh merges after parsing against newer live state
+test/shared/profile/user_cache_provider_test.dart: refresh queries profiles that are already cached
+test/shared/profile/user_cache_provider_test.dart: refresh rejects a retired parsing completion
+test/shared/profile/user_cache_provider_test.dart: refresh verifies real OA batch while allowing main-isolate timers
+test/shared/profile/user_cache_provider_test.dart: stale malformed profile is skipped before parsing
+test/shared/push/dev_push_lease_test.dart: mutation control rejects relay OK false then accepts restored event
+test/shared/push/push_bootstrap_test.dart: relay capability alone does not activate push without opt-in
+test/shared/push/push_bridge_test.dart: debug enrollment carries the configured relay and gateway URLs
+test/shared/push/push_bridge_test.dart: development push gateway matches the compiled configuration
+test/shared/push/push_bridge_test.dart: reads and exposes persisted endpoint grants on iOS
+test/shared/push/push_bridge_test.dart: starts native permission and APNs registration without a result gate
+test/shared/push/push_bridge_test.dart: strict age-gate snapshot requires a native handler
+test/shared/push/push_bridge_test.dart: strict age-gate snapshot uses the acknowledged native method
+test/shared/push/push_gateway_origin_validator_test.dart: iOS build phase allows omission and validates supplied origins
+test/shared/push/push_lease_revocation_outbox_test.dart: community removal journals one precise lease address
+test/shared/push/push_lease_revocation_outbox_test.dart: concurrent reconnect and resume triggers share one attempt
+test/shared/push/push_lease_revocation_outbox_test.dart: different records are globally serialized
+test/shared/push/push_lease_revocation_outbox_test.dart: expired lease is erased without a relay attempt
+test/shared/push/push_lease_revocation_outbox_test.dart: failure reserves durable backoff and restart waits for it
+test/shared/push/push_lease_revocation_outbox_test.dart: legacy community revokes its grant-addressed lease
+test/shared/push/push_lease_revocation_outbox_test.dart: repeated failed restarts cannot create a retry storm
+test/shared/push/push_lease_revocation_outbox_test.dart: retry delay grows exponentially and remains bounded
+test/shared/push/push_presentation_recovery_test.dart: channel dirty refetch handles failure work
+test/shared/push/push_presentation_recovery_test.dart: channel dirty refetch handles reentrant work
+test/shared/push/push_presentation_recovery_test.dart: channel dirty refetch handles retired work
+test/shared/push/push_presentation_recovery_test.dart: channels producer handles detached worker submission failure
+test/shared/push/push_presentation_recovery_test.dart: channels producer preserves distinct input beyond eight arrivals
+test/shared/push/push_presentation_recovery_test.dart: channels producer recovers its saturated detached snapshot
+test/shared/push/push_presentation_recovery_test.dart: pending channel input drains after exhausted dirty refetch
+test/shared/push/push_presentation_recovery_test.dart: pending channel input drains after exhausted initial export
+test/shared/push/push_presentation_recovery_test.dart: profiles producer handles detached worker submission failure
+test/shared/push/push_presentation_recovery_test.dart: profiles producer preserves distinct input beyond eight arrivals
+test/shared/push/push_presentation_recovery_test.dart: profiles producer recovers its saturated detached snapshot
+test/shared/push/push_subscription_provider_test.dart: derives desired subscriptions from nsec, membership, and mute state
+test/shared/push/push_unconfigured_build_test.dart: artifact without a gateway define Settings explains push is unavailable without offering opt-in
+test/shared/push/push_unconfigured_build_test.dart: artifact without a gateway define never requests native registration or gateway grants
+test/shared/relay/media_image_test.dart: MediaGetAuthService memoization re-signs only at the refresh margin before expiry
+test/shared/relay/media_image_test.dart: MediaGetAuthService memoization repeated calls return byte-identical headers
+test/shared/relay/media_image_test.dart: MediaImageProvider fetching sends auth headers with the fetch
+test/shared/relay/media_upload_test.dart: MediaGetAuthService normalizes default ports and rejects path-prefix lookalikes
+test/shared/relay/media_upload_test.dart: MediaGetAuthService signs relay media get requests with a server-scoped token
+test/shared/relay/media_upload_test.dart: MediaUploadService maps 415 media policy responses to friendly copy
+test/shared/relay/media_upload_test.dart: MediaUploadService maps 422 media policy responses to friendly copy
+test/shared/relay/media_upload_test.dart: MediaUploadService preserves video policy response details
+test/shared/relay/media_upload_test.dart: MediaUploadService reads clipboard image through the platform channel
+test/shared/relay/media_upload_test.dart: MediaUploadService retries the legacy upload route when the standard route is absent
+test/shared/relay/media_upload_test.dart: MediaUploadService sanitizes Android JPEG gallery files before upload
+test/shared/relay/media_upload_test.dart: MediaUploadService sanitizes Android PNG gallery files before upload
+test/shared/relay/media_upload_test.dart: MediaUploadService sanitizes and uploads GIF clipboard bytes
+test/shared/relay/media_upload_test.dart: MediaUploadService sanitizes and uploads GIF gallery files
+test/shared/relay/media_upload_test.dart: MediaUploadService sanitizes and uploads animated PNG gallery files
+test/shared/relay/media_upload_test.dart: MediaUploadService sanitizes and uploads animated WebP gallery files
+test/shared/relay/media_upload_test.dart: MediaUploadService sanitizes generic filenames to relay imeta constraints
+test/shared/relay/media_upload_test.dart: MediaUploadService sanitizes iOS JPEG gallery files before upload
+test/shared/relay/media_upload_test.dart: MediaUploadService signs Blossom auth and uploads gallery image bytes
+test/shared/relay/media_upload_test.dart: MediaUploadService transcodes HEIC gallery files on Android before upload
+test/shared/relay/media_upload_test.dart: MediaUploadService transcodes HEIC gallery files on iOS before upload
+test/shared/relay/media_upload_test.dart: MediaUploadService uploads static PNG when acTL appears only in chunk payload
+test/shared/relay/media_upload_test.dart: MediaUploadService uses a bracketed IPv6 server tag in Blossom auth
+test/shared/relay/media_upload_test.dart: pickAndUploadVideo falls back to the picked video when the exported poster fails
+test/shared/relay/media_upload_test.dart: pickAndUploadVideo rebuilds an existing MP4 container before upload
+test/shared/relay/media_upload_test.dart: pickAndUploadVideo transcodes non-MP4 container before uploading
+test/shared/relay/media_upload_test.dart: pickAndUploadVideo uploads a generated poster and links it from the video imeta
+test/shared/relay/media_upload_test.dart: uploadVoiceNote uploads the packaged voice note as a video MP4 audio card
+test/shared/relay/relay_session_test.dart: CLOSED retries back off and reset after EOSE
+test/shared/relay/relay_session_test.dart: CLOSED retries reset after a delivered event
+test/shared/relay/relay_session_test.dart: CLOSED retries reset after disconnect and reconnect
+test/shared/relay/relay_session_test.dart: CLOSED retry backoff saturates before a high-attempt shift
+test/shared/relay/relay_session_test.dart: a CLOSED retry timer does not send while disconnected
+test/shared/relay/relay_session_test.dart: a gated publish is cancelled if the connection changes while waiting
+test/shared/relay/relay_session_test.dart: a rate-limited OK rejection fails the publish and arms the gate
+test/shared/relay/relay_session_test.dart: active rate-limit gate does not delay a new live subscribe
+test/shared/relay/relay_session_test.dart: delivers the same live event to each matching subscription
+test/shared/relay/relay_session_test.dart: flushes replay events before a post-EOSE query can begin
+test/shared/relay/relay_session_test.dart: history timeout rejects instead of returning partial empty data
+test/shared/relay/relay_session_test.dart: ignores callbacks from a socket replaced by a config change
+test/shared/relay/relay_session_test.dart: live onClosed callback runs only for a terminal CLOSED
+test/shared/relay/relay_session_test.dart: publish waits out the rate-limit gate before timeout registration and send
+test/shared/relay/relay_session_test.dart: queryRelay arms the rate-limit gate from a 429 retry hint
+test/shared/relay/relay_session_test.dart: queryRelay defers closing a timed-out client until peer queries finish
+test/shared/relay/relay_session_test.dart: queryRelay does not arm the gate for a non-rate-limit error
+test/shared/relay/relay_session_test.dart: queryRelay does not wait for an active rate-limit gate
+test/shared/relay/relay_session_test.dart: queryRelay preserves an error with an unrecognized body
+test/shared/relay/relay_session_test.dart: queryRelay rejects malformed event arrays
+test/shared/relay/relay_session_test.dart: queryRelay rotates the client after a timeout
+test/shared/relay/relay_session_test.dart: queryRelay sends NIP-98 auth over POST /query
+test/shared/relay/relay_session_test.dart: queryRelay success does not arm the rate-limit gate
+test/shared/relay/relay_session_test.dart: queryRelay uses the default gate for a 503 without a hint
+test/shared/relay/relay_session_test.dart: rate-limited CLOSED retry does not survive a superseded connection
+test/shared/relay/relay_session_test.dart: rate-limited history CLOSED gates the next REQ
+test/shared/relay/relay_session_test.dart: rate-limited live CLOSED honors an immediate retry hint
+test/shared/relay/relay_session_test.dart: rate-limited live CLOSED honours the gate floor
+test/shared/relay/relay_session_test.dart: replay generation guard bails after a connection is superseded
+test/shared/relay/relay_session_test.dart: replay is visible-first and batched eight at a time
+test/shared/relay/relay_session_test.dart: resume keeps a connected session within the background grace period
+test/shared/relay/relay_session_test.dart: resume reconnects a stale connected session after a long pause
+test/shared/relay/relay_session_test.dart: retryable CLOSED before EOSE retains and retries the live sub
+test/shared/relay/relay_session_test.dart: retryable CLOSED reports retrying until replay is ready
+test/shared/relay/relay_session_test.dart: simultaneous rate-limited CLOSED retries are replay-paced
+test/shared/relay/relay_session_test.dart: terminal CLOSED fails a live subscribe before ready
+test/shared/relay/relay_session_test.dart: terminal CLOSED removes a live sub without retrying it
+test/shared/relay/relay_session_test.dart: unsubscribe and dispose cancel CLOSED retry timers
+test/shared/relay/relay_session_test.dart: visible channel owners restore and ignore out-of-order release
+test/shared/relay/relay_socket_liveness_test.dart: detects a peer that stops answering pings
+test/shared/relay/relay_socket_liveness_test.dart: keeps an idle but healthy peer connected
+test/shared/theme/community_theme_provider_test.dart: complete preference writes one cache and outbox snapshot
+test/shared/theme/community_theme_provider_test.dart: delayed absence seeds the intervening local edit
+test/shared/theme/community_theme_provider_test.dart: edit during delayed absence seed wins durable state
+test/shared/theme/community_theme_provider_test.dart: local edit stays authoritative before persistence through exact ack
+test/shared/theme/community_theme_provider_test.dart: provider rebuild preserves delayed local edit and publishes on replacement manager
