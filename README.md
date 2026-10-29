@@ -52,7 +52,7 @@ Live tooling obtains capability privately; iOS test receives it through a one-sh
 
 Project direction: `VISION.md` · invariants: `AGENTS.md` · ADRs: `docs/decisions.md` · operating process: `docs/development.md`
 
-Buzz source is Apache-2.0; OMP protocol references are MIT. Attribution summary and third-party credits are in `licenses/NOTICE`; original notices remain in `licenses/` and the vendored tree.
+Raiju mobile is licensed under Apache-2.0 (`LICENSE`); `spark-core/` is MIT. Buzz source is Apache-2.0; OMP protocol references are MIT. Attribution summary and third-party credits are in `licenses/NOTICE`; original notices remain in `licenses/` and the vendored tree.
 
 ## component map
 
