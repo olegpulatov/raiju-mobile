@@ -46,7 +46,7 @@
         "sha256": "d1aaddeb43f9ad779f5989424bc990de0348053398dda12697cca90e38200f41"
       }
     ],
-    "notes": "Keeps delegation/retelling behavior with a focused collaborator persona; replaces Iskra name and OS-account seam with Spark and editable Oleg-default user name, removes pure-voice branch. Context-sharing addition is mobile-authored. OMP reference source remains unchanged."
+    "notes": "Keeps delegation/retelling behavior with a focused collaborator persona; replaces Iskra name and OS-account seam with Spark and an editable user name, removes pure-voice branch. Context-sharing addition is mobile-authored. OMP reference source remains unchanged."
   },
   "notes": "WebRTC/Opus media and private subscription signaling/protocol were adapted. Device audio, filesystem archives, N-API, Codex credential storage/refresh, app identity headers, and attestation were intentionally not copied. Service entitlement without those private desktop assertions remains an explicit live-test risk."
 }

@@ -167,6 +167,9 @@ const sparkDefaultPreset = SparkPromptPreset(
   instructions: sparkDefaultInstructions,
 );
 
+/// Placeholder until the user sets a real name in Settings → Spark.
+const sparkDefaultUserName = 'User';
+
 class SparkSettings {
   const SparkSettings({
     this.brokerUrl = '',
@@ -175,7 +178,7 @@ class SparkSettings {
     this.promptPresets = const [sparkDefaultPreset],
     this.selectedPresetId = 'spark-default',
     this.voice = 'sol',
-    this.userName = 'Oleg',
+    this.userName = sparkDefaultUserName,
     this.contextAddition = sparkDefaultContextAddition,
     this.mainAgentDirective = sparkDefaultMainAgentDirective,
     this.agentFinalMessage = sparkDefaultAgentFinalMessage,
@@ -283,7 +286,7 @@ class SparkSettings {
       promptPresets: presets,
       selectedPresetId: value['selectedPresetId'] as String,
       voice: value['voice'] as String,
-      userName: value['userName'] as String? ?? 'Oleg',
+      userName: value['userName'] as String? ?? sparkDefaultUserName,
       contextAddition:
           value['contextAddition'] as String? ?? sparkDefaultContextAddition,
       mainAgentDirective:

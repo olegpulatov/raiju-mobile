@@ -2,7 +2,7 @@
 
 ## user intent and scope
 
-Spark is Iskra with remote seams: voice runs on phone, coding agent runs on workstation, one connected conversation. Spark personality is a focused, direct collaborator. Preserve Oleg addressing, delegation behavior, and natural retelling. No invented summarization instructions.
+Spark is Iskra with remote seams: voice runs on phone, coding agent runs on workstation, one connected conversation. Spark personality is a focused, direct collaborator. Preserve addressing by editable user name, delegation behavior, and natural retelling. No invented summarization instructions.
 
 Current requirements:
 
@@ -62,7 +62,7 @@ Assets under `lib/spark/prompts/`:
 - `spark-main-agent-directive.md`: user/Spark/remote coding-agent setup, sent with first real outgoing message after live starts
 - `spark-agent-final-message.md`: existing internal final-response mechanism
 
-Expose all participating prompt text and editable user name, default Oleg, through existing protected settings storage. Persist tool visibility preference. Stable markers and machine IDs stay outside editable prose. Preserve upstream provenance/licenses; upstream `pure-voice.md` does not introduce separate mobile mode.
+Expose all participating prompt text and editable user name, default `User`, through existing protected settings storage. Persist tool visibility preference. Stable markers and machine IDs stay outside editable prose. Preserve upstream provenance/licenses; upstream `pure-voice.md` does not introduce separate mobile mode.
 
 Markdown assets and synchronous editable defaults have a parity test. Rendered instructions and context delimiters share the startup limit; reject an oversized complete configuration rather than truncate persona. Existing edited presets are never replaced merely because their IDs match an old default.
 

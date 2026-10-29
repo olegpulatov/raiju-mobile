@@ -145,7 +145,7 @@ void main() {
       expect(restored.toolVisibility, SparkToolVisibility.hideInVoice);
       expect(restored.hideThinking, isTrue);
       expect(restored.announceTerminalReplies, isTrue);
-      expect(restored.userName, 'Oleg');
+      expect(restored.userName, 'User');
       expect(restored.contextAddition, sparkDefaultContextAddition);
       expect(
         jsonDecode(
