@@ -1,6 +1,6 @@
 # spark-core
 
-Portable Rust transport/media module for Spark, adapted from OMP Iskra. First provider uses ChatGPT subscription OAuth and the private Codex realtime protocol. It is not the public OpenAI Platform Realtime API; service entitlement is not guaranteed by a successful build.
+Portable Rust transport/media module for Spark, adapted from OMP Iskra. First provider is OpenAI live voice included with a ChatGPT subscription (subscription sign-in, Codex realtime voice protocol); it is one provider implementation. The pay-per-use OpenAI Platform Realtime API is a different service. A successful build does not guarantee service access.
 
 The crate does not depend on Flutter, an OMP agent runtime, device microphone APIs, a credential file, or sibling desktop code. It never records audio. Mobile consumer supplies credentials, microphone samples, personality instructions, and bound-chat delegation integration.
 
